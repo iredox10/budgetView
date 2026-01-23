@@ -1,35 +1,60 @@
 import { useState } from 'react';
 import { useBudget } from '../data/BudgetContext';
-import { Card, Title, Text, Button, Flex, Badge, Grid } from '@tremor/react';
-import { Upload, FileJson, CheckCircle2, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
+import { Card, Title, Text, Button, Flex, Badge, Grid, ProgressBar } from '@tremor/react';
+import { Upload, FileJson, CheckCircle2, AlertCircle, Trash2, ArrowRight, FileText, File, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BudgetParser } from '../utils/BudgetParser';
 
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { addState, states, deleteState } = useBudget();
   const navigate = useNavigate();
 
-  const handleFile = (file) => {
-    if (file && file.type === "application/json") {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const json = JSON.parse(e.target.result);
-          // Basic validation of schema
-          if (!json.state || !json.summary || !json.mdas) {
-            throw new Error("Invalid budget schema. Please use the official extraction tool.");
+  const handleFile = async (file) => {
+    if (!file) return;
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      if (file.type === "application/json") {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const json = JSON.parse(e.target.result);
+            const id = addState(json);
+            navigate(`/state/${id}`);
+          } catch (err) {
+            setError("Invalid JSON format.");
+            setIsProcessing(false);
           }
-          const id = addState(json);
-          setError(null);
-          navigate(`/state/${id}`);
-        } catch (err) {
-          setError(err.message);
+        };
+        reader.readAsText(file);
+      } else if (file.type === "application/pdf") {
+        const text = await BudgetParser.extractTextFromPDF(file);
+        // console.log("Extracted text sample:", text.substring(0, 500));
+        const json = BudgetParser.parseText(text);
+        if (!json.mdas.length) {
+          console.error("Extraction failure. Text sample:", text.substring(0, 1000));
+          throw new Error("No budget data detected in PDF. This could be due to a non-standard layout or an encrypted file.");
         }
-      };
-      reader.readAsText(file);
-    } else {
-      setError("Please upload a valid JSON file.");
+        const id = addState(json);
+        setTimeout(() => {
+          navigate(`/state/${id}`, { replace: true });
+        }, 100);
+      } else if (file.type === "text/plain") {
+        const text = await file.text();
+        const json = BudgetParser.parseText(text);
+        if (!json.mdas.length) throw new Error("No budget data detected in text file.");
+        const id = addState(json);
+        navigate(`/state/${id}`);
+      } else {
+        throw new Error("Unsupported file type. Please upload JSON, PDF, or TXT.");
+      }
+    } catch (err) {
+      setError(err.message);
+      setIsProcessing(false);
     }
   };
 
@@ -70,25 +95,38 @@ export default function UploadPage() {
       >
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="p-4 bg-blue-100 text-blue-600 rounded-2xl">
-            <Upload className="w-8 h-8" />
+            {isProcessing ? <Database className="w-8 h-8 animate-pulse" /> : <Upload className="w-8 h-8" />}
           </div>
           <div className="text-center">
-            <Text className="text-lg font-bold text-slate-900">Drag & Drop JSON Budget File</Text>
-            <Text className="text-sm text-slate-400">or click to browse files</Text>
+            <Text className="text-lg font-bold text-slate-900">
+              {isProcessing ? "Analyzing Budget Structures..." : "Drag & Drop Budget PDF or JSON"}
+            </Text>
+            <Text className="text-sm text-slate-400">
+              {isProcessing ? "Identifying MDAs and sectoral allocations" : "or click to browse files"}
+            </Text>
           </div>
-          <input 
-            type="file" 
-            className="hidden" 
-            id="file-upload" 
-            accept=".json"
-            onChange={(e) => handleFile(e.target.files[0])}
-          />
-          <label 
-            htmlFor="file-upload"
-            className="px-6 py-2 bg-slate-900 text-white rounded-xl font-bold cursor-pointer hover:bg-slate-800 transition-all active:scale-95"
-          >
-            Select File
-          </label>
+          {!isProcessing && (
+            <>
+              <input 
+                type="file" 
+                className="hidden" 
+                id="file-upload" 
+                accept=".json,.pdf,.txt"
+                onChange={(e) => handleFile(e.target.files[0])}
+              />
+              <label 
+                htmlFor="file-upload"
+                className="px-6 py-2 bg-slate-900 text-white rounded-xl font-bold cursor-pointer hover:bg-slate-800 transition-all active:scale-95"
+              >
+                Select File
+              </label>
+            </>
+          )}
+          {isProcessing && (
+            <div className="w-64">
+              <ProgressBar value={75} color="blue" className="mt-2" />
+            </div>
+          )}
         </div>
       </Card>
 
@@ -137,27 +175,27 @@ export default function UploadPage() {
       </div>
 
       <div className="p-8 bg-slate-900 rounded-3xl text-white">
-        <Title className="text-white font-bold">Quick Start Guide</Title>
+        <Title className="text-white font-bold">Smart Analysis Guide</Title>
         <div className="mt-6 space-y-4">
           <div className="flex gap-4">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">1</div>
             <div>
-              <Text className="text-white font-bold">Run Extraction Tool</Text>
-              <Text className="text-slate-400 text-sm">Use <code>python parse_budget.py budget.txt &gt; budget.json</code> to process the PDF text.</Text>
+              <Text className="text-white font-bold">Upload PDF Directly</Text>
+              <Text className="text-slate-400 text-sm">Drop the official Budget Estimates PDF. Our AI-driven parser will identify sections automatically.</Text>
             </div>
           </div>
           <div className="flex gap-4">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">2</div>
             <div>
-              <Text className="text-white font-bold">Upload JSON</Text>
-              <Text className="text-slate-400 text-sm">Drag the generated JSON file into the upload area above.</Text>
+              <Text className="text-white font-bold">Verify Traceability</Text>
+              <Text className="text-slate-400 text-sm">Click on any number in the dashboard to see the exact line of text from the PDF it was extracted from.</Text>
             </div>
           </div>
           <div className="flex gap-4">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">3</div>
             <div>
-              <Text className="text-white font-bold">Instant Dashboard</Text>
-              <Text className="text-slate-400 text-sm">The system will automatically generate all visualizations and MDA lists.</Text>
+              <Text className="text-white font-bold">Audit Anomalies</Text>
+              <Text className="text-slate-400 text-sm">The system will flag rows where government totals don't match sub-component sums.</Text>
             </div>
           </div>
         </div>
