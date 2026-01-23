@@ -1,0 +1,4694 @@
+{
+  "state": "Kano",
+  "year": 2024,
+  "summary": {
+    "recurrent_revenue": 379762289575.0,
+    "faac": 277805415034.0,
+    "igr": 101956874541.0,
+    "grants": 16699855183.6,
+    "capital_receipts": 25065182039.4,
+    "total_revenue": 437338312787.93,
+    "total_expenditure": 437338312787.93
+  },
+  "sectors": [
+    {
+      "code": "701",
+      "name": "GENERAL PUBLIC SERVICES",
+      "amount": 121992148504.31
+    },
+    {
+      "code": "703",
+      "name": "PUBLIC ORDER AND SAFETY",
+      "amount": 14095851994.5
+    },
+    {
+      "code": "704",
+      "name": "ECONOMIC AFFAIRS",
+      "amount": 47979749070.17
+    },
+    {
+      "code": "705",
+      "name": "ENVIRONMENTAL PROTECTION",
+      "amount": 5453163697.0
+    },
+    {
+      "code": "706",
+      "name": "HOUSING AND COMMUNITY AMMENITIES",
+      "amount": 48802027636.53
+    },
+    {
+      "code": "707",
+      "name": "HEALTH",
+      "amount": 60907451131.13
+    },
+    {
+      "code": "708",
+      "name": "RECREATION, CULTURE AND RELIGION",
+      "amount": 11054819023.93
+    },
+    {
+      "code": "709",
+      "name": "EDUCATION",
+      "amount": 107192306165.82
+    },
+    {
+      "code": "710",
+      "name": "SOCIAL PROTECTION",
+      "amount": 19860795564.55
+    }
+  ],
+  "mdas": [
+    {
+      "code": "050000000000",
+      "name": "Social Services Sector",
+      "total": 213061183677.4,
+      "personnel": 60955111932.32,
+      "overhead": 21357460924.24,
+      "capital": 130748610820.83
+    },
+    {
+      "code": "020000000000",
+      "name": "Economic Sector",
+      "total": 161481454621.51,
+      "personnel": 11852084000.0,
+      "overhead": 4600000000.0,
+      "capital": 130083785860.93
+    },
+    {
+      "code": "051700000000",
+      "name": "Ministry of Education",
+      "total": 82038831198.41,
+      "personnel": 24529757000.0,
+      "overhead": 4918125608.82,
+      "capital": 52590948589.59
+    },
+    {
+      "code": "052100000000",
+      "name": "Ministry of Health",
+      "total": 72001932297.77,
+      "personnel": 17785315651.0,
+      "overhead": 11711386758.91,
+      "capital": 42505229887.86
+    },
+    {
+      "code": "023400000000",
+      "name": "Ministry of Works & Housing",
+      "total": 58879015121.97,
+      "personnel": 1294047000.0,
+      "overhead": 547996373.06,
+      "capital": 57036971748.91
+    },
+    {
+      "code": "010000000000",
+      "name": "ADMINISTRATION SECTOR",
+      "total": 48459175813.78,
+      "personnel": 8858224355.43,
+      "overhead": 26291651861.97,
+      "capital": 13309299596.38
+    },
+    {
+      "code": "023400100100",
+      "name": "Ministry of Works & Housing",
+      "total": 47727176029.28,
+      "personnel": 542790000.0,
+      "overhead": 286813433.37,
+      "capital": 46897572595.91
+    },
+    {
+      "code": "056900000000",
+      "name": "Ministry for Higher Education",
+      "total": 39545517224.04,
+      "personnel": 16766625281.32,
+      "overhead": 2844309599.33,
+      "capital": 19934582343.39
+    },
+    {
+      "code": "051700100100",
+      "name": "Ministry of Education",
+      "total": 39227936852.0,
+      "personnel": 325410000.0,
+      "overhead": 3453440411.0,
+      "capital": 35449086441.0
+    },
+    {
+      "code": "052100100100",
+      "name": "Ministry of Health",
+      "total": 34481858370.22,
+      "personnel": 1288610000.0,
+      "overhead": 2176485882.57,
+      "capital": 31016762487.65
+    },
+    {
+      "code": "051700100105",
+      "name": "Planning, Research & Statistics",
+      "total": 29865117748.08,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 29865117748.08
+    },
+    {
+      "code": "051702600100",
+      "name": "Senior Secondary Schools Mgt. Board",
+      "total": 25373633728.59,
+      "personnel": 21166409000.0,
+      "overhead": 134224728.59,
+      "capital": 4073000000.0
+    },
+    {
+      "code": "023400100132",
+      "name": "Civil Engineering",
+      "total": 24380708618.88,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 24380708618.88
+    },
+    {
+      "code": "051702600104",
+      "name": "Admin & General Services",
+      "total": 21280650378.59,
+      "personnel": 21166409000.0,
+      "overhead": 114241378.59,
+      "capital": 0
+    },
+    {
+      "code": "011100000000",
+      "name": "Government House",
+      "total": 18972569219.68,
+      "personnel": 2399866006.43,
+      "overhead": 13074651213.25,
+      "capital": 3498052000.0
+    },
+    {
+      "code": "022000000000",
+      "name": "Ministry of Finance",
+      "total": 18957426056.91,
+      "personnel": 4458559000.0,
+      "overhead": 4600000000.0,
+      "capital": 4835272400.0
+    },
+    {
+      "code": "052100300100",
+      "name": "H.M.B. ( HQ and Zones)",
+      "total": 18139997127.59,
+      "personnel": 15272444651.0,
+      "overhead": 2207552476.59,
+      "capital": 660000000.0
+    },
+    {
+      "code": "023800000000",
+      "name": "Ministry of Planning & Budget",
+      "total": 17971660584.56,
+      "personnel": 70923000.0,
+      "overhead": 6569509563.56,
+      "capital": 11331228021.01
+    },
+    {
+      "code": "023800100100",
+      "name": "Ministry of Planning & Budget",
+      "total": 17971660584.56,
+      "personnel": 70923000.0,
+      "overhead": 6569509563.56,
+      "capital": 11331228021.01
+    },
+    {
+      "code": "052100300104",
+      "name": "Admin & General Services",
+      "total": 17479997127.59,
+      "personnel": 15272444651.0,
+      "overhead": 2207552476.59,
+      "capital": 0
+    },
+    {
+      "code": "023400100131",
+      "name": "Public Building & Estate",
+      "total": 17319751358.29,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 17319751358.29
+    },
+    {
+      "code": "022900000000",
+      "name": "Ministry of Transport",
+      "total": 14441878000.0,
+      "personnel": 1662173000.0,
+      "overhead": 781900000.0,
+      "capital": 11997805000.0
+    },
+    {
+      "code": "030000000000",
+      "name": "Law and Justice Sector",
+      "total": 14336498675.25,
+      "personnel": 5800405000.0,
+      "overhead": 2842695649.19,
+      "capital": 5693398026.06
+    },
+    {
+      "code": "052100100105",
+      "name": "Planning, Research & Statistics",
+      "total": 13859953702.65,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 13859953702.65
+    },
+    {
+      "code": "025200000000",
+      "name": "Ministry of Water Resources",
+      "total": 13841594262.01,
+      "personnel": 903914000.0,
+      "overhead": 167052009.51,
+      "capital": 12770628252.5
+    },
+    {
+      "code": "031800000000",
+      "name": "Judicial Service Commission",
+      "total": 13349153675.25,
+      "personnel": 5456755000.0,
+      "overhead": 2388000649.19,
+      "capital": 5504398026.06
+    },
+    {
+      "code": "026300000000",
+      "name": "Ministry of Rural & Community Development",
+      "total": 11756629661.0,
+      "personnel": 362581000.0,
+      "overhead": 17004345.0,
+      "capital": 11377044316.0
+    },
+    {
+      "code": "021500000000",
+      "name": "Ministry of Agric. & Natural Resources",
+      "total": 11119717735.42,
+      "personnel": 1944960000.0,
+      "overhead": 184788900.0,
+      "capital": 8989968835.42
+    },
+    {
+      "code": "023800100105",
+      "name": "Planning, Research & Statistics",
+      "total": 10932773767.23,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 10932773767.23
+    },
+    {
+      "code": "051700300100",
+      "name": "SUBEB",
+      "total": 10818288280.64,
+      "personnel": 180222000.0,
+      "overhead": 81625473.5,
+      "capital": 10556440807.14
+    },
+    {
+      "code": "052100100166",
+      "name": "Physical Planning Department",
+      "total": 10524500000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 10524500000.0
+    },
+    {
+      "code": "053500000000",
+      "name": "Ministry of Environment",
+      "total": 10519525000.0,
+      "personnel": 974705000.0,
+      "overhead": 779320000.0,
+      "capital": 8765500000.0
+    },
+    {
+      "code": "011200000000",
+      "name": "House of Assembly",
+      "total": 10084671442.28,
+      "personnel": 486325000.0,
+      "overhead": 9398346442.28,
+      "capital": 200000000.0
+    },
+    {
+      "code": "011200300100",
+      "name": "House of Assembly",
+      "total": 9362491942.28,
+      "personnel": 471997000.0,
+      "overhead": 8690494942.28,
+      "capital": 200000000.0
+    },
+    {
+      "code": "011200300104",
+      "name": "Admin & General Services",
+      "total": 9362491942.28,
+      "personnel": 471997000.0,
+      "overhead": 8690494942.28,
+      "capital": 200000000.0
+    },
+    {
+      "code": "052100800100",
+      "name": "CONTRIBUTORY HEALTH MGT",
+      "total": 7854198852.03,
+      "personnel": 4000000.0,
+      "overhead": 4923250000.0,
+      "capital": 2926948852.03
+    },
+    {
+      "code": "016100000000",
+      "name": "Office of Secretary to State Government",
+      "total": 7604600000.0,
+      "personnel": 1856450000.0,
+      "overhead": 1628150000.0,
+      "capital": 4120000000.0
+    },
+    {
+      "code": "025210100100",
+      "name": "Kano State Water Board",
+      "total": 7474337622.01,
+      "personnel": 771085000.0,
+      "overhead": 146802009.51,
+      "capital": 6556450612.5
+    },
+    {
+      "code": "026300200100",
+      "name": "RAMPS Directorate",
+      "total": 7424000000.0,
+      "personnel": 0,
+      "overhead": 2000000.0,
+      "capital": 7422000000.0
+    },
+    {
+      "code": "022000700100",
+      "name": "Office of the Accountant General",
+      "total": 7259000000.0,
+      "personnel": 0,
+      "overhead": 4600000000.0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "022000700103",
+      "name": "Office of the Accountant General",
+      "total": 7259000000.0,
+      "personnel": 0,
+      "overhead": 4600000000.0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "052100500100",
+      "name": "Primary Health Care Mgt. Board (PHCMB)",
+      "total": 7118094234.92,
+      "personnel": 205776000.0,
+      "overhead": 1723600000.0,
+      "capital": 5188718234.92
+    },
+    {
+      "code": "026300200131",
+      "name": "Rural Infrastructure",
+      "total": 7092000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 7092000000.0
+    },
+    {
+      "code": "023800100104",
+      "name": "Admin & General Services",
+      "total": 6640432563.56,
+      "personnel": 70923000.0,
+      "overhead": 6569509563.56,
+      "capital": 0
+    },
+    {
+      "code": "031805100100",
+      "name": "High Court of Justice",
+      "total": 6539613649.69,
+      "personnel": 2423363000.0,
+      "overhead": 1351250649.69,
+      "capital": 2765000000.0
+    },
+    {
+      "code": "056902100100",
+      "name": "Dangote University of Science & Technology (Wudil)",
+      "total": 6501856000.0,
+      "personnel": 3741243000.0,
+      "overhead": 1035613000.0,
+      "capital": 1725000000.0
+    },
+    {
+      "code": "056902100111",
+      "name": "Registrar",
+      "total": 6501856000.0,
+      "personnel": 3741243000.0,
+      "overhead": 1035613000.0,
+      "capital": 1725000000.0
+    },
+    {
+      "code": "056902800100",
+      "name": "Yusufu Maitama Sule University",
+      "total": 6180461045.68,
+      "personnel": 3702021000.0,
+      "overhead": 451693240.18,
+      "capital": 2026746805.5
+    },
+    {
+      "code": "025200100100",
+      "name": "Ministry of Water Resources",
+      "total": 6169079000.0,
+      "personnel": 132829000.0,
+      "overhead": 17850000.0,
+      "capital": 6018400000.0
+    },
+    {
+      "code": "023400200100",
+      "name": "Housing Corporation",
+      "total": 6039127153.0,
+      "personnel": 85768000.0,
+      "overhead": 62960000.0,
+      "capital": 5890399153.0
+    },
+    {
+      "code": "021500100100",
+      "name": "Ministry of Agric. & Natural Resources",
+      "total": 5892408935.23,
+      "personnel": 617900000.0,
+      "overhead": 157188900.0,
+      "capital": 5117320035.23
+    },
+    {
+      "code": "023400200131",
+      "name": "Physical Planning and Development control Department",
+      "total": 5785399153.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5785399153.0
+    },
+    {
+      "code": "012300000000",
+      "name": "Min. of Information & internal Affairs",
+      "total": 5673325319.3,
+      "personnel": 620282349.0,
+      "overhead": 1131692627.92,
+      "capital": 3921350342.38
+    },
+    {
+      "code": "031805300100",
+      "name": "Sharia Court of Appeal",
+      "total": 5663562025.56,
+      "personnel": 2423364000.0,
+      "overhead": 800799999.5,
+      "capital": 2439398026.06
+    },
+    {
+      "code": "031805300103",
+      "name": "Chief Registrar",
+      "total": 5663562025.56,
+      "personnel": 2423364000.0,
+      "overhead": 800799999.5,
+      "capital": 2439398026.06
+    },
+    {
+      "code": "051700300159",
+      "name": "Physical Planning",
+      "total": 5345572542.61,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5345572542.61
+    },
+    {
+      "code": "051700100159",
+      "name": "Physical Planning",
+      "total": 5315968692.92,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5315968692.92
+    },
+    {
+      "code": "016100100200",
+      "name": "Admin & General Services",
+      "total": 5300403000.0,
+      "personnel": 492253000.0,
+      "overhead": 688150000.0,
+      "capital": 4120000000.0
+    },
+    {
+      "code": "016100100204",
+      "name": "Admin & General Services",
+      "total": 5300403000.0,
+      "personnel": 492253000.0,
+      "overhead": 688150000.0,
+      "capital": 4120000000.0
+    },
+    {
+      "code": "023400100133",
+      "name": "Mechanical / Electrical",
+      "total": 5185862618.74,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5185862618.74
+    },
+    {
+      "code": "056902800111",
+      "name": "Registrar",
+      "total": 5160461045.68,
+      "personnel": 3702021000.0,
+      "overhead": 451693240.18,
+      "capital": 1006746805.5
+    },
+    {
+      "code": "026000000000",
+      "name": "Ministry of Land and Physical Planning",
+      "total": 5155289508.24,
+      "personnel": 432093000.0,
+      "overhead": 146981178.14,
+      "capital": 4576215330.1
+    },
+    {
+      "code": "011105500100",
+      "name": "Special Services Directorate",
+      "total": 5107353000.0,
+      "personnel": 14353000.0,
+      "overhead": 5093000000.0,
+      "capital": 0
+    },
+    {
+      "code": "011105500104",
+      "name": "Admin & General Services",
+      "total": 5107353000.0,
+      "personnel": 14353000.0,
+      "overhead": 5093000000.0,
+      "capital": 0
+    },
+    {
+      "code": "022000100100",
+      "name": "Ministry of Finance",
+      "total": 4939219881.0,
+      "personnel": 3515091000.0,
+      "overhead": 274128881.0,
+      "capital": 1150000000.0
+    },
+    {
+      "code": "052100100165",
+      "name": "Public Health & Disease Control",
+      "total": 4871826835.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 4871826835.0
+    },
+    {
+      "code": "021511400100",
+      "name": "KNARDA",
+      "total": 4852308800.19,
+      "personnel": 1327060000.0,
+      "overhead": 27600000.0,
+      "capital": 3497648800.19
+    },
+    {
+      "code": "052100800104",
+      "name": "Admin & General Services",
+      "total": 4837050000.0,
+      "personnel": 4000000.0,
+      "overhead": 4703050000.0,
+      "capital": 130000000.0
+    },
+    {
+      "code": "022900100100",
+      "name": "Ministry of Transport",
+      "total": 4836105000.0,
+      "personnel": 106000000.0,
+      "overhead": 115000000.0,
+      "capital": 4615105000.0
+    },
+    {
+      "code": "022000100104",
+      "name": "Admin & General Services",
+      "total": 4665591000.0,
+      "personnel": 3515091000.0,
+      "overhead": 500000.0,
+      "capital": 1150000000.0
+    },
+    {
+      "code": "051300000000",
+      "name": "Ministry of Youths and Sports",
+      "total": 4623458437.51,
+      "personnel": 497401000.0,
+      "overhead": 378907437.51,
+      "capital": 3747150000.0
+    },
+    {
+      "code": "022900500100",
+      "name": "Kano Metro Politant Area Transport Agency (KAMATA)",
+      "total": 4595500000.0,
+      "personnel": 0,
+      "overhead": 95500000.0,
+      "capital": 4500000000.0
+    },
+    {
+      "code": "022900500132",
+      "name": "Public Transport",
+      "total": 4500000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 4500000000.0
+    },
+    {
+      "code": "051701500100",
+      "name": "Science & Technical Schools Board",
+      "total": 4444096979.38,
+      "personnel": 2354676000.0,
+      "overhead": 1164980059.37,
+      "capital": 924440920.01
+    },
+    {
+      "code": "051700300154",
+      "name": "Schools Services",
+      "total": 4375822780.51,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 4375822780.51
+    },
+    {
+      "code": "022800000000",
+      "name": "Ministry for Science Technology & Innovation",
+      "total": 4302584547.4,
+      "personnel": 101754000.0,
+      "overhead": 145278590.4,
+      "capital": 4055551957.0
+    },
+    {
+      "code": "023400400100",
+      "name": "Kano State Road Maintenance Agency (KARMA)",
+      "total": 4273939939.69,
+      "personnel": 10717000.0,
+      "overhead": 183222939.69,
+      "capital": 4080000000.0
+    },
+    {
+      "code": "056900100100",
+      "name": "Ministry for Higher Education",
+      "total": 4126461521.0,
+      "personnel": 14669000.0,
+      "overhead": 630000000.0,
+      "capital": 3481792521.0
+    },
+    {
+      "code": "051702600105",
+      "name": "Planning, Research & Statistics",
+      "total": 4092983350.0,
+      "personnel": 0,
+      "overhead": 19983350.0,
+      "capital": 4073000000.0
+    },
+    {
+      "code": "026005800100",
+      "name": "Kano State Urban Planning & Development Authority",
+      "total": 4087374706.39,
+      "personnel": 166698000.0,
+      "overhead": 34461376.29,
+      "capital": 3886215330.1
+    },
+    {
+      "code": "056900100104",
+      "name": "Admin & General Services",
+      "total": 4048461521.0,
+      "personnel": 14669000.0,
+      "overhead": 552000000.0,
+      "capital": 3481792521.0
+    },
+    {
+      "code": "051700100104",
+      "name": "Admin & General Services",
+      "total": 3778850411.0,
+      "personnel": 325410000.0,
+      "overhead": 3453440411.0,
+      "capital": 0
+    },
+    {
+      "code": "011100100100",
+      "name": "Government House",
+      "total": 3729741997.72,
+      "personnel": 65832000.0,
+      "overhead": 2563909997.72,
+      "capital": 1100000000.0
+    },
+    {
+      "code": "051400000000",
+      "name": "Ministry of Women Affairs & Social Dev.",
+      "total": 3709887971.2,
+      "personnel": 141290000.0,
+      "overhead": 553397971.2,
+      "capital": 3015200000.0
+    },
+    {
+      "code": "051400100100",
+      "name": "Ministry of Women Affairs & Social Dev.",
+      "total": 3709887971.2,
+      "personnel": 141290000.0,
+      "overhead": 553397971.2,
+      "capital": 3015200000.0
+    },
+    {
+      "code": "056901800100",
+      "name": "Kano State Polytechnic",
+      "total": 3707027856.08,
+      "personnel": 3157275000.0,
+      "overhead": 55800000.0,
+      "capital": 493952856.08
+    },
+    {
+      "code": "053500600103",
+      "name": "Coordinator",
+      "total": 3597825000.0,
+      "personnel": 0,
+      "overhead": 17825000.0,
+      "capital": 3580000000.0
+    },
+    {
+      "code": "051701500106",
+      "name": "Personnel Management",
+      "total": 3519656059.37,
+      "personnel": 2354676000.0,
+      "overhead": 1164980059.37,
+      "capital": 0
+    },
+    {
+      "code": "022200000000",
+      "name": "Ministry of Commerce Ind. & Co-op.",
+      "total": 3470250556.0,
+      "personnel": 331861000.0,
+      "overhead": 1230489556.0,
+      "capital": 1907900000.0
+    },
+    {
+      "code": "052100100104",
+      "name": "Admin & General Services",
+      "total": 3465095882.57,
+      "personnel": 1288610000.0,
+      "overhead": 2176485882.57,
+      "capital": 0
+    },
+    {
+      "code": "022000800100",
+      "name": "Kano State Internal Revenue Services",
+      "total": 3438973775.91,
+      "personnel": 943468000.0,
+      "overhead": 2235505775.91,
+      "capital": 260000000.0
+    },
+    {
+      "code": "022000800107",
+      "name": "Finance and Human Resources",
+      "total": 3438973775.91,
+      "personnel": 943468000.0,
+      "overhead": 2235505775.91,
+      "capital": 260000000.0
+    },
+    {
+      "code": "026005800133",
+      "name": "Engineering, Civil & Mechanical",
+      "total": 3336215330.1,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 3336215330.1
+    },
+    {
+      "code": "056901800111",
+      "name": "Registrar",
+      "total": 3213075000.0,
+      "personnel": 3157275000.0,
+      "overhead": 55800000.0,
+      "capital": 0
+    },
+    {
+      "code": "053500100100",
+      "name": "Ministry of Environment",
+      "total": 3130374000.0,
+      "personnel": 614774000.0,
+      "overhead": 250100000.0,
+      "capital": 2265500000.0
+    },
+    {
+      "code": "022900400100",
+      "name": "Kano State Road Transport Agency (KAROTA)",
+      "total": 3063523000.0,
+      "personnel": 1513923000.0,
+      "overhead": 516900000.0,
+      "capital": 1032700000.0
+    },
+    {
+      "code": "022900400104",
+      "name": "Admin & General Services",
+      "total": 3063523000.0,
+      "personnel": 1513923000.0,
+      "overhead": 516900000.0,
+      "capital": 1032700000.0
+    },
+    {
+      "code": "022000900100",
+      "name": "Kano State Investment Promotion Agency",
+      "total": 3008332400.0,
+      "personnel": 0,
+      "overhead": 23060000.0,
+      "capital": 2985272400.0
+    },
+    {
+      "code": "056903100108",
+      "name": "Physical Planning (Work)",
+      "total": 2954672125.81,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2954672125.81
+    },
+    {
+      "code": "056904800100",
+      "name": "Kano State Scholarship Board",
+      "total": 2890488653.0,
+      "personnel": 37874000.0,
+      "overhead": 62420000.0,
+      "capital": 2790194653.0
+    },
+    {
+      "code": "056904800104",
+      "name": "Admin & General Services",
+      "total": 2890488653.0,
+      "personnel": 37874000.0,
+      "overhead": 62420000.0,
+      "capital": 2790194653.0
+    },
+    {
+      "code": "056903100111",
+      "name": "Registrar",
+      "total": 2856940525.0,
+      "personnel": 2769403000.0,
+      "overhead": 87537525.0,
+      "capital": 0
+    },
+    {
+      "code": "022000900137",
+      "name": "Investor Relation",
+      "total": 2820000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2820000000.0
+    },
+    {
+      "code": "031805100105",
+      "name": "Planning, Research & Statistics",
+      "total": 2765000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2765000000.0
+    },
+    {
+      "code": "022800100100",
+      "name": "Ministry for Science Technology & Innovation",
+      "total": 2749844528.4,
+      "personnel": 50150000.0,
+      "overhead": 145278590.4,
+      "capital": 2554415938.0
+    },
+    {
+      "code": "025210100107",
+      "name": "Finance & Supply",
+      "total": 2700650000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2700650000.0
+    },
+    {
+      "code": "051300100100",
+      "name": "Ministry of Youths and Sports",
+      "total": 2666240000.01,
+      "personnel": 0,
+      "overhead": 141090000.01,
+      "capital": 2525150000.0
+    },
+    {
+      "code": "052100800164",
+      "name": "Programmes (Health Management)",
+      "total": 2638948852.03,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2638948852.03
+    },
+    {
+      "code": "022200100100",
+      "name": "Ministry of Commerce Ind. & Co-op.",
+      "total": 2635266000.0,
+      "personnel": 206866000.0,
+      "overhead": 1051000000.0,
+      "capital": 1377400000.0
+    },
+    {
+      "code": "056902900100",
+      "name": "Aminu School of Islamic Legal Studies",
+      "total": 2576923162.0,
+      "personnel": 1456223000.0,
+      "overhead": 17384986.0,
+      "capital": 1103315176.0
+    },
+    {
+      "code": "056900200100",
+      "name": "College of Education & Preliminary Studies",
+      "total": 2540415879.0,
+      "personnel": 753308000.0,
+      "overhead": 155550000.0,
+      "capital": 1631557879.0
+    },
+    {
+      "code": "025200100105",
+      "name": "Planning, Research & Statistics",
+      "total": 2488400000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2488400000.0
+    },
+    {
+      "code": "012500000000",
+      "name": "Office of the Head of Civil Service",
+      "total": 2474593000.0,
+      "personnel": 2169593000.0,
+      "overhead": 290000000.0,
+      "capital": 15000000.0
+    },
+    {
+      "code": "025210100131",
+      "name": "Production",
+      "total": 2470800612.5,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2470800612.5
+    },
+    {
+      "code": "052100500162",
+      "name": "Planning, Monitoring & Evaluation",
+      "total": 2442464099.42,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2442464099.42
+    },
+    {
+      "code": "031805100106",
+      "name": "Personnel Management",
+      "total": 2423363000.0,
+      "personnel": 2423363000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "053500200100",
+      "name": "Refuse Management & Sanitation Board (REMASAB)",
+      "total": 2389640000.0,
+      "personnel": 263740000.0,
+      "overhead": 464900000.0,
+      "capital": 1661000000.0
+    },
+    {
+      "code": "053500200104",
+      "name": "Admin & General Services",
+      "total": 2389640000.0,
+      "personnel": 263740000.0,
+      "overhead": 464900000.0,
+      "capital": 1661000000.0
+    },
+    {
+      "code": "052100500164",
+      "name": "Treatment Care & Prevention",
+      "total": 2309704274.5,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2309704274.5
+    },
+    {
+      "code": "016100200100",
+      "name": "Research Evaluation & Political Affairs Directorate",
+      "total": 2304197000.0,
+      "personnel": 1364197000.0,
+      "overhead": 940000000.0,
+      "capital": 0
+    },
+    {
+      "code": "016100200121",
+      "name": "Research, Evaluation and political Affairs",
+      "total": 2304197000.0,
+      "personnel": 1364197000.0,
+      "overhead": 940000000.0,
+      "capital": 0
+    },
+    {
+      "code": "022900100105",
+      "name": "Planning, Research & Statistics",
+      "total": 2201105000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2201105000.0
+    },
+    {
+      "code": "022900100132",
+      "name": "Transport",
+      "total": 2065000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2065000000.0
+    },
+    {
+      "code": "053500100104",
+      "name": "Admin & General Services",
+      "total": 2045374000.0,
+      "personnel": 614774000.0,
+      "overhead": 160100000.0,
+      "capital": 1270500000.0
+    },
+    {
+      "code": "052100600100",
+      "name": "State Agency for Control of Aids",
+      "total": 1996181773.02,
+      "personnel": 0,
+      "overhead": 240938459.76,
+      "capital": 1755243313.26
+    },
+    {
+      "code": "026300700100",
+      "name": "RUWASA",
+      "total": 1992729000.0,
+      "personnel": 62629000.0,
+      "overhead": 6100000.0,
+      "capital": 1924000000.0
+    },
+    {
+      "code": "052100500104",
+      "name": "Admin & General Services",
+      "total": 1949650375.0,
+      "personnel": 205776000.0,
+      "overhead": 1723600000.0,
+      "capital": 20274375.0
+    },
+    {
+      "code": "056900300100",
+      "name": "RMK College of Basic & Remedial Studies T/Wada",
+      "total": 1906322157.15,
+      "personnel": 329514000.0,
+      "overhead": 38316848.15,
+      "capital": 1538491309.0
+    },
+    {
+      "code": "021500100121",
+      "name": "Agric. Services",
+      "total": 1869515915.43,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1869515915.43
+    },
+    {
+      "code": "011105500200",
+      "name": "Kano State Cooperate Security Directorate",
+      "total": 1818991000.0,
+      "personnel": 1773019000.0,
+      "overhead": 21800000.0,
+      "capital": 24172000.0
+    },
+    {
+      "code": "011105500204",
+      "name": "Admin & General Services",
+      "total": 1794819000.0,
+      "personnel": 1773019000.0,
+      "overhead": 21800000.0,
+      "capital": 0
+    },
+    {
+      "code": "012300400100",
+      "name": "Government Printing Press",
+      "total": 1791788000.0,
+      "personnel": 54388000.0,
+      "overhead": 279400000.0,
+      "capital": 1458000000.0
+    },
+    {
+      "code": "056900200107",
+      "name": "Bursar",
+      "total": 1787107879.0,
+      "personnel": 0,
+      "overhead": 155550000.0,
+      "capital": 1631557879.0
+    },
+    {
+      "code": "022900300100",
+      "name": "Kano State Transport Authority",
+      "total": 1766750000.0,
+      "personnel": 42250000.0,
+      "overhead": 24500000.0,
+      "capital": 1700000000.0
+    },
+    {
+      "code": "052100600162",
+      "name": "Planning, Monitoring & Evaluation",
+      "total": 1755243313.26,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1755243313.26
+    },
+    {
+      "code": "017700000000",
+      "name": "Ministry of Religious Affairs",
+      "total": 1674183754.0,
+      "personnel": 393946000.0,
+      "overhead": 182090500.0,
+      "capital": 1098147254.0
+    },
+    {
+      "code": "025200100131",
+      "name": "Water Supply",
+      "total": 1667000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1667000000.0
+    },
+    {
+      "code": "025200100133",
+      "name": "Irrigation Engineering",
+      "total": 1650000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1650000000.0
+    },
+    {
+      "code": "052100300203",
+      "name": "Office of the Chief Medical Director",
+      "total": 1639859839.99,
+      "personnel": 974485000.0,
+      "overhead": 267374839.99,
+      "capital": 398000000.0
+    },
+    {
+      "code": "011105800100",
+      "name": "Protocol Directorate",
+      "total": 1622604792.17,
+      "personnel": 129467000.0,
+      "overhead": 1493137792.17,
+      "capital": 0
+    },
+    {
+      "code": "011105800129",
+      "name": "Protocol",
+      "total": 1622604792.17,
+      "personnel": 129467000.0,
+      "overhead": 1493137792.17,
+      "capital": 0
+    },
+    {
+      "code": "022900300112",
+      "name": "Operations/Maintenance Department",
+      "total": 1600000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1600000000.0
+    },
+    {
+      "code": "021500100105",
+      "name": "Planning, Research & Statistics",
+      "total": 1586403819.8,
+      "personnel": 0,
+      "overhead": 8000000.0,
+      "capital": 1578403819.8
+    },
+    {
+      "code": "023600000000",
+      "name": "Ministry of Tourism & Culture",
+      "total": 1585408588.0,
+      "personnel": 289219000.0,
+      "overhead": 90989588.0,
+      "capital": 1205200000.0
+    },
+    {
+      "code": "022200100104",
+      "name": "Admin & General Services",
+      "total": 1563566000.0,
+      "personnel": 206866000.0,
+      "overhead": 1051000000.0,
+      "capital": 305700000.0
+    },
+    {
+      "code": "021511400121",
+      "name": "Extension Services",
+      "total": 1560047355.99,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1560047355.99
+    },
+    {
+      "code": "021511400104",
+      "name": "Admin & General Services",
+      "total": 1543315000.0,
+      "personnel": 1327060000.0,
+      "overhead": 13255000.0,
+      "capital": 203000000.0
+    },
+    {
+      "code": "011103700100",
+      "name": "Pilgrim Welfare Board",
+      "total": 1508992400.0,
+      "personnel": 39517000.0,
+      "overhead": 1459475400.0,
+      "capital": 10000000.0
+    },
+    {
+      "code": "056902900111",
+      "name": "Registrar",
+      "total": 1504333962.51,
+      "personnel": 1456223000.0,
+      "overhead": 17384986.0,
+      "capital": 30725976.51
+    },
+    {
+      "code": "023400400112",
+      "name": "Operations",
+      "total": 1500000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1500000000.0
+    },
+    {
+      "code": "011103700104",
+      "name": "Admin & General Services",
+      "total": 1498992400.0,
+      "personnel": 39517000.0,
+      "overhead": 1459475400.0,
+      "capital": 0
+    },
+    {
+      "code": "012300400121",
+      "name": "Production",
+      "total": 1480850000.0,
+      "personnel": 0,
+      "overhead": 22850000.0,
+      "capital": 1458000000.0
+    },
+    {
+      "code": "012500100200",
+      "name": "Establishment department",
+      "total": 1470513000.0,
+      "personnel": 1470513000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "012500100203",
+      "name": "Office of the Permanent Secretary - Establishment",
+      "total": 1470513000.0,
+      "personnel": 1470513000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "051300100152",
+      "name": "Economic Empowerment",
+      "total": 1400000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1400000000.0
+    },
+    {
+      "code": "012300100100",
+      "name": "Min. of Information & internal Affairs",
+      "total": 1390785139.8,
+      "personnel": 304903000.0,
+      "overhead": 670758686.42,
+      "capital": 415123453.38
+    },
+    {
+      "code": "031805100103",
+      "name": "Chief Registrar",
+      "total": 1351250649.69,
+      "personnel": 0,
+      "overhead": 1351250649.69,
+      "capital": 0
+    },
+    {
+      "code": "051400100153",
+      "name": "Women Affairs",
+      "total": 1272000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1272000000.0
+    },
+    {
+      "code": "022800100139",
+      "name": "Information Communication and Technology Department",
+      "total": 1241156873.54,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1241156873.54
+    },
+    {
+      "code": "022800400100",
+      "name": "Kano State Information Technology Development Agency (KASITDA)",
+      "total": 1215000000.0,
+      "personnel": 15000000.0,
+      "overhead": 0,
+      "capital": 1200000000.0
+    },
+    {
+      "code": "012300100104",
+      "name": "Admin & General Services",
+      "total": 1185191686.42,
+      "personnel": 304903000.0,
+      "overhead": 670758686.42,
+      "capital": 209530000.0
+    },
+    {
+      "code": "026300700106",
+      "name": "Planning & Mobilization",
+      "total": 1176000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1176000000.0
+    },
+    {
+      "code": "026300300100",
+      "name": "Rural Electrification Board",
+      "total": 1172402345.0,
+      "personnel": 208463000.0,
+      "overhead": 6004345.0,
+      "capital": 957935000.0
+    },
+    {
+      "code": "026300100100",
+      "name": "Ministry of Rural & Community Development",
+      "total": 1167498316.0,
+      "personnel": 91489000.0,
+      "overhead": 2900000.0,
+      "capital": 1073109316.0
+    },
+    {
+      "code": "022800400104",
+      "name": "Human Resources and Finance Management",
+      "total": 1160000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1160000000.0
+    },
+    {
+      "code": "056903000100",
+      "name": "Audu Bako College of Agriculture Danbatta",
+      "total": 1156301051.0,
+      "personnel": 607405000.0,
+      "overhead": 20975000.0,
+      "capital": 527921051.0
+    },
+    {
+      "code": "052100100164",
+      "name": "Medical Services",
+      "total": 1120000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1120000000.0
+    },
+    {
+      "code": "056902900108",
+      "name": "Physical Planning (Work)",
+      "total": 1072589199.49,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1072589199.49
+    },
+    {
+      "code": "026000100100",
+      "name": "Ministry of Land and Physical Planning",
+      "total": 1067914801.85,
+      "personnel": 265395000.0,
+      "overhead": 112519801.85,
+      "capital": 690000000.0
+    },
+    {
+      "code": "051701000100",
+      "name": "Agency for Mass Education",
+      "total": 1059174927.83,
+      "personnel": 321546000.0,
+      "overhead": 5977255.25,
+      "capital": 731651672.58
+    },
+    {
+      "code": "025210100104",
+      "name": "Admin & General Services",
+      "total": 1052887009.51,
+      "personnel": 771085000.0,
+      "overhead": 146802009.51,
+      "capital": 135000000.0
+    },
+    {
+      "code": "014000000000",
+      "name": "Office of the Auditor General",
+      "total": 1026915578.53,
+      "personnel": 872187000.0,
+      "overhead": 154728578.53,
+      "capital": 0
+    },
+    {
+      "code": "056902800101",
+      "name": "Vice Chancellor",
+      "total": 1020000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1020000000.0
+    },
+    {
+      "code": "022800100140",
+      "name": "Science Department",
+      "total": 1014686458.52,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1014686458.52
+    },
+    {
+      "code": "011100100104",
+      "name": "Admin & General Services",
+      "total": 1000000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1000000000.0
+    },
+    {
+      "code": "023400400131",
+      "name": "Asphalt and Quarry",
+      "total": 1000000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1000000000.0
+    },
+    {
+      "code": "023400400132",
+      "name": "Drainage",
+      "total": 1000000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1000000000.0
+    },
+    {
+      "code": "025210100137",
+      "name": "Engineering",
+      "total": 1000000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1000000000.0
+    },
+    {
+      "code": "032600000000",
+      "name": "Ministry of Justice",
+      "total": 987345000.0,
+      "personnel": 343650000.0,
+      "overhead": 454695000.0,
+      "capital": 189000000.0
+    },
+    {
+      "code": "051400100104",
+      "name": "Admin & General Services",
+      "total": 974687971.2,
+      "personnel": 141290000.0,
+      "overhead": 553397971.2,
+      "capital": 280000000.0
+    },
+    {
+      "code": "012300500100",
+      "name": "Triumph Publishing Company",
+      "total": 971959857.5,
+      "personnel": 14577349.0,
+      "overhead": 21045441.5,
+      "capital": 936337067.0
+    },
+    {
+      "code": "011100800100",
+      "name": "Kano State Emergency Relief & Rehabilitation Board",
+      "total": 966135000.0,
+      "personnel": 120550000.0,
+      "overhead": 126105000.0,
+      "capital": 719480000.0
+    },
+    {
+      "code": "026300300105",
+      "name": "Planning, Research & Statistics",
+      "total": 957935000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 957935000.0
+    },
+    {
+      "code": "012300500104",
+      "name": "Admin & General Services",
+      "total": 957382508.5,
+      "personnel": 0,
+      "overhead": 21045441.5,
+      "capital": 936337067.0
+    },
+    {
+      "code": "011100100200",
+      "name": "Deputy Governor\u2019s Office",
+      "total": 948629420.0,
+      "personnel": 72264000.0,
+      "overhead": 676365420.0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "053500100105",
+      "name": "Planning, Research & Statistics",
+      "total": 945000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 945000000.0
+    },
+    {
+      "code": "051400100154",
+      "name": "Social Welfare",
+      "total": 940000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 940000000.0
+    },
+    {
+      "code": "011106400100",
+      "name": "Kano State Bureau of Statistics",
+      "total": 938980760.0,
+      "personnel": 25508000.0,
+      "overhead": 280072760.0,
+      "capital": 633400000.0
+    },
+    {
+      "code": "012300200100",
+      "name": "Abubakar Rimi Television Corporation",
+      "total": 928301322.0,
+      "personnel": 116334000.0,
+      "overhead": 64350000.0,
+      "capital": 747617322.0
+    },
+    {
+      "code": "051700300105",
+      "name": "Planning, Research & Statistics",
+      "total": 899670957.52,
+      "personnel": 0,
+      "overhead": 81625473.5,
+      "capital": 818045484.02
+    },
+    {
+      "code": "017700100300",
+      "name": "Kano State Hisbah Commission",
+      "total": 879173500.0,
+      "personnel": 298283000.0,
+      "overhead": 78890500.0,
+      "capital": 502000000.0
+    },
+    {
+      "code": "021511400107",
+      "name": "Finance & Supply",
+      "total": 879145000.0,
+      "personnel": 0,
+      "overhead": 8700000.0,
+      "capital": 870445000.0
+    },
+    {
+      "code": "023600300100",
+      "name": "History & Culture Bureau",
+      "total": 879103000.0,
+      "personnel": 147853000.0,
+      "overhead": 18050000.0,
+      "capital": 713200000.0
+    },
+    {
+      "code": "051305100100",
+      "name": "Youth Development Directorate",
+      "total": 871814000.0,
+      "personnel": 48114000.0,
+      "overhead": 18700000.0,
+      "capital": 805000000.0
+    },
+    {
+      "code": "051305100104",
+      "name": "Admin & General Services",
+      "total": 856814000.0,
+      "personnel": 48114000.0,
+      "overhead": 18700000.0,
+      "capital": 790000000.0
+    },
+    {
+      "code": "014000100100",
+      "name": "Office of the Auditor General (State)",
+      "total": 845156578.53,
+      "personnel": 722428000.0,
+      "overhead": 122728578.53,
+      "capital": 0
+    },
+    {
+      "code": "014000100104",
+      "name": "Admin & General Services",
+      "total": 845156578.53,
+      "personnel": 722428000.0,
+      "overhead": 122728578.53,
+      "capital": 0
+    },
+    {
+      "code": "023403900100",
+      "name": "Kano State Fire Service",
+      "total": 838772000.0,
+      "personnel": 654772000.0,
+      "overhead": 15000000.0,
+      "capital": 169000000.0
+    },
+    {
+      "code": "023403900104",
+      "name": "Admin & General Services",
+      "total": 838772000.0,
+      "personnel": 654772000.0,
+      "overhead": 15000000.0,
+      "capital": 169000000.0
+    },
+    {
+      "code": "023400100104",
+      "name": "Admin & General Services",
+      "total": 829603433.37,
+      "personnel": 542790000.0,
+      "overhead": 286813433.37,
+      "capital": 0
+    },
+    {
+      "code": "056900300108",
+      "name": "Physical Planning (Work)",
+      "total": 790000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 790000000.0
+    },
+    {
+      "code": "051300100105",
+      "name": "Planning, Research & Statistics",
+      "total": 785150000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 785150000.0
+    },
+    {
+      "code": "056903000111",
+      "name": "Registrar",
+      "total": 783380000.0,
+      "personnel": 607405000.0,
+      "overhead": 20975000.0,
+      "capital": 155000000.0
+    },
+    {
+      "code": "021500100104",
+      "name": "Admin & General Services",
+      "total": 767088900.0,
+      "personnel": 617900000.0,
+      "overhead": 149188900.0,
+      "capital": 0
+    },
+    {
+      "code": "011101000100",
+      "name": "Public Procurement Bureau",
+      "total": 762353449.42,
+      "personnel": 31519000.0,
+      "overhead": 595834449.42,
+      "capital": 135000000.0
+    },
+    {
+      "code": "053500500100",
+      "name": "Kano State Sustainable Projects",
+      "total": 755246000.0,
+      "personnel": 65816000.0,
+      "overhead": 4430000.0,
+      "capital": 685000000.0
+    },
+    {
+      "code": "053500500104",
+      "name": "Admin & General Services",
+      "total": 755246000.0,
+      "personnel": 65816000.0,
+      "overhead": 4430000.0,
+      "capital": 685000000.0
+    },
+    {
+      "code": "056900200111",
+      "name": "Registrar",
+      "total": 753308000.0,
+      "personnel": 753308000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "011100100204",
+      "name": "Admin & General Services",
+      "total": 748629420.0,
+      "personnel": 72264000.0,
+      "overhead": 676365420.0,
+      "capital": 0
+    },
+    {
+      "code": "056900300157",
+      "name": "Academic Planning",
+      "total": 748491309.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 748491309.0
+    },
+    {
+      "code": "032600100100",
+      "name": "Ministry of Justice",
+      "total": 746652000.0,
+      "personnel": 327532000.0,
+      "overhead": 289120000.0,
+      "capital": 130000000.0
+    },
+    {
+      "code": "031806100100",
+      "name": "Multi-Door Court House",
+      "total": 709267000.0,
+      "personnel": 409267000.0,
+      "overhead": 150000000.0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "051701500159",
+      "name": "Physical Planning",
+      "total": 700687673.21,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 700687673.21
+    },
+    {
+      "code": "012500800100",
+      "name": "Pension Fund Trustees",
+      "total": 692504000.0,
+      "personnel": 692504000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "012500800104",
+      "name": "Admin & General Services",
+      "total": 692504000.0,
+      "personnel": 692504000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "011101000104",
+      "name": "Admin & General Services",
+      "total": 690353449.42,
+      "personnel": 31519000.0,
+      "overhead": 523834449.42,
+      "capital": 135000000.0
+    },
+    {
+      "code": "026300700131",
+      "name": "Water & Sanitation",
+      "total": 668000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 668000000.0
+    },
+    {
+      "code": "052100300165",
+      "name": "Hospital Services",
+      "total": 660000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 660000000.0
+    },
+    {
+      "code": "022200100132",
+      "name": "Commerce",
+      "total": 636000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 636000000.0
+    },
+    {
+      "code": "055100000000",
+      "name": "Ministry for Local Government",
+      "total": 622031548.47,
+      "personnel": 260018000.0,
+      "overhead": 172013548.47,
+      "capital": 190000000.0
+    },
+    {
+      "code": "032600100104",
+      "name": "Admin & General Services",
+      "total": 616652000.0,
+      "personnel": 327532000.0,
+      "overhead": 289120000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701000104",
+      "name": "Admin & General Services",
+      "total": 597468859.11,
+      "personnel": 321546000.0,
+      "overhead": 5337740.25,
+      "capital": 270585118.86
+    },
+    {
+      "code": "021500100124",
+      "name": "Veterinary Services",
+      "total": 595919900.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 595919900.0
+    },
+    {
+      "code": "051305500100",
+      "name": "Kano State Sports Commission",
+      "total": 595537000.0,
+      "personnel": 149287000.0,
+      "overhead": 34250000.0,
+      "capital": 412000000.0
+    },
+    {
+      "code": "026300100104",
+      "name": "Admin & General Services",
+      "total": 594389000.0,
+      "personnel": 91489000.0,
+      "overhead": 2900000.0,
+      "capital": 500000000.0
+    },
+    {
+      "code": "021500100123",
+      "name": "Agric. Engineering",
+      "total": 588480400.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 588480400.0
+    },
+    {
+      "code": "051702700100",
+      "name": "Kano State Islamic & Qur\u2019anic School Board",
+      "total": 577112292.26,
+      "personnel": 60580000.0,
+      "overhead": 23723633.92,
+      "capital": 492808658.34
+    },
+    {
+      "code": "012300200104",
+      "name": "Admin & General Services",
+      "total": 576149522.0,
+      "personnel": 116334000.0,
+      "overhead": 64350000.0,
+      "capital": 395465522.0
+    },
+    {
+      "code": "011101400100",
+      "name": "Community Re-orientation Council",
+      "total": 575000000.0,
+      "personnel": 0,
+      "overhead": 25000000.0,
+      "capital": 550000000.0
+    },
+    {
+      "code": "011101400104",
+      "name": "Admin & General Services",
+      "total": 575000000.0,
+      "personnel": 0,
+      "overhead": 25000000.0,
+      "capital": 550000000.0
+    },
+    {
+      "code": "031806100184",
+      "name": "Director Multi Door",
+      "total": 559267000.0,
+      "personnel": 409267000.0,
+      "overhead": 0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "026000100107",
+      "name": "Survey Department",
+      "total": 520000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 520000000.0
+    },
+    {
+      "code": "011100800105",
+      "name": "Planning, Research & Statistics",
+      "total": 510600000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 510600000.0
+    },
+    {
+      "code": "017700100305",
+      "name": "Planning, Research & Statistics",
+      "total": 502000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 502000000.0
+    },
+    {
+      "code": "023400400105",
+      "name": "Planning, Research & Statistics",
+      "total": 500000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 500000000.0
+    },
+    {
+      "code": "056904900100",
+      "name": "School of Aquisition Centre Kano",
+      "total": 498493477.32,
+      "personnel": 197690281.32,
+      "overhead": 76760000.0,
+      "capital": 224043196.0
+    },
+    {
+      "code": "056901800108",
+      "name": "Physical Planning (Work)",
+      "total": 493952856.08,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 493952856.08
+    },
+    {
+      "code": "051702700105",
+      "name": "Planning, Research & Statistics",
+      "total": 492808658.34,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 492808658.34
+    },
+    {
+      "code": "051305600100",
+      "name": "Kano Pillars Football Club",
+      "total": 489867437.5,
+      "personnel": 300000000.0,
+      "overhead": 184867437.5,
+      "capital": 5000000.0
+    },
+    {
+      "code": "021500100122",
+      "name": "Livestock & Poultry",
+      "total": 485000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 485000000.0
+    },
+    {
+      "code": "053500300100",
+      "name": "Kano State Afforestation Project (KNAP)",
+      "total": 475455000.0,
+      "personnel": 30375000.0,
+      "overhead": 5080000.0,
+      "capital": 440000000.0
+    },
+    {
+      "code": "053500300103",
+      "name": "Coordinator",
+      "total": 475455000.0,
+      "personnel": 30375000.0,
+      "overhead": 5080000.0,
+      "capital": 440000000.0
+    },
+    {
+      "code": "021511400123",
+      "name": "Engineering",
+      "total": 466400456.2,
+      "personnel": 0,
+      "overhead": 5300000.0,
+      "capital": 461100456.2
+    },
+    {
+      "code": "051700800100",
+      "name": "Kano State library Board",
+      "total": 453255707.19,
+      "personnel": 120914000.0,
+      "overhead": 39341707.19,
+      "capital": 293000000.0
+    },
+    {
+      "code": "012300300100",
+      "name": "Kano State Radio Corporation",
+      "total": 446168000.0,
+      "personnel": 108537000.0,
+      "overhead": 63338500.0,
+      "capital": 274292500.0
+    },
+    {
+      "code": "023600300105",
+      "name": "Planning, Research & Statistics",
+      "total": 442000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 442000000.0
+    },
+    {
+      "code": "031801100100",
+      "name": "Judicial Service Commission",
+      "total": 436711000.0,
+      "personnel": 200761000.0,
+      "overhead": 85950000.0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "052100500163",
+      "name": "Pharmaceutical",
+      "total": 416275486.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 416275486.0
+    },
+    {
+      "code": "051305500105",
+      "name": "Planning, Research & Statistics",
+      "total": 412000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 412000000.0
+    },
+    {
+      "code": "026005800132",
+      "name": "Architecture",
+      "total": 400000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 400000000.0
+    },
+    {
+      "code": "014800000000",
+      "name": "Kano State Ind. Elect. Comm.",
+      "total": 390542499.99,
+      "personnel": 39950000.0,
+      "overhead": 50592499.99,
+      "capital": 300000000.0
+    },
+    {
+      "code": "014800100100",
+      "name": "Kano State Ind. Elect. Comm.",
+      "total": 390542499.99,
+      "personnel": 39950000.0,
+      "overhead": 50592499.99,
+      "capital": 300000000.0
+    },
+    {
+      "code": "014800100104",
+      "name": "Admin & General Services",
+      "total": 390542499.99,
+      "personnel": 39950000.0,
+      "overhead": 50592499.99,
+      "capital": 300000000.0
+    },
+    {
+      "code": "023600100100",
+      "name": "Ministry of Tourism & Culture",
+      "total": 383100000.0,
+      "personnel": 0,
+      "overhead": 48100000.0,
+      "capital": 335000000.0
+    },
+    {
+      "code": "022800100104",
+      "name": "Admin & General Services",
+      "total": 379825416.18,
+      "personnel": 50150000.0,
+      "overhead": 145278590.4,
+      "capital": 184396825.78
+    },
+    {
+      "code": "026000100104",
+      "name": "Admin & General Services",
+      "total": 377914801.85,
+      "personnel": 265395000.0,
+      "overhead": 112519801.85,
+      "capital": 0
+    },
+    {
+      "code": "011101100100",
+      "name": "Public Complaint & Anti-Corruption Commission",
+      "total": 377281659.89,
+      "personnel": 93332006.43,
+      "overhead": 197949653.46,
+      "capital": 86000000.0
+    },
+    {
+      "code": "011101100104",
+      "name": "Admin & General Services",
+      "total": 377281659.89,
+      "personnel": 93332006.43,
+      "overhead": 197949653.46,
+      "capital": 86000000.0
+    },
+    {
+      "code": "017700100304",
+      "name": "Admin & General Services",
+      "total": 377173500.0,
+      "personnel": 298283000.0,
+      "overhead": 78890500.0,
+      "capital": 0
+    },
+    {
+      "code": "051400100155",
+      "name": "Child Development",
+      "total": 376400000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 376400000.0
+    },
+    {
+      "code": "021511600100",
+      "name": "KASCO",
+      "total": 375000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 375000000.0
+    },
+    {
+      "code": "021511600107",
+      "name": "Finance & Supply",
+      "total": 375000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 375000000.0
+    },
+    {
+      "code": "056903000108",
+      "name": "Physical Planning (Work)",
+      "total": 372921051.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 372921051.0
+    },
+    {
+      "code": "052100100162",
+      "name": "Nursing Services",
+      "total": 370000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 370000000.0
+    },
+    {
+      "code": "056900300111",
+      "name": "Registrar",
+      "total": 367830848.15,
+      "personnel": 329514000.0,
+      "overhead": 38316848.15,
+      "capital": 0
+    },
+    {
+      "code": "017000000000",
+      "name": "Ministry for Special Duties",
+      "total": 354450000.0,
+      "personnel": 0,
+      "overhead": 267700000.0,
+      "capital": 86750000.0
+    },
+    {
+      "code": "022900100133",
+      "name": "Road Traffic",
+      "total": 349000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 349000000.0
+    },
+    {
+      "code": "051300100151",
+      "name": "Youth Development Department",
+      "total": 340000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 340000000.0
+    },
+    {
+      "code": "012300300104",
+      "name": "Admin & General Services",
+      "total": 332613000.0,
+      "personnel": 108537000.0,
+      "overhead": 63338500.0,
+      "capital": 160737500.0
+    },
+    {
+      "code": "055100200100",
+      "name": "Ministry for Local Government",
+      "total": 330542548.47,
+      "personnel": 81729000.0,
+      "overhead": 58813548.47,
+      "capital": 190000000.0
+    },
+    {
+      "code": "026300200127",
+      "name": "Mechanical Engineering Services",
+      "total": 330000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 330000000.0
+    },
+    {
+      "code": "023605400100",
+      "name": "Zoological & Wild Life Mgt. Agency",
+      "total": 323205588.0,
+      "personnel": 141366000.0,
+      "overhead": 24839588.0,
+      "capital": 157000000.0
+    },
+    {
+      "code": "055100200104",
+      "name": "Admin & General Services",
+      "total": 320542548.47,
+      "personnel": 81729000.0,
+      "overhead": 58813548.47,
+      "capital": 180000000.0
+    },
+    {
+      "code": "011106400104",
+      "name": "Admin & General Services",
+      "total": 319980760.0,
+      "personnel": 25508000.0,
+      "overhead": 206072760.0,
+      "capital": 88400000.0
+    },
+    {
+      "code": "022800200100",
+      "name": "Kano State Data Centre",
+      "total": 315740019.0,
+      "personnel": 14604000.0,
+      "overhead": 0,
+      "capital": 301136019.0
+    },
+    {
+      "code": "022001300100",
+      "name": "Debt Management",
+      "total": 311900000.0,
+      "personnel": 0,
+      "overhead": 71900000.0,
+      "capital": 240000000.0
+    },
+    {
+      "code": "022001300101",
+      "name": "Office of the Director General",
+      "total": 311900000.0,
+      "personnel": 0,
+      "overhead": 71900000.0,
+      "capital": 240000000.0
+    },
+    {
+      "code": "017700100200",
+      "name": "Kano State Zakkat Commission",
+      "total": 306222254.0,
+      "personnel": 3375000.0,
+      "overhead": 26700000.0,
+      "capital": 276147254.0
+    },
+    {
+      "code": "012300200123",
+      "name": "Engineering Services",
+      "total": 305819000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 305819000.0
+    },
+    {
+      "code": "051305600153",
+      "name": "Office of the Secretary",
+      "total": 305000000.0,
+      "personnel": 300000000.0,
+      "overhead": 0,
+      "capital": 5000000.0
+    },
+    {
+      "code": "022800200180",
+      "name": "Operation And infrastructure",
+      "total": 301136019.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 301136019.0
+    },
+    {
+      "code": "023600100104",
+      "name": "Admin & General Services",
+      "total": 298100000.0,
+      "personnel": 0,
+      "overhead": 48100000.0,
+      "capital": 250000000.0
+    },
+    {
+      "code": "056904900107",
+      "name": "Bursar",
+      "total": 294450281.32,
+      "personnel": 197690281.32,
+      "overhead": 76760000.0,
+      "capital": 20000000.0
+    },
+    {
+      "code": "022200100131",
+      "name": "Industry",
+      "total": 290500000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 290500000.0
+    },
+    {
+      "code": "056903400100",
+      "name": "Kano Fisheries Academy Bagauda Bebeji",
+      "total": 275774000.0,
+      "personnel": 0,
+      "overhead": 16770000.0,
+      "capital": 259004000.0
+    },
+    {
+      "code": "012300400104",
+      "name": "Admin & General Services",
+      "total": 271938000.0,
+      "personnel": 54388000.0,
+      "overhead": 217550000.0,
+      "capital": 0
+    },
+    {
+      "code": "011100800104",
+      "name": "Admin & General Services",
+      "total": 271535000.0,
+      "personnel": 120550000.0,
+      "overhead": 126105000.0,
+      "capital": 24880000.0
+    },
+    {
+      "code": "052100100163",
+      "name": "Pharmaceutical Services",
+      "total": 270481950.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 270481950.0
+    },
+    {
+      "code": "012500100100",
+      "name": "Office of the Head of Civil Service",
+      "total": 270000000.0,
+      "personnel": 0,
+      "overhead": 270000000.0,
+      "capital": 0
+    },
+    {
+      "code": "012500100104",
+      "name": "Admin & General Services",
+      "total": 270000000.0,
+      "personnel": 0,
+      "overhead": 270000000.0,
+      "capital": 0
+    },
+    {
+      "code": "011106400136",
+      "name": "Demography and Social Indicators",
+      "total": 268000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 268000000.0
+    },
+    {
+      "code": "056904500100",
+      "name": "Kano State Livestock Academy Bagauda",
+      "total": 267774000.0,
+      "personnel": 0,
+      "overhead": 27020000.0,
+      "capital": 240754000.0
+    },
+    {
+      "code": "051701000105",
+      "name": "Planning, Research & Statistics",
+      "total": 267765375.48,
+      "personnel": 0,
+      "overhead": 639515.0,
+      "capital": 267125860.48
+    },
+    {
+      "code": "056903200100",
+      "name": "Kano State Hospitality and Tourism Academy Daula Hotel",
+      "total": 267280000.0,
+      "personnel": 0,
+      "overhead": 26120000.0,
+      "capital": 241160000.0
+    },
+    {
+      "code": "022000100101",
+      "name": "Office of the Commissioner",
+      "total": 266628881.0,
+      "personnel": 0,
+      "overhead": 266628881.0,
+      "capital": 0
+    },
+    {
+      "code": "056903600100",
+      "name": "Kano State Farm Mechanization Academy Kadawa Garun Mallam",
+      "total": 261180000.0,
+      "personnel": 0,
+      "overhead": 20020000.0,
+      "capital": 241160000.0
+    },
+    {
+      "code": "056903400108",
+      "name": "Physical Planning (Work)",
+      "total": 259004000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 259004000.0
+    },
+    {
+      "code": "022200200100",
+      "name": "Kantin Kwari Market",
+      "total": 253000000.0,
+      "personnel": 0,
+      "overhead": 45000000.0,
+      "capital": 208000000.0
+    },
+    {
+      "code": "022200200104",
+      "name": "Admin & General Services",
+      "total": 253000000.0,
+      "personnel": 0,
+      "overhead": 45000000.0,
+      "capital": 208000000.0
+    },
+    {
+      "code": "026300100131",
+      "name": "Integrated Rural Development Department",
+      "total": 250109316.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 250109316.0
+    },
+    {
+      "code": "011105700100",
+      "name": "Research & Documentation Directorate",
+      "total": 250000000.0,
+      "personnel": 0,
+      "overhead": 250000000.0,
+      "capital": 0
+    },
+    {
+      "code": "011105700128",
+      "name": "Research",
+      "total": 250000000.0,
+      "personnel": 0,
+      "overhead": 250000000.0,
+      "capital": 0
+    },
+    {
+      "code": "025210100135",
+      "name": "Technical Services",
+      "total": 250000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 250000000.0
+    },
+    {
+      "code": "052101100100",
+      "name": "Private Health Institutions Management Agency",
+      "total": 249640000.0,
+      "personnel": 40000000.0,
+      "overhead": 8500000.0,
+      "capital": 201140000.0
+    },
+    {
+      "code": "017700100205",
+      "name": "Planning research and Statistics Department",
+      "total": 247147254.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 247147254.0
+    },
+    {
+      "code": "021511400124",
+      "name": "Rural Infrastructure",
+      "total": 246251000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 246251000.0
+    },
+    {
+      "code": "052101100104",
+      "name": "Admin & General Services",
+      "total": 244300000.0,
+      "personnel": 40000000.0,
+      "overhead": 8500000.0,
+      "capital": 195800000.0
+    },
+    {
+      "code": "017700100400",
+      "name": "Kano Sharia Commission",
+      "total": 242288000.0,
+      "personnel": 92288000.0,
+      "overhead": 0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "056903200108",
+      "name": "Physical Planning (Work)",
+      "total": 241160000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 241160000.0
+    },
+    {
+      "code": "056903600108",
+      "name": "Physical Planning (Work)",
+      "total": 241160000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 241160000.0
+    },
+    {
+      "code": "052100600104",
+      "name": "Admin & General Services",
+      "total": 240938459.76,
+      "personnel": 0,
+      "overhead": 240938459.76,
+      "capital": 0
+    },
+    {
+      "code": "056904500108",
+      "name": "Physical Planning (Work)",
+      "total": 240754000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 240754000.0
+    },
+    {
+      "code": "052100900100",
+      "name": "KHETFUND",
+      "total": 236417000.0,
+      "personnel": 0,
+      "overhead": 73000000.0,
+      "capital": 163417000.0
+    },
+    {
+      "code": "022200300100",
+      "name": "Kano state Consumer Protection Agency",
+      "total": 234415000.0,
+      "personnel": 0,
+      "overhead": 91915000.0,
+      "capital": 142500000.0
+    },
+    {
+      "code": "011200400100",
+      "name": "Assembly Service Commission",
+      "total": 232562500.0,
+      "personnel": 0,
+      "overhead": 232562500.0,
+      "capital": 0
+    },
+    {
+      "code": "011200400104",
+      "name": "Admin & General Services",
+      "total": 232562500.0,
+      "personnel": 0,
+      "overhead": 232562500.0,
+      "capital": 0
+    },
+    {
+      "code": "052100800162",
+      "name": "Information and Communication Technology",
+      "total": 230000000.0,
+      "personnel": 0,
+      "overhead": 190000000.0,
+      "capital": 40000000.0
+    },
+    {
+      "code": "032600200100",
+      "name": "Law Reform Commission",
+      "total": 228693000.0,
+      "personnel": 16118000.0,
+      "overhead": 153575000.0,
+      "capital": 59000000.0
+    },
+    {
+      "code": "032600200104",
+      "name": "Admin & General Services",
+      "total": 228693000.0,
+      "personnel": 16118000.0,
+      "overhead": 153575000.0,
+      "capital": 59000000.0
+    },
+    {
+      "code": "022900100104",
+      "name": "Admin & General Services",
+      "total": 221000000.0,
+      "personnel": 106000000.0,
+      "overhead": 115000000.0,
+      "capital": 0
+    },
+    {
+      "code": "023600300104",
+      "name": "Admin & General Services",
+      "total": 217103000.0,
+      "personnel": 147853000.0,
+      "overhead": 18050000.0,
+      "capital": 51200000.0
+    },
+    {
+      "code": "022200300104",
+      "name": "Admin & General Services",
+      "total": 215415000.0,
+      "personnel": 0,
+      "overhead": 91915000.0,
+      "capital": 123500000.0
+    },
+    {
+      "code": "026300300104",
+      "name": "Admin & General Services",
+      "total": 214467345.0,
+      "personnel": 208463000.0,
+      "overhead": 6004345.0,
+      "capital": 0
+    },
+    {
+      "code": "011106400135",
+      "name": "Real Sector and Economic Growth",
+      "total": 214000000.0,
+      "personnel": 0,
+      "overhead": 14000000.0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "025200100135",
+      "name": "Hydrology & Hydrogeology",
+      "total": 213000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 213000000.0
+    },
+    {
+      "code": "022200400100",
+      "name": "Abubakar Rimi Market",
+      "total": 211995000.0,
+      "personnel": 31995000.0,
+      "overhead": 0,
+      "capital": 180000000.0
+    },
+    {
+      "code": "017000100100",
+      "name": "Ministry for Special Duties",
+      "total": 204450000.0,
+      "personnel": 0,
+      "overhead": 117700000.0,
+      "capital": 86750000.0
+    },
+    {
+      "code": "017000100104",
+      "name": "Admin & General Services",
+      "total": 204450000.0,
+      "personnel": 0,
+      "overhead": 117700000.0,
+      "capital": 86750000.0
+    },
+    {
+      "code": "056904900108",
+      "name": "Physical Planning (Work)",
+      "total": 204043196.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 204043196.0
+    },
+    {
+      "code": "014700000000",
+      "name": "Civil Service Commission",
+      "total": 203325000.0,
+      "personnel": 19625000.0,
+      "overhead": 113700000.0,
+      "capital": 70000000.0
+    },
+    {
+      "code": "014700100100",
+      "name": "Civil Service Commission",
+      "total": 203325000.0,
+      "personnel": 19625000.0,
+      "overhead": 113700000.0,
+      "capital": 70000000.0
+    },
+    {
+      "code": "031801100106",
+      "name": "Personnel Management",
+      "total": 200761000.0,
+      "personnel": 200761000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "011100100205",
+      "name": "Planning, Research & Statistics",
+      "total": 200000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "023600300135",
+      "name": "Arts and Culture Department",
+      "total": 200000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "051700800155",
+      "name": "Books Development",
+      "total": 200000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 200000000.0
+    },
+    {
+      "code": "025210600100",
+      "name": "WRECA",
+      "total": 198177640.0,
+      "personnel": 0,
+      "overhead": 2400000.0,
+      "capital": 195777640.0
+    },
+    {
+      "code": "052101300166",
+      "name": "Drugs and Supply",
+      "total": 195000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 195000000.0
+    },
+    {
+      "code": "011105600100",
+      "name": "Special Duties Directorate",
+      "total": 186104740.48,
+      "personnel": 0,
+      "overhead": 186104740.48,
+      "capital": 0
+    },
+    {
+      "code": "011105600109",
+      "name": "Special Duties",
+      "total": 186104740.48,
+      "personnel": 0,
+      "overhead": 186104740.48,
+      "capital": 0
+    },
+    {
+      "code": "017700100100",
+      "name": "Ministry of Religious Affairs",
+      "total": 185500000.0,
+      "personnel": 0,
+      "overhead": 15500000.0,
+      "capital": 170000000.0
+    },
+    {
+      "code": "017700100104",
+      "name": "Admin & General Services",
+      "total": 185500000.0,
+      "personnel": 0,
+      "overhead": 15500000.0,
+      "capital": 170000000.0
+    },
+    {
+      "code": "051305600103",
+      "name": "Office of the Chairman",
+      "total": 184867437.5,
+      "personnel": 0,
+      "overhead": 184867437.5,
+      "capital": 0
+    },
+    {
+      "code": "051305500104",
+      "name": "Admin & General Services",
+      "total": 183537000.0,
+      "personnel": 149287000.0,
+      "overhead": 34250000.0,
+      "capital": 0
+    },
+    {
+      "code": "023400400107",
+      "name": "Finance & Supply",
+      "total": 183222939.69,
+      "personnel": 0,
+      "overhead": 183222939.69,
+      "capital": 0
+    },
+    {
+      "code": "014000200100",
+      "name": "Local Government Audit",
+      "total": 181759000.0,
+      "personnel": 149759000.0,
+      "overhead": 32000000.0,
+      "capital": 0
+    },
+    {
+      "code": "014000200104",
+      "name": "Admin & General Services",
+      "total": 181759000.0,
+      "personnel": 149759000.0,
+      "overhead": 32000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100300100",
+      "name": "Chieftancy Affairs",
+      "total": 180789000.0,
+      "personnel": 178289000.0,
+      "overhead": 2500000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100300103",
+      "name": "Emirate Council of the State",
+      "total": 180789000.0,
+      "personnel": 178289000.0,
+      "overhead": 2500000.0,
+      "capital": 0
+    },
+    {
+      "code": "051700300106",
+      "name": "Personnel Management",
+      "total": 180222000.0,
+      "personnel": 180222000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "022900600100",
+      "name": "Kano State Permissible Weight and Weight Bridges",
+      "total": 180000000.0,
+      "personnel": 0,
+      "overhead": 30000000.0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "052100900103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 179417000.0,
+      "personnel": 0,
+      "overhead": 16000000.0,
+      "capital": 163417000.0
+    },
+    {
+      "code": "053500700100",
+      "name": "URBAN BEAUTIFICATION AND LANDSCAPING AGENCY",
+      "total": 170985000.0,
+      "personnel": 0,
+      "overhead": 36985000.0,
+      "capital": 134000000.0
+    },
+    {
+      "code": "053500700104",
+      "name": "Admin & General Services",
+      "total": 170985000.0,
+      "personnel": 0,
+      "overhead": 36985000.0,
+      "capital": 134000000.0
+    },
+    {
+      "code": "026300100132",
+      "name": "Community Development Department",
+      "total": 170000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 170000000.0
+    },
+    {
+      "code": "051700800104",
+      "name": "Admin & General Services",
+      "total": 168255707.19,
+      "personnel": 120914000.0,
+      "overhead": 39341707.19,
+      "capital": 8000000.0
+    },
+    {
+      "code": "026005800106",
+      "name": "Personnel Management",
+      "total": 166698000.0,
+      "personnel": 166698000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "023605400104",
+      "name": "Admin & General Services",
+      "total": 166205588.0,
+      "personnel": 141366000.0,
+      "overhead": 24839588.0,
+      "capital": 0
+    },
+    {
+      "code": "011100100199",
+      "name": "Policy Strategy, Implementation & Evaluation",
+      "total": 165000000.0,
+      "personnel": 0,
+      "overhead": 65000000.0,
+      "capital": 100000000.0
+    },
+    {
+      "code": "056903900100",
+      "name": "Kano Film Academy",
+      "total": 157551000.0,
+      "personnel": 0,
+      "overhead": 17113000.0,
+      "capital": 140438000.0
+    },
+    {
+      "code": "023800100133",
+      "name": "Research & Policy Coordination",
+      "total": 155382253.77,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 155382253.77
+    },
+    {
+      "code": "014700100104",
+      "name": "Admin & General Services",
+      "total": 153325000.0,
+      "personnel": 19625000.0,
+      "overhead": 113700000.0,
+      "capital": 20000000.0
+    },
+    {
+      "code": "023800100134",
+      "name": "Monitoring and Evaluation",
+      "total": 153072000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 153072000.0
+    },
+    {
+      "code": "026300100105",
+      "name": "Planning, Research & Statistics",
+      "total": 153000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 153000000.0
+    },
+    {
+      "code": "056902700100",
+      "name": "Informatics Institute",
+      "total": 150886771.0,
+      "personnel": 0,
+      "overhead": 8980000.0,
+      "capital": 141906771.0
+    },
+    {
+      "code": "025200100104",
+      "name": "Admin & General Services",
+      "total": 150679000.0,
+      "personnel": 132829000.0,
+      "overhead": 17850000.0,
+      "capital": 0
+    },
+    {
+      "code": "026005800131",
+      "name": "Urban Planning & Control",
+      "total": 150000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "022900600133",
+      "name": "Transport Infrastructure",
+      "total": 150000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "031801100132",
+      "name": "Secretary",
+      "total": 150000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 150000000.0
+    },
+    {
+      "code": "031806100143",
+      "name": "Multi-Door Court House",
+      "total": 150000000.0,
+      "personnel": 0,
+      "overhead": 150000000.0,
+      "capital": 0
+    },
+    {
+      "code": "023400200104",
+      "name": "Admin & General Services",
+      "total": 148728000.0,
+      "personnel": 85768000.0,
+      "overhead": 62960000.0,
+      "capital": 0
+    },
+    {
+      "code": "051400100105",
+      "name": "Planning, Research & Statistics",
+      "total": 146800000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 146800000.0
+    },
+    {
+      "code": "025210600105",
+      "name": "Planning, Research & Statistics",
+      "total": 145777640.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 145777640.0
+    },
+    {
+      "code": "012300700100",
+      "name": "Kano State Censorship Board",
+      "total": 144323000.0,
+      "personnel": 21543000.0,
+      "overhead": 32800000.0,
+      "capital": 89980000.0
+    },
+    {
+      "code": "056902700108",
+      "name": "Works",
+      "total": 141906771.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 141906771.0
+    },
+    {
+      "code": "051300100104",
+      "name": "Admin & General Services",
+      "total": 141090000.01,
+      "personnel": 0,
+      "overhead": 141090000.01,
+      "capital": 0
+    },
+    {
+      "code": "056903900108",
+      "name": "Physical Planning (Work)",
+      "total": 140438000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 140438000.0
+    },
+    {
+      "code": "053500100165",
+      "name": "Pollution Control Department",
+      "total": 140000000.0,
+      "personnel": 0,
+      "overhead": 90000000.0,
+      "capital": 50000000.0
+    },
+    {
+      "code": "023605400105",
+      "name": "Planning, Research & Statistics",
+      "total": 136000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 136000000.0
+    },
+    {
+      "code": "021511400105",
+      "name": "Planning and Human Resources",
+      "total": 135799988.0,
+      "personnel": 0,
+      "overhead": 345000.0,
+      "capital": 135454988.0
+    },
+    {
+      "code": "056904000100",
+      "name": "Kano Sport Academy Karfi",
+      "total": 134220000.0,
+      "personnel": 0,
+      "overhead": 38020000.0,
+      "capital": 96200000.0
+    },
+    {
+      "code": "032600100105",
+      "name": "Planning, Research & Statistics",
+      "total": 130000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 130000000.0
+    },
+    {
+      "code": "051700100158",
+      "name": "Kano Education Resource Department",
+      "total": 130000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 130000000.0
+    },
+    {
+      "code": "022200500100",
+      "name": "Tourism Management Board",
+      "total": 129249556.0,
+      "personnel": 93000000.0,
+      "overhead": 36249556.0,
+      "capital": 0
+    },
+    {
+      "code": "022200500104",
+      "name": "Admin & General Services",
+      "total": 129249556.0,
+      "personnel": 93000000.0,
+      "overhead": 36249556.0,
+      "capital": 0
+    },
+    {
+      "code": "022000900121",
+      "name": "Public Relation",
+      "total": 118272400.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 118272400.0
+    },
+    {
+      "code": "011200300600",
+      "name": "Public Account Committee",
+      "total": 117732000.0,
+      "personnel": 14328000.0,
+      "overhead": 103404000.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300601",
+      "name": "Office of the Chairman, Public Account Committee",
+      "total": 117732000.0,
+      "personnel": 14328000.0,
+      "overhead": 103404000.0,
+      "capital": 0
+    },
+    {
+      "code": "022800100105",
+      "name": "Planning, Research & Statistics",
+      "total": 114175780.16,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 114175780.16
+    },
+    {
+      "code": "011100800112",
+      "name": "Operations",
+      "total": 113500000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 113500000.0
+    },
+    {
+      "code": "022200400104",
+      "name": "Admin & General Services",
+      "total": 111995000.0,
+      "personnel": 31995000.0,
+      "overhead": 0,
+      "capital": 80000000.0
+    },
+    {
+      "code": "023400200132",
+      "name": "Estate Department",
+      "total": 105000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 105000000.0
+    },
+    {
+      "code": "011200300200",
+      "name": "Office of RT Hon Speakers Office",
+      "total": 103300000.0,
+      "personnel": 0,
+      "overhead": 103300000.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300201",
+      "name": "Office of RT Hon Speakers Office",
+      "total": 103300000.0,
+      "personnel": 0,
+      "overhead": 103300000.0,
+      "capital": 0
+    },
+    {
+      "code": "017000300100",
+      "name": "Disability Trust Fund (PWD)",
+      "total": 100000000.0,
+      "personnel": 0,
+      "overhead": 100000000.0,
+      "capital": 0
+    },
+    {
+      "code": "017000300104",
+      "name": "Admin & General Services",
+      "total": 100000000.0,
+      "personnel": 0,
+      "overhead": 100000000.0,
+      "capital": 0
+    },
+    {
+      "code": "022200400131",
+      "name": "Technical Services",
+      "total": 100000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 100000000.0
+    },
+    {
+      "code": "022900300110",
+      "name": "Special Services Department",
+      "total": 100000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 100000000.0
+    },
+    {
+      "code": "051701000155",
+      "name": "Mass Education",
+      "total": 98799975.8,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 98799975.8
+    },
+    {
+      "code": "056904000108",
+      "name": "Physical Planning (Work)",
+      "total": 96200000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 96200000.0
+    },
+    {
+      "code": "022900500104",
+      "name": "Admin & General Services",
+      "total": 95500000.0,
+      "personnel": 0,
+      "overhead": 95500000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100800103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 95000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 95000000.0
+    },
+    {
+      "code": "017700100404",
+      "name": "Admin & General Services",
+      "total": 92288000.0,
+      "personnel": 92288000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "022200100133",
+      "name": "Cooperatives",
+      "total": 91200000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 91200000.0
+    },
+    {
+      "code": "012300100123",
+      "name": "Information",
+      "total": 90793453.38,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 90793453.38
+    },
+    {
+      "code": "012300700121",
+      "name": "Director Films",
+      "total": 89980000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 89980000.0
+    },
+    {
+      "code": "051701500105",
+      "name": "Planning, Research & Statistics",
+      "total": 88939650.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 88939650.0
+    },
+    {
+      "code": "031801100107",
+      "name": "Finance & Supply",
+      "total": 85950000.0,
+      "personnel": 0,
+      "overhead": 85950000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701600100",
+      "name": "Kano State Private And Voluntary Inst Board",
+      "total": 85332430.52,
+      "personnel": 0,
+      "overhead": 14812340.0,
+      "capital": 70520090.52
+    },
+    {
+      "code": "023600100135",
+      "name": "Art and culture Department",
+      "total": 85000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 85000000.0
+    },
+    {
+      "code": "051702700104",
+      "name": "Admin & General Services",
+      "total": 84303633.92,
+      "personnel": 60580000.0,
+      "overhead": 23723633.92,
+      "capital": 0
+    },
+    {
+      "code": "012300300108",
+      "name": "Engineering / works Department",
+      "total": 83555000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 83555000.0
+    },
+    {
+      "code": "051700100157",
+      "name": "Education Support Services",
+      "total": 83000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 83000000.0
+    },
+    {
+      "code": "023400400133",
+      "name": "Mechanical Engineering Services",
+      "total": 80000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 80000000.0
+    },
+    {
+      "code": "023800100132",
+      "name": "Development Support & Coordination",
+      "total": 80000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 80000000.0
+    },
+    {
+      "code": "026300700103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 80000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 80000000.0
+    },
+    {
+      "code": "011106400138",
+      "name": "ICT & Statistical coordination",
+      "total": 77000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 77000000.0
+    },
+    {
+      "code": "011200300300",
+      "name": "Office of RT Hon Deputy Speakers Office",
+      "total": 75862500.0,
+      "personnel": 0,
+      "overhead": 75862500.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300301",
+      "name": "Office of RT Hon Deputy Speakers Office",
+      "total": 75862500.0,
+      "personnel": 0,
+      "overhead": 75862500.0,
+      "capital": 0
+    },
+    {
+      "code": "011101000105",
+      "name": "Planning, Research & Statistics",
+      "total": 72000000.0,
+      "personnel": 0,
+      "overhead": 72000000.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300400",
+      "name": "Office of the Majority Leader",
+      "total": 70907500.0,
+      "personnel": 0,
+      "overhead": 70907500.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300401",
+      "name": "Office of the Majority Leader",
+      "total": 70907500.0,
+      "personnel": 0,
+      "overhead": 70907500.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300500",
+      "name": "Office of the Minority Leader",
+      "total": 70907500.0,
+      "personnel": 0,
+      "overhead": 70907500.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300501",
+      "name": "Office of the Minority Leader",
+      "total": 70907500.0,
+      "personnel": 0,
+      "overhead": 70907500.0,
+      "capital": 0
+    },
+    {
+      "code": "011100800121",
+      "name": "Rehabilitation Department",
+      "total": 70500000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 70500000.0
+    },
+    {
+      "code": "022000900104",
+      "name": "Admin & General Services",
+      "total": 70060000.0,
+      "personnel": 0,
+      "overhead": 23060000.0,
+      "capital": 47000000.0
+    },
+    {
+      "code": "017700100422",
+      "name": "Public Enlighten Department",
+      "total": 70000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 70000000.0
+    },
+    {
+      "code": "026300700104",
+      "name": "Admin & General Services",
+      "total": 68729000.0,
+      "personnel": 62629000.0,
+      "overhead": 6100000.0,
+      "capital": 0
+    },
+    {
+      "code": "011100900100",
+      "name": "Guidance and Counselling Board",
+      "total": 67552000.0,
+      "personnel": 13752000.0,
+      "overhead": 13800000.0,
+      "capital": 40000000.0
+    },
+    {
+      "code": "022900300104",
+      "name": "Admin & General Services",
+      "total": 66750000.0,
+      "personnel": 42250000.0,
+      "overhead": 24500000.0,
+      "capital": 0
+    },
+    {
+      "code": "011100100121",
+      "name": "Policy Coordination",
+      "total": 65832000.0,
+      "personnel": 65832000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "011101300100",
+      "name": "Council Affairs Directorate",
+      "total": 64433000.0,
+      "personnel": 20753000.0,
+      "overhead": 43680000.0,
+      "capital": 0
+    },
+    {
+      "code": "011101300123",
+      "name": "Council Affairs",
+      "total": 64433000.0,
+      "personnel": 20753000.0,
+      "overhead": 43680000.0,
+      "capital": 0
+    },
+    {
+      "code": "056904600100",
+      "name": "Kano State Development Journalism Academy Tarauni",
+      "total": 63170000.0,
+      "personnel": 0,
+      "overhead": 17570000.0,
+      "capital": 45600000.0
+    },
+    {
+      "code": "017700100500",
+      "name": "Kano State Agency for Evacuation & Repatriation of Street Beggars",
+      "total": 61000000.0,
+      "personnel": 0,
+      "overhead": 61000000.0,
+      "capital": 0
+    },
+    {
+      "code": "017700100504",
+      "name": "Admin & General Services",
+      "total": 61000000.0,
+      "personnel": 0,
+      "overhead": 61000000.0,
+      "capital": 0
+    },
+    {
+      "code": "011106400103",
+      "name": "Director General",
+      "total": 60000000.0,
+      "personnel": 0,
+      "overhead": 60000000.0,
+      "capital": 0
+    },
+    {
+      "code": "017700100204",
+      "name": "Admin & General Services",
+      "total": 59075000.0,
+      "personnel": 3375000.0,
+      "overhead": 26700000.0,
+      "capital": 29000000.0
+    },
+    {
+      "code": "051701000158",
+      "name": "Educational Support",
+      "total": 58548133.81,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 58548133.81
+    },
+    {
+      "code": "051700100154",
+      "name": "Department of Arabic and Islamic Studies",
+      "total": 55000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 55000000.0
+    },
+    {
+      "code": "051700800105",
+      "name": "Planning, Research & Statistics",
+      "total": 55000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 55000000.0
+    },
+    {
+      "code": "012300100105",
+      "name": "Planning, Research & Statistics",
+      "total": 54800000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 54800000.0
+    },
+    {
+      "code": "012300700104",
+      "name": "Admin & General Services",
+      "total": 54343000.0,
+      "personnel": 21543000.0,
+      "overhead": 32800000.0,
+      "capital": 0
+    },
+    {
+      "code": "056903700100",
+      "name": "Kano State Corporate Security Training Academy Gabasawa",
+      "total": 53748000.0,
+      "personnel": 0,
+      "overhead": 23076000.0,
+      "capital": 30672000.0
+    },
+    {
+      "code": "025210600104",
+      "name": "Admin & General Services",
+      "total": 52400000.0,
+      "personnel": 0,
+      "overhead": 2400000.0,
+      "capital": 50000000.0
+    },
+    {
+      "code": "011200300700",
+      "name": "Office of the Chief Whip",
+      "total": 50907500.0,
+      "personnel": 0,
+      "overhead": 50907500.0,
+      "capital": 0
+    },
+    {
+      "code": "011200300701",
+      "name": "Office of the Chief Whip",
+      "total": 50907500.0,
+      "personnel": 0,
+      "overhead": 50907500.0,
+      "capital": 0
+    },
+    {
+      "code": "055100900100",
+      "name": "Karaye Emirate Council",
+      "total": 50700000.0,
+      "personnel": 0,
+      "overhead": 50700000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100900107",
+      "name": "Finance & Supply",
+      "total": 50700000.0,
+      "personnel": 0,
+      "overhead": 50700000.0,
+      "capital": 0
+    },
+    {
+      "code": "014700100121",
+      "name": "Recruitment & Retirement",
+      "total": 50000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 50000000.0
+    },
+    {
+      "code": "017000200100",
+      "name": "People with Need Commission (PWD)",
+      "total": 50000000.0,
+      "personnel": 0,
+      "overhead": 50000000.0,
+      "capital": 0
+    },
+    {
+      "code": "017000200104",
+      "name": "Admin & General Services",
+      "total": 50000000.0,
+      "personnel": 0,
+      "overhead": 50000000.0,
+      "capital": 0
+    },
+    {
+      "code": "017700100423",
+      "name": "Islamic Propagation Department",
+      "total": 50000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 50000000.0
+    },
+    {
+      "code": "026000100114",
+      "name": "Geography Information System Department",
+      "total": 50000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 50000000.0
+    },
+    {
+      "code": "056904600108",
+      "name": "Physical Planning (Work)",
+      "total": 45600000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 45600000.0
+    },
+    {
+      "code": "056900100105",
+      "name": "Academic Planning Research and Statistics",
+      "total": 45000000.0,
+      "personnel": 0,
+      "overhead": 45000000.0,
+      "capital": 0
+    },
+    {
+      "code": "012300200124",
+      "name": "Commercial Services",
+      "total": 44000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 44000000.0
+    },
+    {
+      "code": "051701500154",
+      "name": "Educational Support Services",
+      "total": 43869196.8,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 43869196.8
+    },
+    {
+      "code": "052100800105",
+      "name": "Planning, Research & Statistics",
+      "total": 41200000.0,
+      "personnel": 0,
+      "overhead": 18200000.0,
+      "capital": 23000000.0
+    },
+    {
+      "code": "011100900121",
+      "name": "Guidance and Training Department",
+      "total": 40000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 40000000.0
+    },
+    {
+      "code": "012300100101",
+      "name": "Office of the Commissioner",
+      "total": 40000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 40000000.0
+    },
+    {
+      "code": "026000100111",
+      "name": "Physical Planning Department",
+      "total": 40000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 40000000.0
+    },
+    {
+      "code": "011105900100",
+      "name": "Servicom Directorate",
+      "total": 38945000.0,
+      "personnel": 0,
+      "overhead": 38945000.0,
+      "capital": 0
+    },
+    {
+      "code": "011105900104",
+      "name": "Admin & General Services",
+      "total": 38945000.0,
+      "personnel": 0,
+      "overhead": 38945000.0,
+      "capital": 0
+    },
+    {
+      "code": "056904000107",
+      "name": "Bursar",
+      "total": 38020000.0,
+      "personnel": 0,
+      "overhead": 38020000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701500153",
+      "name": "Schools Administration",
+      "total": 37904400.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 37904400.0
+    },
+    {
+      "code": "051701000156",
+      "name": "Monitoring & Evaluation",
+      "total": 36592583.63,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 36592583.63
+    },
+    {
+      "code": "022200100105",
+      "name": "Planning, Research & Statistics",
+      "total": 35000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 35000000.0
+    },
+    {
+      "code": "052100900104",
+      "name": "Admin & General Services",
+      "total": 35000000.0,
+      "personnel": 0,
+      "overhead": 35000000.0,
+      "capital": 0
+    },
+    {
+      "code": "026005800107",
+      "name": "Finance & Supply",
+      "total": 34461376.29,
+      "personnel": 0,
+      "overhead": 34461376.29,
+      "capital": 0
+    },
+    {
+      "code": "056900100159",
+      "name": "Physical Planning Department",
+      "total": 32000000.0,
+      "personnel": 0,
+      "overhead": 32000000.0,
+      "capital": 0
+    },
+    {
+      "code": "056903700108",
+      "name": "Physical Planning (Work)",
+      "total": 30672000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 30672000.0
+    },
+    {
+      "code": "017700100405",
+      "name": "Planning, Research & Statistics",
+      "total": 30000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 30000000.0
+    },
+    {
+      "code": "026000100108",
+      "name": "Cadastral Department",
+      "total": 30000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 30000000.0
+    },
+    {
+      "code": "026000100110",
+      "name": "Land department",
+      "total": 30000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 30000000.0
+    },
+    {
+      "code": "022900600104",
+      "name": "Admin & General Services",
+      "total": 30000000.0,
+      "personnel": 0,
+      "overhead": 30000000.0,
+      "capital": 0
+    },
+    {
+      "code": "051700800154",
+      "name": "Reader Services",
+      "total": 30000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 30000000.0
+    },
+    {
+      "code": "012300400108",
+      "name": "Engineering and Maintenance",
+      "total": 28000000.0,
+      "personnel": 0,
+      "overhead": 28000000.0,
+      "capital": 0
+    },
+    {
+      "code": "011100900104",
+      "name": "Admin & General Services",
+      "total": 27552000.0,
+      "personnel": 13752000.0,
+      "overhead": 13800000.0,
+      "capital": 0
+    },
+    {
+      "code": "056904500107",
+      "name": "Bursar",
+      "total": 27020000.0,
+      "personnel": 0,
+      "overhead": 27020000.0,
+      "capital": 0
+    },
+    {
+      "code": "056903200107",
+      "name": "Bursar",
+      "total": 26120000.0,
+      "personnel": 0,
+      "overhead": 26120000.0,
+      "capital": 0
+    },
+    {
+      "code": "012501000100",
+      "name": "Kano State Computer Centre",
+      "total": 25076000.0,
+      "personnel": 6576000.0,
+      "overhead": 3500000.0,
+      "capital": 15000000.0
+    },
+    {
+      "code": "012501000104",
+      "name": "Admin & General Services",
+      "total": 25076000.0,
+      "personnel": 6576000.0,
+      "overhead": 3500000.0,
+      "capital": 15000000.0
+    },
+    {
+      "code": "011105500212",
+      "name": "Operations",
+      "total": 24172000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 24172000.0
+    },
+    {
+      "code": "051701500103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 24000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 24000000.0
+    },
+    {
+      "code": "051701500155",
+      "name": "Consultancy",
+      "total": 24000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 24000000.0
+    },
+    {
+      "code": "051701600105",
+      "name": "Planning, Research & Statistics",
+      "total": 23156027.3,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 23156027.3
+    },
+    {
+      "code": "056903700107",
+      "name": "Bursar",
+      "total": 23076000.0,
+      "personnel": 0,
+      "overhead": 23076000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701600155",
+      "name": "Quality Assurance Department",
+      "total": 22656027.67,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 22656027.67
+    },
+    {
+      "code": "022800300100",
+      "name": "Kano State ICT Park",
+      "total": 22000000.0,
+      "personnel": 22000000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "022800300103",
+      "name": "DG ICT",
+      "total": 22000000.0,
+      "personnel": 22000000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "052100900105",
+      "name": "Planning, Research & Statistics",
+      "total": 22000000.0,
+      "personnel": 0,
+      "overhead": 22000000.0,
+      "capital": 0
+    },
+    {
+      "code": "021511400103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 21350000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 21350000.0
+    },
+    {
+      "code": "023605400131",
+      "name": "Zoological/Wildlife",
+      "total": 21000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 21000000.0
+    },
+    {
+      "code": "056903600107",
+      "name": "Bursar",
+      "total": 20020000.0,
+      "personnel": 0,
+      "overhead": 20020000.0,
+      "capital": 0
+    },
+    {
+      "code": "012300100122",
+      "name": "Public Enlightenment",
+      "total": 20000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 20000000.0
+    },
+    {
+      "code": "012300300122",
+      "name": "News and Current Affairs Department",
+      "total": 20000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 20000000.0
+    },
+    {
+      "code": "023600300131",
+      "name": "Research & Documentation Deparment",
+      "total": 20000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 20000000.0
+    },
+    {
+      "code": "026000100115",
+      "name": "Information and Communication Technology Department",
+      "total": 20000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 20000000.0
+    },
+    {
+      "code": "022200100134",
+      "name": "Tourism",
+      "total": 19000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 19000000.0
+    },
+    {
+      "code": "022200300135",
+      "name": "Quality Assurance Department",
+      "total": 19000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 19000000.0
+    },
+    {
+      "code": "052100400100",
+      "name": "College of Nursing & Mid-Wifery Board",
+      "total": 18301700.0,
+      "personnel": 0,
+      "overhead": 18301700.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400111",
+      "name": "Registrar",
+      "total": 18301700.0,
+      "personnel": 0,
+      "overhead": 18301700.0,
+      "capital": 0
+    },
+    {
+      "code": "022800400190",
+      "name": "Digital Economy Literacy and Capacity Building",
+      "total": 18000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 18000000.0
+    },
+    {
+      "code": "056904100100",
+      "name": "Kano State Driving Academy",
+      "total": 17570000.0,
+      "personnel": 0,
+      "overhead": 17570000.0,
+      "capital": 0
+    },
+    {
+      "code": "056904100107",
+      "name": "Bursar",
+      "total": 17570000.0,
+      "personnel": 0,
+      "overhead": 17570000.0,
+      "capital": 0
+    },
+    {
+      "code": "056904600107",
+      "name": "Bursar",
+      "total": 17570000.0,
+      "personnel": 0,
+      "overhead": 17570000.0,
+      "capital": 0
+    },
+    {
+      "code": "056903900107",
+      "name": "Bursar",
+      "total": 17113000.0,
+      "personnel": 0,
+      "overhead": 17113000.0,
+      "capital": 0
+    },
+    {
+      "code": "056903400107",
+      "name": "Bursar",
+      "total": 16770000.0,
+      "personnel": 0,
+      "overhead": 16770000.0,
+      "capital": 0
+    },
+    {
+      "code": "012500100400",
+      "name": "Salary and wages Directorate",
+      "total": 16500000.0,
+      "personnel": 0,
+      "overhead": 16500000.0,
+      "capital": 0
+    },
+    {
+      "code": "012500100403",
+      "name": "Office of the Permanent Secretary - Salaries & Wages",
+      "total": 16500000.0,
+      "personnel": 0,
+      "overhead": 16500000.0,
+      "capital": 0
+    },
+    {
+      "code": "022800400103",
+      "name": "Director General",
+      "total": 15000000.0,
+      "personnel": 15000000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "051305100151",
+      "name": "Youth Development Department",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 15000000.0
+    },
+    {
+      "code": "055100600100",
+      "name": "Kano Emirate Council",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100600107",
+      "name": "Finance & Supply",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100700100",
+      "name": "Bichi Emirate Council",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100700107",
+      "name": "Finance & Supply",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100800100",
+      "name": "Gaya Emirate Council",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100800107",
+      "name": "Finance & Supply",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100100100",
+      "name": "Rano Emirate Council",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "055100100107",
+      "name": "Finance & Supply",
+      "total": 15000000.0,
+      "personnel": 0,
+      "overhead": 15000000.0,
+      "capital": 0
+    },
+    {
+      "code": "022800200103",
+      "name": "Data Manager",
+      "total": 14604000.0,
+      "personnel": 14604000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "012300500103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 14577349.0,
+      "personnel": 14577349.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "051701600104",
+      "name": "Admin & General Services",
+      "total": 14071723.0,
+      "personnel": 0,
+      "overhead": 14071723.0,
+      "capital": 0
+    },
+    {
+      "code": "022800400191",
+      "name": "IT Infrastructure and e-Governance",
+      "total": 14000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 14000000.0
+    },
+    {
+      "code": "052101300104",
+      "name": "Admin & General Services",
+      "total": 12527000.0,
+      "personnel": 0,
+      "overhead": 12527000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701600156",
+      "name": "Private and Voluntary Institutions department",
+      "total": 12082031.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 12082031.0
+    },
+    {
+      "code": "032600300100",
+      "name": "Justice Sector Reform Team",
+      "total": 12000000.0,
+      "personnel": 0,
+      "overhead": 12000000.0,
+      "capital": 0
+    },
+    {
+      "code": "032600300103",
+      "name": "Justice Sector Reform Team",
+      "total": 12000000.0,
+      "personnel": 0,
+      "overhead": 12000000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100800185",
+      "name": "Account Investment & Contribution",
+      "total": 12000000.0,
+      "personnel": 0,
+      "overhead": 12000000.0,
+      "capital": 0
+    },
+    {
+      "code": "023400100105",
+      "name": "Planning, Research & Statistics",
+      "total": 11250000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 11250000.0
+    },
+    {
+      "code": "012300400103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 11000000.0,
+      "personnel": 0,
+      "overhead": 11000000.0,
+      "capital": 0
+    },
+    {
+      "code": "051700300157",
+      "name": "Nomadic Education",
+      "total": 11000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 11000000.0
+    },
+    {
+      "code": "023400400106",
+      "name": "Personnel Management",
+      "total": 10717000.0,
+      "personnel": 10717000.0,
+      "overhead": 0,
+      "capital": 0
+    },
+    {
+      "code": "052100400300",
+      "name": "School of Basic Mid Wifery Kano",
+      "total": 10615700.0,
+      "personnel": 0,
+      "overhead": 10615700.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400303",
+      "name": "School of Basic Mid Wifery Kano",
+      "total": 10615700.0,
+      "personnel": 0,
+      "overhead": 10615700.0,
+      "capital": 0
+    },
+    {
+      "code": "011103700112",
+      "name": "Operations",
+      "total": 10000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 10000000.0
+    },
+    {
+      "code": "012300300123",
+      "name": "Commercial Services Department",
+      "total": 10000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 10000000.0
+    },
+    {
+      "code": "023800100131",
+      "name": "Budget",
+      "total": 10000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 10000000.0
+    },
+    {
+      "code": "055100200105",
+      "name": "Planning, Research & Statistics",
+      "total": 10000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 10000000.0
+    },
+    {
+      "code": "052100400800",
+      "name": "School of Basic Mid Wifery Gwarzo",
+      "total": 9915700.0,
+      "personnel": 0,
+      "overhead": 9915700.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400803",
+      "name": "School of Basic Mid Wifery Gwarzo",
+      "total": 9915700.0,
+      "personnel": 0,
+      "overhead": 9915700.0,
+      "capital": 0
+    },
+    {
+      "code": "056902700111",
+      "name": "Registrar",
+      "total": 8980000.0,
+      "personnel": 0,
+      "overhead": 8980000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701600103",
+      "name": "Office of the Executive Chairman/ Secretary / MD",
+      "total": 7750000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 7750000.0
+    },
+    {
+      "code": "022000100103",
+      "name": "Office of the Permanent Secretary",
+      "total": 7000000.0,
+      "personnel": 0,
+      "overhead": 7000000.0,
+      "capital": 0
+    },
+    {
+      "code": "022200600100",
+      "name": "Cottage Trade and Street Hawking",
+      "total": 6325000.0,
+      "personnel": 0,
+      "overhead": 6325000.0,
+      "capital": 0
+    },
+    {
+      "code": "022200600104",
+      "name": "Admin & General Services",
+      "total": 6325000.0,
+      "personnel": 0,
+      "overhead": 6325000.0,
+      "capital": 0
+    },
+    {
+      "code": "052102000100",
+      "name": "School of Hygiene",
+      "total": 6250000.0,
+      "personnel": 0,
+      "overhead": 6250000.0,
+      "capital": 0
+    },
+    {
+      "code": "052102000188",
+      "name": "Provost",
+      "total": 6250000.0,
+      "personnel": 0,
+      "overhead": 6250000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400400",
+      "name": "School of Basic Mid Wifery Dambatta",
+      "total": 5550000.0,
+      "personnel": 0,
+      "overhead": 5550000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400403",
+      "name": "School of Basic Mid Wifery Dambatta",
+      "total": 5550000.0,
+      "personnel": 0,
+      "overhead": 5550000.0,
+      "capital": 0
+    },
+    {
+      "code": "052101100105",
+      "name": "Planning, Research & Statistics",
+      "total": 5340000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5340000.0
+    },
+    {
+      "code": "052100400600",
+      "name": "School of Nursing Madobi",
+      "total": 5100000.0,
+      "personnel": 0,
+      "overhead": 5100000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400603",
+      "name": "School of Nursing Madobi",
+      "total": 5100000.0,
+      "personnel": 0,
+      "overhead": 5100000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701500156",
+      "name": "Monitoring & Evaluation",
+      "total": 5040000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5040000.0
+    },
+    {
+      "code": "052100400500",
+      "name": "School of Post Basic Mid Wifery Gezawa",
+      "total": 5025000.0,
+      "personnel": 0,
+      "overhead": 5025000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400503",
+      "name": "School of Post Basic Mid Wifery Gezawa",
+      "total": 5025000.0,
+      "personnel": 0,
+      "overhead": 5025000.0,
+      "capital": 0
+    },
+    {
+      "code": "022800400192",
+      "name": "Corporate Planning Research and Development",
+      "total": 5000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 5000000.0
+    },
+    {
+      "code": "011106000100",
+      "name": "Kano state Liaison Office - Abuja",
+      "total": 4950000.0,
+      "personnel": 0,
+      "overhead": 4950000.0,
+      "capital": 0
+    },
+    {
+      "code": "011106000132",
+      "name": "Kano state Liaison Office - Abuja",
+      "total": 4950000.0,
+      "personnel": 0,
+      "overhead": 4950000.0,
+      "capital": 0
+    },
+    {
+      "code": "052104000100",
+      "name": "School Health Technology Kano",
+      "total": 4750000.0,
+      "personnel": 0,
+      "overhead": 4750000.0,
+      "capital": 0
+    },
+    {
+      "code": "052104000188",
+      "name": "Principal",
+      "total": 4750000.0,
+      "personnel": 0,
+      "overhead": 4750000.0,
+      "capital": 0
+    },
+    {
+      "code": "011106000200",
+      "name": "Kano state Liaison Office - Lagos",
+      "total": 4521000.0,
+      "personnel": 0,
+      "overhead": 4521000.0,
+      "capital": 0
+    },
+    {
+      "code": "011106000232",
+      "name": "Kano state Liaison Office - Lagos",
+      "total": 4521000.0,
+      "personnel": 0,
+      "overhead": 4521000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400700",
+      "name": "School of Post Basic Anesthesia",
+      "total": 4415000.0,
+      "personnel": 0,
+      "overhead": 4415000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400703",
+      "name": "School of Post Basic Anesthesia",
+      "total": 4415000.0,
+      "personnel": 0,
+      "overhead": 4415000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400200",
+      "name": "School of Nursing Kano",
+      "total": 4210000.0,
+      "personnel": 0,
+      "overhead": 4210000.0,
+      "capital": 0
+    },
+    {
+      "code": "052100400203",
+      "name": "School of Nursing Kano",
+      "total": 4210000.0,
+      "personnel": 0,
+      "overhead": 4210000.0,
+      "capital": 0
+    },
+    {
+      "code": "052103000100",
+      "name": "School of Health Technology Bebeji",
+      "total": 4025000.0,
+      "personnel": 0,
+      "overhead": 4025000.0,
+      "capital": 0
+    },
+    {
+      "code": "052103000188",
+      "name": "Principal",
+      "total": 4025000.0,
+      "personnel": 0,
+      "overhead": 4025000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701600109",
+      "name": "Special Duties",
+      "total": 3526004.55,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 3526004.55
+    },
+    {
+      "code": "022800400189",
+      "name": "Cyber Security",
+      "total": 3000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 3000000.0
+    },
+    {
+      "code": "012300200122",
+      "name": "News and Current Affairs",
+      "total": 2332800.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2332800.0
+    },
+    {
+      "code": "026300200104",
+      "name": "Admin & General Services",
+      "total": 2000000.0,
+      "personnel": 0,
+      "overhead": 2000000.0,
+      "capital": 0
+    },
+    {
+      "code": "051700300155",
+      "name": "Quality Assurance",
+      "total": 2000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2000000.0
+    },
+    {
+      "code": "051700300156",
+      "name": "Training",
+      "total": 2000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2000000.0
+    },
+    {
+      "code": "051700300158",
+      "name": "Social Mobilization",
+      "total": 2000000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 2000000.0
+    },
+    {
+      "code": "051701600154",
+      "name": "Arabic and Islamic education department",
+      "total": 1350000.0,
+      "personnel": 0,
+      "overhead": 0,
+      "capital": 1350000.0
+    },
+    {
+      "code": "056900100153",
+      "name": "Information Communication Technology",
+      "total": 1000000.0,
+      "personnel": 0,
+      "overhead": 1000000.0,
+      "capital": 0
+    },
+    {
+      "code": "051701600110",
+      "name": "Special Assignment",
+      "total": 740617.0,
+      "personnel": 0,
+      "overhead": 740617.0,
+      "capital": 0
+    }
+  ]
+}
