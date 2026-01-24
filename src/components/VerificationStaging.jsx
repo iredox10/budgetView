@@ -145,80 +145,90 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
                 <div className="space-y-4">
                   <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Revenue Chain</Text>
                   {[
-                    { id: 'total_revenue', label: 'Reported Total Revenue' },
-                    { id: 'faac', label: 'FAAC Share' },
-                    { id: 'igr', label: 'Independent Revenue (IGR)' },
-                    { id: 'grants', label: 'Aid & Grants' },
-                    { id: 'capital_receipts', label: 'Capital Receipts' },
-                  ].map(field => (
-                    <div key={field.id} className="relative group">
-                      <Flex className="mb-1">
-                        <label className="text-xs font-bold text-slate-700">{field.label}</label>
-                        <button 
-                          onClick={() => assignSelection(field.id)}
-                          disabled={!selection}
-                          className={clsx(
-                            "px-2 py-0.5 rounded text-[9px] font-black transition-all",
-                            selection ? "bg-blue-600 text-white shadow-lg" : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100"
-                          )}
-                        >
-                          {selection ? "ASSIGN SELECTION" : "READY TO MAP"}
-                        </button>
-                      </Flex>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
-                        <TextInput 
-                          value={formData.summary[field.id]?.toString() || ''}
-                          onChange={(e) => handleSummaryChange(field.id, e.target.value)}
-                          onFocus={() => setFocusedField(field.id)}
-                          className="font-mono font-bold pl-8"
-                        />
-                      </div>
+                  { id: 'total_revenue', label: 'Reported Total Revenue' },
+                  { id: 'faac', label: 'FAAC Share' },
+                  { id: 'igr', label: 'Independent Revenue (IGR)' },
+                  { id: 'grants', label: 'Aid & Grants' },
+                  { id: 'capital_receipts', label: 'Capital Receipts' },
+                ].map(field => (
+                  <div key={field.id} className="relative group">
+                    <Flex className="mb-1">
+                      <label className="text-xs font-bold text-slate-700">{field.label}</label>
+                      <button 
+                        onClick={() => assignSelection(field.id)}
+                        disabled={!selection}
+                        className={clsx(
+                          "px-2 py-0.5 rounded text-[9px] font-black transition-all",
+                          selection ? "bg-blue-600 text-white shadow-lg" : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100"
+                        )}
+                      >
+                        {selection ? "ASSIGN SELECTION" : "READY TO MAP"}
+                      </button>
+                    </Flex>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
+                      <TextInput 
+                        value={formData.summary[field.id]?.toString() || ''}
+                        onChange={(e) => handleSummaryChange(field.id, e.target.value)}
+                        onFocus={() => setFocusedField(field.id)}
+                        className="font-mono font-bold pl-8"
+                      />
+                    </div>
+                    <div className="mt-1 px-1 flex justify-between items-center">
+                      <Text className="text-[10px] font-bold text-blue-600">
+                        {formatCurrency(formData.summary[field.id])}
+                      </Text>
                       {formData.summarySources[field.id] && (
-                        <div className="flex items-center gap-1 mt-1 text-[9px] text-slate-400 italic">
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400 italic">
                           <Link2 className="w-2.5 h-2.5" />
                           <span className="truncate max-w-[250px]">{formData.summarySources[field.id]}</span>
                         </div>
                       )}
                     </div>
-                  ))}
+                  </div>
+                ))}
                 </div>
 
                 <Divider />
 
                 <div className="space-y-4">
-                  <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Expenditure Chain</Text>
-                  {[
-                    { id: 'total_expenditure', label: 'Reported Total Expenditure' },
-                    { id: 'personnel_cost', label: 'Personnel Cost' },
-                    { id: 'other_recurrent_costs', label: 'Recurrent (Overhead)' },
-                    { id: 'capital_expenditure', label: 'Capital Expenditure' },
-                  ].map(field => (
-                    <div key={field.id} className="relative group">
-                      <Flex className="mb-1">
-                        <label className="text-xs font-bold text-slate-700">{field.label}</label>
-                        <button 
-                          onClick={() => assignSelection(field.id)}
-                          disabled={!selection}
-                          className={clsx(
-                            "px-2 py-0.5 rounded text-[9px] font-black transition-all",
-                            selection ? "bg-blue-600 text-white shadow-lg" : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100"
-                          )}
-                        >
-                          {selection ? "ASSIGN SELECTION" : "READY TO MAP"}
-                        </button>
-                      </Flex>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
-                        <TextInput 
-                          value={formData.summary[field.id]?.toString() || ''}
-                          onChange={(e) => handleSummaryChange(field.id, e.target.value)}
-                          onFocus={() => setFocusedField(field.id)}
-                          className="font-mono font-bold pl-8"
-                        />
-                      </div>
+                <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Expenditure Chain</Text>
+                {[
+                  { id: 'total_expenditure', label: 'Reported Total Expenditure' },
+                  { id: 'personnel_cost', label: 'Personnel Cost' },
+                  { id: 'other_recurrent_costs', label: 'Recurrent (Overhead)' },
+                  { id: 'capital_expenditure', label: 'Capital Expenditure' },
+                ].map(field => (
+                  <div key={field.id} className="relative group">
+                    <Flex className="mb-1">
+                      <label className="text-xs font-bold text-slate-700">{field.label}</label>
+                      <button 
+                        onClick={() => assignSelection(field.id)}
+                        disabled={!selection}
+                        className={clsx(
+                          "px-2 py-0.5 rounded text-[9px] font-black transition-all",
+                          selection ? "bg-blue-600 text-white shadow-lg" : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100"
+                        )}
+                      >
+                        {selection ? "ASSIGN SELECTION" : "READY TO MAP"}
+                      </button>
+                    </Flex>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
+                      <TextInput 
+                        value={formData.summary[field.id]?.toString() || ''}
+                        onChange={(e) => handleSummaryChange(field.id, e.target.value)}
+                        onFocus={() => setFocusedField(field.id)}
+                        className="font-mono font-bold pl-8"
+                      />
                     </div>
-                  ))}
+                    <div className="mt-1 px-1">
+                      <Text className="text-[10px] font-bold text-blue-600">
+                        {formatCurrency(formData.summary[field.id])}
+                      </Text>
+                    </div>
+                  </div>
+                ))}
                 </div>
               </div>
             </Card>
@@ -312,43 +322,65 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
                         onClick={() => setSelection(num)}
                         className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-mono font-bold text-slate-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"
                       >
-                        {num}
+                        ₦ {num}
                       </button>
                     ))}
                   </div>
                 </Card>
 
                 <Card className="rounded-3xl p-6 shadow-xl shadow-slate-200/50">
-                  <Title className="mb-6">Mathematical Checksums</Title>
+                  <Title className="mb-6">Forensic Checksums</Title>
                   <div className="space-y-6">
                     <div>
                       <Flex className="mb-2">
-                        <Text className="text-[10px] font-bold uppercase tracking-wider">Revenue Match</Text>
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">Revenue Equilibrium</Text>
                         <Badge color={balance.isRevenueBalanced ? "emerald" : "rose"} size="xs">
                           {balance.isRevenueBalanced ? "BALANCED" : "DISCREPANCY"}
                         </Badge>
                       </Flex>
-                      <Tracker data={[{ color: balance.isRevenueBalanced ? 'emerald' : 'rose' }]} className="h-1.5" />
+                      <div className="flex items-center gap-2">
+                        <Tracker data={[{ color: balance.isRevenueBalanced ? 'emerald' : 'rose' }]} className="flex-1 h-1.5" />
+                        <span className="text-[10px] font-mono font-bold text-slate-500 whitespace-nowrap">{formatCurrency(balance.revenueDiff)}</span>
+                      </div>
                     </div>
 
                     <div>
                       <Flex className="mb-2">
-                        <Text className="text-[10px] font-bold uppercase tracking-wider">Expenditure Match</Text>
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">Expenditure Equilibrium</Text>
                         <Badge color={balance.isExpenditureBalanced ? "emerald" : "rose"} size="xs">
                           {balance.isExpenditureBalanced ? "BALANCED" : "DISCREPANCY"}
                         </Badge>
                       </Flex>
-                      <Tracker data={[{ color: balance.isExpenditureBalanced ? 'emerald' : 'rose' }]} className="h-1.5" />
+                      <div className="flex items-center gap-2">
+                        <Tracker data={[{ color: balance.isExpenditureBalanced ? 'emerald' : 'rose' }]} className="flex-1 h-1.5" />
+                        <span className="text-[10px] font-mono font-bold text-slate-500 whitespace-nowrap">{formatCurrency(balance.expenditureDiff)}</span>
+                      </div>
                     </div>
 
                     <div>
                       <Flex className="mb-2">
-                        <Text className="text-[10px] font-bold uppercase tracking-wider">MDA Aggregation</Text>
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">Admin vs Summary</Text>
                         <Badge color={balance.isMdaIntegrated ? "emerald" : "rose"} size="xs">
                           {balance.isMdaIntegrated ? "MATCH" : "MISMATCH"}
                         </Badge>
                       </Flex>
-                      <Tracker data={[{ color: balance.isMdaIntegrated ? 'emerald' : 'rose' }]} className="h-1.5" />
+                      <div className="flex items-center gap-2">
+                        <Tracker data={[{ color: balance.isMdaIntegrated ? 'emerald' : 'rose' }]} className="flex-1 h-1.5" />
+                        <span className="text-[10px] font-mono font-bold text-slate-500 whitespace-nowrap">{formatCurrency(balance.mdaDiff)}</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Flex className="mb-2">
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">Functional vs Summary</Text>
+                        <Badge color={Math.abs(balance.sectorDiff) < 1000 ? "emerald" : "rose"} size="xs">
+                          {Math.abs(balance.sectorDiff) < 1000 ? "MATCH" : "MISMATCH"}
+                        </Badge>
+                      </Flex>
+                      <div className="flex items-center gap-2">
+                        <Tracker data={[{ color: Math.abs(balance.sectorDiff) < 1000 ? 'emerald' : 'rose' }]} className="flex-1 h-1.5" />
+                        <span className="text-[10px] font-mono font-bold text-slate-500 whitespace-nowrap">{formatCurrency(balance.sectorDiff)}</span>
+                      </div>
                     </div>
 
                     <div className="pt-4 mt-4 border-t border-slate-100">
