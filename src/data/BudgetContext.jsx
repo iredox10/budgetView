@@ -49,16 +49,18 @@ export function BudgetProvider({ children }) {
       
       // 1. Create State Document
       await databases.createDocument(DB_ID, COLLECTIONS.STATES, stateId, {
-        name: newStateData.state,
-        year: newStateData.year,
-        total_expenditure: newStateData.summary.total_expenditure,
-        capital_expenditure: newStateData.summary.capital_expenditure,
-        personnel_cost: newStateData.summary.personnel_cost,
-        recurrent_revenue: newStateData.summary.recurrent_revenue,
+        name: newStateData.state || "Unknown State",
+        year: newStateData.year || 2024,
+        total_expenditure: newStateData.summary.total_expenditure || 0,
+        capital_expenditure: newStateData.summary.capital_expenditure || 0,
+        personnel_cost: newStateData.summary.personnel_cost || 0,
+        recurrent_revenue: newStateData.summary.recurrent_revenue || 0,
         faac: newStateData.summary.faac || 0,
         igr: newStateData.summary.igr || 0,
         grants: newStateData.summary.grants || 0,
-        capital_receipts: newStateData.summary.capital_receipts || 0
+        capital_receipts: newStateData.summary.capital_receipts || 0,
+        verified: true, // If it passed staging, it's verified
+        summarySources: JSON.stringify(newStateData.summarySources || {})
       });
 
       // 2. Batch Create MDAs (Using Promise.all for speed)
@@ -72,9 +74,9 @@ export function BudgetProvider({ children }) {
         await Promise.all(chunk.map(mda => 
           databases.createDocument(DB_ID, COLLECTIONS.MDAS, ID.unique(), {
             state_id: stateId,
-            code: mda.code,
-            name: mda.name,
-            total: mda.total,
+            code: mda.code || "000000000000",
+            name: mda.name || "Unknown Agency",
+            total: mda.total || 0,
             personnel: mda.personnel || 0,
             overhead: mda.overhead || 0,
             capital: mda.capital || 0,
@@ -87,9 +89,9 @@ export function BudgetProvider({ children }) {
       await Promise.all(newStateData.sectors.map(sector => 
         databases.createDocument(DB_ID, COLLECTIONS.SECTORS, ID.unique(), {
           state_id: stateId,
-          code: sector.code,
-          name: sector.name,
-          amount: sector.amount
+          code: sector.code || "000",
+          name: sector.name || "Unknown Sector",
+          amount: sector.amount || 0
         })
       ));
 

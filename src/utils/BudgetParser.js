@@ -1,4 +1,7 @@
+import { BUDGET_ALIASES } from '../data/aliases';
+
 export class BudgetParser {
+  // ... existing parseNumber and extractTextFromPDF ...
   static parseNumber(s) {
     if (!s || s.trim() === '-' || s.trim() === '0.00' || s.trim() === '.') return 0;
     const clean = s.trim().replace(/,/g, '');
@@ -60,14 +63,15 @@ export class BudgetParser {
       state: stateName,
       year: year,
       summary: {},
+      summarySources: {}, // Store the raw lines for verification
       sectors: [],
       mdas: []
     };
 
     // Auto-detect state/year
-    for (let i = 0; i < Math.min(50, lines.length); i++) {
+    for (let i = 0; i < Math.min(100, lines.length); i++) {
       const line = lines[i];
-      if (line.includes("Government") && (line.includes("Approved Budget") || line.includes("Estimates"))) {
+      if (line.includes("Government") && (line.includes("Approved Budget") || line.includes("Estimates") || line.includes("Budget"))) {
         const stateMatch = line.match(/([A-Za-z]+)\s+State/i);
         if (stateMatch) data.state = stateMatch[1].charAt(0).toUpperCase() + stateMatch[1].slice(1).toLowerCase();
         const yearMatch = line.match(/(20\d{2})/);
@@ -75,33 +79,27 @@ export class BudgetParser {
       }
     }
 
-    // If still unknown, look for any word followed by "STATE"
     if (data.state === "Unknown") {
       const backupMatch = text.match(/([A-Z]+)\s+STATE\s+GOVERNMENT/i);
       if (backupMatch) data.state = backupMatch[1].charAt(0).toUpperCase() + backupMatch[1].slice(1).toLowerCase();
     }
 
-    const summaryMap = {
-      "Recurrent Revenue": "recurrent_revenue",
-      "11 - GOVERNMENT SHARE OF FAAC": "faac",
-      "12 - INDEPENDENT REVENUE": "igr",
-      "13 - AID AND GRANTS": "grants",
-      "14 - CAPITAL DEVELOPMENTFUND (CDF) RECEIPTS": "capital_receipts",
-      "Personnel Cost": "personnel_cost",
-      "Other Recurrent Costs": "other_recurrent_costs",
-      "Capital Expenditure (Capital Expenditure)": "capital_expenditure",
-      "Total Revenue (including OB)": "total_revenue",
-      "Total Expenditure": "total_expenditure"
-    };
-
-    // Parse Summary
-    for (let i = 0; i < Math.min(300, lines.length); i++) {
+    // Parse Summary with aliases and capture source lines
+    for (let i = 0; i < Math.min(1000, lines.length); i++) {
       const line = lines[i];
-      for (const [key, field] of Object.entries(summaryMap)) {
-        if (line.includes(key)) {
-          const matches = line.match(/[\d,]+\.\d{2}/g);
-          if (matches) {
-            data.summary[field] = this.parseNumber(matches[matches.length - 1]);
+      const upperLine = line.toUpperCase();
+      
+      for (const [field, keywords] of Object.entries(BUDGET_ALIASES)) {
+        for (const keyword of keywords) {
+          if (upperLine.includes(keyword.toUpperCase())) {
+            const matches = line.match(/[\d,]+\.\d{2}/g);
+            if (matches) {
+              const val = this.parseNumber(matches[matches.length - 1]);
+              if (val > 0) {
+                data.summary[field] = val;
+                data.summarySources[field] = line.trim();
+              }
+            }
           }
         }
       }
@@ -111,17 +109,16 @@ export class BudgetParser {
     let inFunctional = false;
     for (const line of lines) {
       const stripped = line.trim();
-      if (stripped.includes("Total Expenditure by Functional Classification")) {
+      if (stripped.toUpperCase().includes("TOTAL EXPENDITURE BY FUNCTIONAL CLASSIFICATION")) {
         inFunctional = true;
         continue;
       }
       if (inFunctional) {
-        if (stripped.includes("Personnel Expenditure by Functional") || stripped.includes("Administrative")) {
+        if (stripped.toUpperCase().includes("PERSONNEL EXPENDITURE") || stripped.toUpperCase().includes("ADMINISTRATIVE")) {
           inFunctional = false;
           continue;
         }
         
-        // Match 3-digit code followed by name and 4 columns
         const sectorMatch = stripped.match(/^(7\d{2})\s+(.+?)\s+([\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)$/);
         if (sectorMatch) {
           const [_, code, name, a22, b23, p23, b24] = sectorMatch;
@@ -136,10 +133,11 @@ export class BudgetParser {
 
     // Parse Administrative Classification
     const sectionMap = {
-      "Total Expenditure by Administrative Classification": "total",
-      "Personnel Expenditure by Administrative Classification": "personnel",
-      "Other Non-Debt Recurrent Expenditure by Administrative Classification": "overhead",
-      "Capital Expenditure by Administrative Classification": "capital"
+      "TOTAL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "total",
+      "PERSONNEL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "personnel",
+      "OTHER NON-DEBT RECURRENT EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "overhead",
+      "OVERHEAD COST BY ADMINISTRATIVE CLASSIFICATION": "overhead",
+      "CAPITAL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "capital"
     };
     
     const mdas = {};
@@ -148,9 +146,10 @@ export class BudgetParser {
     for (const line of lines) {
       const stripped = line.trim();
       if (!stripped) continue;
+      const upperStripped = stripped.toUpperCase();
 
       for (const [title, key] of Object.entries(sectionMap)) {
-        if (stripped.includes(title)) {
+        if (upperStripped.includes(title)) {
           currentSection = key;
           break;
         }
@@ -158,20 +157,15 @@ export class BudgetParser {
       
       if (!currentSection) continue;
       
-      // Look for the 12-digit code or something that looks like an account code
       const codeMatch = stripped.match(/^(\d{8,12})/);
       if (codeMatch) {
         const code = codeMatch[1];
-        // Extract the rest of the line and find numeric columns
         const rest = stripped.substring(code.length).trim();
-        // Match numbers at the end. We need at least the last column (2024 budget)
         const columns = rest.match(/([\d,.-]+\.\d{2})|(\s-\s)/g);
         
         if (columns && columns.length >= 1) {
           const b24 = columns[columns.length - 1];
           const val = this.parseNumber(b24);
-          
-          // The name is everything between the code and the first number
           const namePart = rest.split(/[\d,.-]+\.\d{2}/)[0].trim();
           
           if (!mdas[code]) {
@@ -197,6 +191,8 @@ export class BudgetParser {
     data.mdas = Object.values(mdas)
       .filter(m => m.total > 0 || m.personnel > 0 || m.overhead > 0 || m.capital > 0)
       .map(m => {
+        // If the budget structure only lists components, sum them. 
+        // But if total is listed, we respect it.
         if (m.total === 0) m.total = m.personnel + m.overhead + m.capital;
         return m;
       })

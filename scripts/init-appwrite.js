@@ -34,122 +34,124 @@ const storage = new Storage(client);
 
 async function setup() {
   try {
-    console.log("🚀 Initializing Appwrite Schema...");
+    console.log("🚀 Updating Appwrite Schema Permissions & Attributes...");
+
+    const publicPermissions = [
+      Permission.read(Role.any()),
+      Permission.write(Role.any()), 
+    ];
 
     // 1. Create Database
     try {
       await databases.create(VITE_APPWRITE_DATABASE_ID, 'BudgetView Database');
       console.log("✅ Database created.");
     } catch (e) {
-      console.log("ℹ️ Database already exists.");
+      console.log("ℹ️ Database exists.");
     }
 
     // 2. States Collection
     try {
-      await databases.createCollection(
-        VITE_APPWRITE_DATABASE_ID,
-        VITE_APPWRITE_STATES_COLLECTION_ID,
-        'States',
-        [
-          Permission.read(Role.any()),
-          Permission.write(Role.team('admin')),
-        ]
-      );
-      console.log("✅ States collection created.");
-      
-      // Attributes for States
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'name', 100, true);
-      await databases.createIntegerAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'year', true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'total_expenditure', true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'capital_expenditure', true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'personnel_cost', true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'recurrent_revenue', true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'faac', false);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'igr', false);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'grants', false);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'capital_receipts', false);
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'pdf_file_id', 50, false);
+      await databases.updateCollection(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'States', publicPermissions);
+      console.log("✅ States collection updated.");
     } catch (e) {
-      console.log("ℹ️ States collection already exists or failed.");
+      await databases.createCollection(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, 'States', publicPermissions);
+      console.log("✅ States collection created.");
+    }
+
+    // Create State Attributes (Try each one)
+    const stateAttrs = [
+      { id: 'name', type: 'string', size: 100, req: true },
+      { id: 'year', type: 'integer', req: true },
+      { id: 'total_expenditure', type: 'float', req: true },
+      { id: 'capital_expenditure', type: 'float', req: true },
+      { id: 'personnel_cost', type: 'float', req: true },
+      { id: 'recurrent_revenue', type: 'float', req: true },
+      { id: 'faac', type: 'float', req: false },
+      { id: 'igr', type: 'float', req: false },
+      { id: 'grants', type: 'float', req: false },
+      { id: 'capital_receipts', type: 'float', req: false },
+      { id: 'pdf_file_id', type: 'string', size: 50, req: false },
+      { id: 'verified', type: 'boolean', req: false, default: true },
+      { id: 'summarySources', type: 'string', size: 2000, req: false }
+    ];
+
+    for (const attr of stateAttrs) {
+      try {
+        if (attr.type === 'string') await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, attr.id, attr.size, attr.req);
+        if (attr.type === 'integer') await databases.createIntegerAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, attr.id, attr.req);
+        if (attr.type === 'float') await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, attr.id, attr.req);
+        if (attr.type === 'boolean') await databases.createBooleanAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_STATES_COLLECTION_ID, attr.id, attr.req, attr.default);
+        console.log(`✅ State Attr: ${attr.id}`);
+      } catch (e) {}
     }
 
     // 3. MDAs Collection
     try {
-      await databases.createCollection(
-        VITE_APPWRITE_DATABASE_ID,
-        VITE_APPWRITE_MDAS_COLLECTION_ID,
-        'MDAs',
-        [
-          Permission.read(Role.any()),
-          Permission.write(Role.team('admin')),
-        ]
-      );
-      console.log("✅ MDAs collection created.");
-
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'state_id', 50, true);
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'code', 50, true);
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'name', 500, true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'total', true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'personnel', false, 0);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'overhead', false, 0);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'capital', false, 0);
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'sourceLine', 2000, false);
-      
-      // Index for fast state lookup and searching
-      setTimeout(async () => {
-        try {
-          await databases.createIndex(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'state_idx', 'key', ['state_id']);
-          await databases.createIndex(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'search_idx', 'fulltext', ['name']);
-        } catch (e) {}
-      }, 5000);
+      await databases.updateCollection(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'MDAs', publicPermissions);
+      console.log("✅ MDAs collection updated.");
     } catch (e) {
-      console.log("ℹ️ MDAs collection already exists.");
+      await databases.createCollection(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, 'MDAs', publicPermissions);
+      console.log("✅ MDAs collection created.");
+    }
+
+    const mdaAttrs = [
+      { id: 'state_id', type: 'string', size: 50, req: true },
+      { id: 'code', type: 'string', size: 50, req: true },
+      { id: 'name', type: 'string', size: 500, req: true },
+      { id: 'total', type: 'float', req: true },
+      { id: 'personnel', type: 'float', req: false, default: 0 },
+      { id: 'overhead', type: 'float', req: false, default: 0 },
+      { id: 'capital', type: 'float', req: false, default: 0 },
+      { id: 'sourceLine', type: 'string', size: 2000, req: false }
+    ];
+
+    for (const attr of mdaAttrs) {
+      try {
+        if (attr.type === 'string') await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, attr.id, attr.size, attr.req);
+        if (attr.type === 'float') await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, attr.id, attr.req, attr.default);
+        console.log(`✅ MDA Attr: ${attr.id}`);
+      } catch (e) {}
     }
 
     // 4. Sectors Collection
     try {
-      await databases.createCollection(
-        VITE_APPWRITE_DATABASE_ID,
-        VITE_APPWRITE_SECTORS_COLLECTION_ID,
-        'Sectors',
-        [
-          Permission.read(Role.any()),
-          Permission.write(Role.team('admin')),
-        ]
-      );
+      await databases.updateCollection(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, 'Sectors', publicPermissions);
+      console.log("✅ Sectors collection updated.");
+    } catch (e) {
+      await databases.createCollection(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, 'Sectors', publicPermissions);
       console.log("✅ Sectors collection created.");
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, 'state_id', 50, true);
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, 'code', 10, true);
-      await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, 'name', 200, true);
-      await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, 'amount', true);
-    } catch (e) {
-      console.log("ℹ️ Sectors collection already exists.");
     }
 
-    // 5. Create Storage Bucket
+    const sectorAttrs = [
+      { id: 'state_id', type: 'string', size: 50, req: true },
+      { id: 'code', type: 'string', size: 10, req: true },
+      { id: 'name', type: 'string', size: 200, req: true },
+      { id: 'amount', type: 'float', req: true }
+    ];
+
+    for (const attr of sectorAttrs) {
+      try {
+        if (attr.type === 'string') await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, attr.id, attr.size, attr.req);
+        if (attr.type === 'float') await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_SECTORS_COLLECTION_ID, attr.id, attr.req);
+        console.log(`✅ Sector Attr: ${attr.id}`);
+      } catch (e) {}
+    }
+
+    // 5. Storage Bucket
     try {
-      await storage.createBucket(
-        VITE_APPWRITE_BUDGET_BUCKET_ID,
-        'Budget PDFs',
-        [
-          Permission.read(Role.any()),
-          Permission.write(Role.team('admin')),
-        ],
-        false,
-        true,
-        undefined,
-        ['pdf']
-      );
-      console.log("✅ Storage bucket created.");
+      await storage.updateBucket(VITE_APPWRITE_BUDGET_BUCKET_ID, 'Budget PDFs', publicPermissions, false, true, undefined, ['pdf']);
+      console.log("✅ Storage bucket updated.");
     } catch (e) {
-      console.log("ℹ️ Storage bucket already exists.");
+      try {
+        await storage.createBucket(VITE_APPWRITE_BUDGET_BUCKET_ID, 'Budget PDFs', publicPermissions, false, true, undefined, ['pdf']);
+        console.log("✅ Storage bucket created.");
+      } catch (e2) {}
     }
 
-    console.log("\n✨ Schema Initialization Complete.");
-    console.log("⚠️ Note: Some attributes and indexes may take a minute to propagate.");
+    console.log("\n✨ Setup Complete. Public write access enabled.");
 
   } catch (err) {
-    console.error("❌ Initialization failed:", err);
+    console.error("❌ Setup failed:", err);
   }
 }
 

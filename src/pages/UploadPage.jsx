@@ -4,11 +4,15 @@ import { Card, Title, Text, Button, Flex, Badge, Grid, ProgressBar } from '@trem
 import { Upload, FileJson, CheckCircle2, AlertCircle, Trash2, ArrowRight, FileText, File, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BudgetParser } from '../utils/BudgetParser';
+import VerificationStaging from '../components/VerificationStaging';
 
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [stagedData, setStagedData] = useState(null);
+  const [rawText, setRawText] = useState('');
+  
   const { addState, states, deleteState } = useBudget();
   const navigate = useNavigate();
 
@@ -23,8 +27,9 @@ export default function UploadPage() {
         reader.onload = async (e) => {
           try {
             const json = JSON.parse(e.target.result);
-            const id = await addState(json);
-            navigate(`/state/${id}`);
+            setStagedData(json);
+            setRawText(JSON.stringify(json, null, 2));
+            setIsProcessing(false);
           } catch (err) {
             setError("Invalid JSON format or upload failed.");
             setIsProcessing(false);
@@ -38,21 +43,32 @@ export default function UploadPage() {
           console.error("Extraction failure. Text sample:", text.substring(0, 1000));
           throw new Error("No budget data detected in PDF. This could be due to a non-standard layout or an encrypted file.");
         }
-        const id = await addState(json);
-        setTimeout(() => {
-          navigate(`/state/${id}`, { replace: true });
-        }, 100);
+        setStagedData(json);
+        setRawText(text);
+        setIsProcessing(false);
       } else if (file.type === "text/plain") {
         const text = await file.text();
         const json = BudgetParser.parseText(text);
         if (!json.mdas.length) throw new Error("No budget data detected in text file.");
-        const id = await addState(json);
-        navigate(`/state/${id}`);
+        setStagedData(json);
+        setRawText(text);
+        setIsProcessing(false);
       } else {
         throw new Error("Unsupported file type. Please upload JSON, PDF, or TXT.");
       }
     } catch (err) {
       setError(err.message);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCommit = async (finalData) => {
+    setIsProcessing(true);
+    try {
+      const id = await addState(finalData);
+      navigate(`/state/${id}`);
+    } catch (err) {
+      setError("Cloud commit failed: " + err.message);
       setIsProcessing(false);
     }
   };
@@ -76,11 +92,24 @@ export default function UploadPage() {
     }
   };
 
+  if (stagedData) {
+    return (
+      <div className="p-8">
+        <VerificationStaging 
+          rawData={stagedData} 
+          rawText={rawText} 
+          onSave={handleCommit} 
+          onCancel={() => setStagedData(null)} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center space-y-2">
         <Title className="text-3xl font-black text-slate-900">Upload State Budget</Title>
-        <Text className="text-slate-500">Convert PDF to JSON using our Python tool, then drop it here.</Text>
+        <Text className="text-slate-500">Official Nigeria State Budget PDF or Structured JSON.</Text>
       </div>
 
       <Card 
@@ -158,14 +187,12 @@ export default function UploadPage() {
                   >
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  {s.id !== 'kano' && (
-                    <button 
-                      onClick={() => deleteState(s.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <button 
+                    onClick={() => deleteState(s.id)}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </Flex>
             </Card>

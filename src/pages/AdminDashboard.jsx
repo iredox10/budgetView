@@ -15,7 +15,7 @@ import {
   Grid,
   Metric
 } from '@tremor/react';
-import { Trash2, ShieldCheck, Database, FileText, Settings, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Trash2, ShieldCheck, Database, FileText, Settings, AlertTriangle, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -102,7 +102,10 @@ export default function AdminDashboard() {
                         <FileText className="w-4 h-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-slate-900">{s.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900">{s.name}</span>
+                          {s.data.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500" title="Verified Integrity" />}
+                        </div>
                         <span className="text-[10px] font-mono text-slate-400">ID: {s.id}</span>
                       </div>
                     </div>
