@@ -20,26 +20,25 @@ export default function UploadPage() {
     try {
       if (file.type === "application/json") {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           try {
             const json = JSON.parse(e.target.result);
-            const id = addState(json);
+            const id = await addState(json);
             navigate(`/state/${id}`);
           } catch (err) {
-            setError("Invalid JSON format.");
+            setError("Invalid JSON format or upload failed.");
             setIsProcessing(false);
           }
         };
         reader.readAsText(file);
       } else if (file.type === "application/pdf") {
         const text = await BudgetParser.extractTextFromPDF(file);
-        // console.log("Extracted text sample:", text.substring(0, 500));
         const json = BudgetParser.parseText(text);
         if (!json.mdas.length) {
           console.error("Extraction failure. Text sample:", text.substring(0, 1000));
           throw new Error("No budget data detected in PDF. This could be due to a non-standard layout or an encrypted file.");
         }
-        const id = addState(json);
+        const id = await addState(json);
         setTimeout(() => {
           navigate(`/state/${id}`, { replace: true });
         }, 100);
@@ -47,7 +46,7 @@ export default function UploadPage() {
         const text = await file.text();
         const json = BudgetParser.parseText(text);
         if (!json.mdas.length) throw new Error("No budget data detected in text file.");
-        const id = addState(json);
+        const id = await addState(json);
         navigate(`/state/${id}`);
       } else {
         throw new Error("Unsupported file type. Please upload JSON, PDF, or TXT.");
