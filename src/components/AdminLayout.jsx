@@ -86,8 +86,8 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Admin Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-20 shadow-sm">
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        <header className="sticky top-0 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 z-40 shadow-sm">
           <div className="flex items-center gap-4">
             <button 
               className="lg:hidden p-2 text-slate-600"

@@ -72,6 +72,8 @@ async function setup() {
       { id: 'capital_receipts', type: 'float', req: false },
       { id: 'pdf_file_id', type: 'string', size: 50, req: false },
       { id: 'verified', type: 'boolean', req: false, default: true },
+      { id: 'isOfficialError', type: 'boolean', req: false, default: false },
+      { id: 'errorExplanation', type: 'string', size: 2000, req: false },
       { id: 'summarySources', type: 'string', size: 2000, req: false }
     ];
 

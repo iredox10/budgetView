@@ -19,15 +19,17 @@ import {
   Badge,
   TextInput
 } from '@tremor/react';
-import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Database, CheckCircle2, X, ArrowRight } from 'lucide-react';
+import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Database, CheckCircle2, X, ArrowRight, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Callout } from '@tremor/react';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
-    maximumFractionDigits: 0
-  }).format(val);
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(val || 0);
 };
 
 export default function StateDashboard() {
@@ -101,6 +103,23 @@ export default function StateDashboard() {
 
   return (
     <div className="relative space-y-8 pb-12 animate-in fade-in duration-500">
+      {/* Official Discrepancy Alert */}
+      {data.isOfficialError && (
+        <Callout 
+          title="Government Document Integrity Alert" 
+          color="amber" 
+          icon={AlertTriangle}
+          className="rounded-2xl border-amber-200 shadow-lg shadow-amber-100"
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <Text className="text-amber-800 font-medium">
+              {data.errorExplanation || "The official budget document for this state contains internal mathematical discrepancies verified by our audit team."}
+            </Text>
+            <Badge color="amber" size="xs" className="whitespace-nowrap">Confirmed Source Error</Badge>
+          </div>
+        </Callout>
+      )}
+
       {/* Source Inspector Sidebar */}
       {selectedMDA && (
         <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl border-l border-slate-200 z-50 p-8 animate-in slide-in-from-right duration-300">

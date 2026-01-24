@@ -1,12 +1,21 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Card, Title, Text, TextInput, Button, Grid, Flex, Badge, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, Callout } from '@tremor/react';
-import { CheckCircle2, AlertCircle, Save, ArrowLeft, RefreshCw, Scale } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { 
+  Card, Title, Text, TextInput, Button, Grid, Flex, Badge, 
+  Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, 
+  Callout, Divider, Tracker
+} from '@tremor/react';
+import { 
+  CheckCircle2, AlertCircle, Save, ArrowLeft, RefreshCw, Scale, 
+  MousePointer2, Hash, Link2, Info, AlertTriangle, Search
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
   }).format(val || 0);
 };
 
@@ -14,30 +23,45 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
   const [formData, setFormData] = useState({
     state: rawData.state,
     year: rawData.year,
-    summary: { ...rawData.summary }
+    summary: { ...rawData.summary },
+    summarySources: { ...rawData.summarySources },
+    isOfficialError: false,
+    errorExplanation: ''
   });
 
-  const [mdaSearch, setMdaSearch] = useState('');
+  const [focusedField, setFocusedField] = useState(null);
+  const [selection, setSelection] = useState('');
+  const [textSearch, setTextSearch] = useState('');
+  const textContainerRef = useRef(null);
+
+  const candidatePool = useMemo(() => {
+    const numbers = rawText.match(/[\d,]+\.\d{2}/g) || [];
+    const uniqueNumbers = [...new Set(numbers)];
+    const assignedValues = Object.values(formData.summary).map(v => v?.toFixed?.(2) || "0.00");
+    return uniqueNumbers.filter(n => !assignedValues.includes(n.replace(/,/g, '')));
+  }, [rawText, formData.summary]);
 
   const balance = useMemo(() => {
     const s = formData.summary;
     const revTotal = (s.faac || 0) + (s.igr || 0) + (s.grants || 0) + (s.capital_receipts || 0);
     const expTotal = (s.personnel_cost || 0) + (s.other_recurrent_costs || 0) + (s.capital_expenditure || 0);
     
-    // Sum MDAs (excluding sector totals which usually have codes ending in 00000000)
     const mdaSum = rawData.mdas
       .filter(m => !m.code.endsWith('00000000'))
       .reduce((acc, curr) => acc + curr.total, 0);
+
+    const sectorSum = rawData.sectors.reduce((acc, curr) => acc + curr.amount, 0);
 
     return {
       revenueDiff: (s.total_revenue || 0) - revTotal,
       expenditureDiff: (s.total_expenditure || 0) - expTotal,
       mdaDiff: (s.total_expenditure || 0) - mdaSum,
+      sectorDiff: (s.total_expenditure || 0) - sectorSum,
       isRevenueBalanced: Math.abs((s.total_revenue || 0) - revTotal) < 1,
       isExpenditureBalanced: Math.abs((s.total_expenditure || 0) - expTotal) < 1,
-      isMdaIntegrated: Math.abs((s.total_expenditure || 0) - mdaSum) < 1000 // Higher tolerance for MDA sum due to hierarchy complexity
+      isMdaIntegrated: Math.abs((s.total_expenditure || 0) - mdaSum) < 1000
     };
-  }, [formData, rawData.mdas]);
+  }, [formData, rawData.mdas, rawData.sectors]);
 
   const handleSummaryChange = (field, value) => {
     const num = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
@@ -47,191 +71,298 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
     }));
   };
 
-  const isValid = balance.isRevenueBalanced && balance.isExpenditureBalanced;
+  const handleTextSelection = () => {
+    const selected = window.getSelection().toString().trim();
+    if (selected) {
+      setSelection(selected);
+    }
+  };
+
+  const assignSelection = (field) => {
+    if (!selection) return;
+    const num = parseFloat(selection.replace(/[^0-9.]/g, '')) || 0;
+    const lines = rawText.split('\n');
+    const sourceLine = lines.find(l => l.includes(selection)) || selection;
+
+    setFormData(prev => ({
+      ...prev,
+      summary: { ...prev.summary, [field]: num },
+      summarySources: { ...prev.summarySources, [field]: sourceLine }
+    }));
+    setSelection('');
+  };
+
+  const isValid = (balance.isRevenueBalanced && balance.isExpenditureBalanced) || formData.isOfficialError;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <button onClick={onCancel} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-            <ArrowLeft className="w-5 h-5 text-slate-500" />
-          </button>
-          <div>
-            <Title className="text-2xl font-black">Accuracy Verification Staging</Title>
-            <Text>Review extracted data against raw text before cloud commit.</Text>
+    <div className="fixed inset-0 bg-slate-50 z-[100] overflow-y-auto pb-20">
+      <div className="space-y-8 animate-in fade-in duration-500 max-w-[1600px] mx-auto p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-3xl border border-slate-200 shadow-sm gap-4 sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <button onClick={onCancel} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+              <ArrowLeft className="w-5 h-5 text-slate-500" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <Title className="text-2xl font-black text-slate-900">Audit & Evidence Console</Title>
+                <Badge color={isValid ? "emerald" : "rose"} icon={isValid ? CheckCircle2 : AlertCircle}>
+                  {isValid ? "Validated" : "Balance Required"}
+                </Badge>
+              </div>
+              <Text className="text-xs">Verify numbers against raw document evidence.</Text>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {selection && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl animate-in slide-in-from-right-4">
+                <MousePointer2 className="w-4 h-4 text-blue-600" />
+                <span className="text-xs font-bold text-blue-700">Selected: {selection}</span>
+              </div>
+            )}
+            <Button 
+              icon={Save} 
+              disabled={!isValid}
+              onClick={() => onSave({ ...rawData, ...formData })}
+              className={isValid ? "bg-slate-900 hover:bg-slate-800 border-none text-white font-black px-8 py-6 rounded-2xl shadow-xl shadow-slate-200 transition-all active:scale-95" : "bg-slate-300"}
+            >
+              COMMIT VERIFIED DATA
+            </Button>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button 
-            icon={Save} 
-            disabled={!isValid}
-            onClick={() => onSave({ ...rawData, ...formData })}
-            className={isValid ? "bg-blue-600 hover:bg-blue-700" : "bg-slate-300"}
-          >
-            CONFIRM & COMMIT TO CLOUD
-          </Button>
-        </div>
-      </div>
 
-      <Grid numItemsLg={2} className="gap-8">
-        {/* Left Side: Summary Fields */}
-        <div className="space-y-6">
-          <Card>
-            <div className="flex items-center gap-2 mb-6">
-              <Scale className="w-5 h-5 text-blue-600" />
-              <Title>Budget Summary Control</Title>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-slate-400">State Name</label>
-                  <TextInput value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} />
+        <Grid numItemsLg={3} className="gap-8">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="rounded-3xl border-none shadow-xl shadow-slate-200/50">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Scale className="w-5 h-5 text-blue-600" />
+                  <Title>Financial Identities</Title>
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-slate-400">Budget Year</label>
-                  <TextInput value={formData.year.toString()} onChange={(e) => setFormData({...formData, year: parseInt(e.target.value) || 2024})} />
-                </div>
+                <Badge color="slate" icon={Hash}>Summary</Badge>
               </div>
-
-              <div className="pt-4 border-t border-slate-100">
-                <Text className="font-bold text-slate-900 mb-4">Revenue Identities</Text>
-                <div className="space-y-3">
+              
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Revenue Chain</Text>
                   {[
-                    { id: 'total_revenue', label: 'Total Revenue' },
-                    { id: 'faac', label: 'FAAC Allocation' },
+                    { id: 'total_revenue', label: 'Reported Total Revenue' },
+                    { id: 'faac', label: 'FAAC Share' },
                     { id: 'igr', label: 'Independent Revenue (IGR)' },
                     { id: 'grants', label: 'Aid & Grants' },
                     { id: 'capital_receipts', label: 'Capital Receipts' },
                   ].map(field => (
-                    <div key={field.id} className="group">
+                    <div key={field.id} className="relative group">
                       <Flex className="mb-1">
-                        <label className="text-xs font-medium text-slate-600">{field.label}</label>
-                        {rawData.summarySources[field.id] && (
-                          <Badge size="xs" color="slate" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            Found in text
-                          </Badge>
-                        )}
+                        <label className="text-xs font-bold text-slate-700">{field.label}</label>
+                        <button 
+                          onClick={() => assignSelection(field.id)}
+                          disabled={!selection}
+                          className={clsx(
+                            "px-2 py-0.5 rounded text-[9px] font-black transition-all",
+                            selection ? "bg-blue-600 text-white shadow-lg" : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100"
+                          )}
+                        >
+                          {selection ? "ASSIGN SELECTION" : "READY TO MAP"}
+                        </button>
                       </Flex>
-                      <TextInput 
-                        placeholder="₦ 0.00"
-                        value={formData.summary[field.id]?.toString() || ''}
-                        onChange={(e) => handleSummaryChange(field.id, e.target.value)}
-                        error={field.id === 'total_revenue' && !balance.isRevenueBalanced}
-                      />
-                      {rawData.summarySources[field.id] && (
-                        <p className="text-[9px] text-slate-400 mt-1 font-mono italic truncate">
-                          Source: {rawData.summarySources[field.id]}
-                        </p>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
+                        <TextInput 
+                          value={formData.summary[field.id]?.toString() || ''}
+                          onChange={(e) => handleSummaryChange(field.id, e.target.value)}
+                          onFocus={() => setFocusedField(field.id)}
+                          className="font-mono font-bold pl-8"
+                        />
+                      </div>
+                      {formData.summarySources[field.id] && (
+                        <div className="flex items-center gap-1 mt-1 text-[9px] text-slate-400 italic">
+                          <Link2 className="w-2.5 h-2.5" />
+                          <span className="truncate max-w-[250px]">{formData.summarySources[field.id]}</span>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
-                {!balance.isRevenueBalanced && (
-                  <Callout title="Revenue Mismatch" color="rose" icon={AlertCircle} className="mt-4">
-                    The sum of FAAC, IGR, Grants, and Receipts differs from Total Revenue by {formatCurrency(balance.revenueDiff)}.
-                  </Callout>
-                )}
-              </div>
 
-              <div className="pt-4 border-t border-slate-100">
-                <Text className="font-bold text-slate-900 mb-4">Expenditure Identities</Text>
-                <div className="space-y-3">
+                <Divider />
+
+                <div className="space-y-4">
+                  <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Expenditure Chain</Text>
                   {[
-                    { id: 'total_expenditure', label: 'Total Expenditure' },
+                    { id: 'total_expenditure', label: 'Reported Total Expenditure' },
                     { id: 'personnel_cost', label: 'Personnel Cost' },
-                    { id: 'other_recurrent_costs', label: 'Other Recurrent (Overhead)' },
+                    { id: 'other_recurrent_costs', label: 'Recurrent (Overhead)' },
                     { id: 'capital_expenditure', label: 'Capital Expenditure' },
                   ].map(field => (
-                    <div key={field.id} className="group">
+                    <div key={field.id} className="relative group">
                       <Flex className="mb-1">
-                        <label className="text-xs font-medium text-slate-600">{field.label}</label>
-                        {rawData.summarySources[field.id] && (
-                          <Badge size="xs" color="slate" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            Found in text
-                          </Badge>
-                        )}
+                        <label className="text-xs font-bold text-slate-700">{field.label}</label>
+                        <button 
+                          onClick={() => assignSelection(field.id)}
+                          disabled={!selection}
+                          className={clsx(
+                            "px-2 py-0.5 rounded text-[9px] font-black transition-all",
+                            selection ? "bg-blue-600 text-white shadow-lg" : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100"
+                          )}
+                        >
+                          {selection ? "ASSIGN SELECTION" : "READY TO MAP"}
+                        </button>
                       </Flex>
-                      <TextInput 
-                        placeholder="₦ 0.00"
-                        value={formData.summary[field.id]?.toString() || ''}
-                        onChange={(e) => handleSummaryChange(field.id, e.target.value)}
-                        error={field.id === 'total_expenditure' && !balance.isExpenditureBalanced}
-                      />
-                      {rawData.summarySources[field.id] && (
-                        <p className="text-[9px] text-slate-400 mt-1 font-mono italic truncate">
-                          Source: {rawData.summarySources[field.id]}
-                        </p>
-                      )}
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
+                        <TextInput 
+                          value={formData.summary[field.id]?.toString() || ''}
+                          onChange={(e) => handleSummaryChange(field.id, e.target.value)}
+                          onFocus={() => setFocusedField(field.id)}
+                          className="font-mono font-bold pl-8"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
-                {!balance.isExpenditureBalanced && (
-                  <Callout title="Expenditure Mismatch" color="rose" icon={AlertCircle} className="mt-4">
-                    The sum of Personnel, Overhead, and Capital differs from Total Expenditure by {formatCurrency(balance.expenditureDiff)}.
-                  </Callout>
-                )}
               </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
 
-        {/* Right Side: Raw Text Inspector */}
-        <div className="space-y-6">
-          <Card className="h-[calc(100vh-250px)] flex flex-col p-0 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <Title>Raw Document Text</Title>
-              <Text className="text-xs">Search and extract values directly from the source.</Text>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 font-mono text-xs text-slate-600 whitespace-pre leading-relaxed bg-slate-900 text-slate-300">
-              {rawText}
-            </div>
-          </Card>
-        </div>
-      </Grid>
-
-      {/* MDA Integrity Check */}
-      <Card>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <Title>MDA Integrity Validation</Title>
-            <Text>Ensuring every MDA total sums up to the overall budget expenditure.</Text>
+            <Card className={clsx("rounded-3xl border-2 transition-all", formData.isOfficialError ? "border-amber-500 bg-amber-50/20 shadow-lg shadow-amber-100" : "border-slate-100 shadow-sm")}>
+              <Flex className="mb-4">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className={clsx("w-5 h-5", formData.isOfficialError ? "text-amber-600" : "text-slate-400")} />
+                  <Title className="text-lg">Confirmed Source Error</Title>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={formData.isOfficialError}
+                  onChange={(e) => setFormData({...formData, isOfficialError: e.target.checked})}
+                  className="w-5 h-5 accent-amber-600"
+                />
+              </Flex>
+              <Text className="text-xs mb-4 text-slate-500 font-medium italic">
+                "I verify that these numbers are extracted correctly but do not sum up in the official government PDF."
+              </Text>
+              {formData.isOfficialError && (
+                <textarea 
+                  placeholder="Audit Note: Explain the internal mismatch (e.g., 'The sum of Personnel + Overhead + Capital is ₦1.4B less than the reported Total Expenditure on page 5')."
+                  className="w-full p-4 bg-white border border-amber-200 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-amber-500/20 h-32 leading-relaxed"
+                  value={formData.errorExplanation}
+                  onChange={(e) => setFormData({...formData, errorExplanation: e.target.value})}
+                />
+              )}
+            </Card>
           </div>
-          <Badge 
-            color={balance.isMdaIntegrated ? "emerald" : "rose"} 
-            icon={balance.isMdaIntegrated ? CheckCircle2 : AlertCircle}
-          >
-            {balance.isMdaIntegrated ? "Fully Integrated" : `Variance: ${formatCurrency(balance.mdaDiff)}`}
-          </Badge>
-        </div>
-        <div className="max-h-96 overflow-y-auto border border-slate-100 rounded-xl">
-          <Table>
-            <TableHead className="bg-slate-50 sticky top-0 z-10">
-              <TableRow>
-                <TableHeaderCell>MDA</TableHeaderCell>
-                <TableHeaderCell className="text-right">Extracted Total</TableHeaderCell>
-                <TableHeaderCell className="text-right">Status</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rawData.mdas.slice(0, 20).map((mda) => (
-                <TableRow key={mda.code}>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-900">{mda.name}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{mda.code}</span>
+
+          <div className="lg:col-span-2 space-y-6">
+            <Grid numItemsMd={2} className="gap-6">
+              <Card className="h-[calc(100vh-250px)] flex flex-col p-0 overflow-hidden rounded-3xl border-slate-200 shadow-xl shadow-slate-200/50">
+                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-4">
+                  <Flex items-center justify-between>
+                    <div>
+                      <Title className="text-slate-900">Source Document</Title>
+                      <Text className="text-[10px]">Highlight numbers to map them.</Text>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right font-medium text-slate-700">{formatCurrency(mda.total)}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge color="emerald" size="xs">Verified</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+                    <Badge size="xs" color="blue">Live Audit</Badge>
+                  </Flex>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input 
+                      type="text"
+                      placeholder="Search document text..."
+                      className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
+                      value={textSearch}
+                      onChange={(e) => setTextSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div 
+                  ref={textContainerRef}
+                  onMouseUp={handleTextSelection}
+                  className="flex-1 overflow-y-auto p-8 font-mono text-[11px] leading-relaxed bg-slate-900 text-slate-400 whitespace-pre scroll-smooth"
+                >
+                  {rawText.split('\n').map((line, idx) => {
+                    const isAssigned = Object.values(formData.summarySources).some(s => s === line.trim());
+                    const isHighlighted = focusedField && formData.summarySources[focusedField] === line.trim();
+                    const isSearchMatch = textSearch && line.toUpperCase().includes(textSearch.toUpperCase());
+                    
+                    return (
+                      <div 
+                        key={idx} 
+                        className={clsx(
+                          "hover:bg-white/5 px-2 transition-colors",
+                          isAssigned && "text-blue-300 border-l-2 border-blue-500/50",
+                          isHighlighted && "bg-blue-500/20 text-blue-100 border-l-4 border-blue-500 font-bold",
+                          isSearchMatch && "bg-yellow-500/20 text-yellow-200"
+                        )}
+                      >
+                        {line}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              <div className="space-y-6 h-[calc(100vh-250px)] overflow-y-auto pr-2">
+                <Card className="rounded-3xl border-none shadow-xl shadow-slate-200/50 bg-white p-6">
+                  <div className="flex items-center gap-2 mb-6 text-blue-600">
+                    <RefreshCw className="w-5 h-5 animate-spin-slow" />
+                    <Title className="text-slate-900">Unmapped Numbers</Title>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {candidatePool.slice(0, 50).map((num, i) => (
+                      <button 
+                        key={i}
+                        onClick={() => setSelection(num)}
+                        className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-mono font-bold text-slate-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card className="rounded-3xl p-6 shadow-xl shadow-slate-200/50">
+                  <Title className="mb-6">Mathematical Checksums</Title>
+                  <div className="space-y-6">
+                    <div>
+                      <Flex className="mb-2">
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">Revenue Match</Text>
+                        <Badge color={balance.isRevenueBalanced ? "emerald" : "rose"} size="xs">
+                          {balance.isRevenueBalanced ? "BALANCED" : "DISCREPANCY"}
+                        </Badge>
+                      </Flex>
+                      <Tracker data={[{ color: balance.isRevenueBalanced ? 'emerald' : 'rose' }]} className="h-1.5" />
+                    </div>
+
+                    <div>
+                      <Flex className="mb-2">
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">Expenditure Match</Text>
+                        <Badge color={balance.isExpenditureBalanced ? "emerald" : "rose"} size="xs">
+                          {balance.isExpenditureBalanced ? "BALANCED" : "DISCREPANCY"}
+                        </Badge>
+                      </Flex>
+                      <Tracker data={[{ color: balance.isExpenditureBalanced ? 'emerald' : 'rose' }]} className="h-1.5" />
+                    </div>
+
+                    <div>
+                      <Flex className="mb-2">
+                        <Text className="text-[10px] font-bold uppercase tracking-wider">MDA Aggregation</Text>
+                        <Badge color={balance.isMdaIntegrated ? "emerald" : "rose"} size="xs">
+                          {balance.isMdaIntegrated ? "MATCH" : "MISMATCH"}
+                        </Badge>
+                      </Flex>
+                      <Tracker data={[{ color: balance.isMdaIntegrated ? 'emerald' : 'rose' }]} className="h-1.5" />
+                    </div>
+
+                    <div className="pt-4 mt-4 border-t border-slate-100">
+                      <Callout title="Audit Result" color={isValid ? "emerald" : "rose"} icon={isValid ? CheckCircle2 : AlertCircle} className="text-[10px]">
+                        {isValid ? "All financial identities are accounted for." : "The current selection does not balance."}
+                      </Callout>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </Grid>
+          </div>
+        </Grid>
+      </div>
     </div>
   );
 }

@@ -94,14 +94,12 @@ export default function UploadPage() {
 
   if (stagedData) {
     return (
-      <div className="p-8">
-        <VerificationStaging 
-          rawData={stagedData} 
-          rawText={rawText} 
-          onSave={handleCommit} 
-          onCancel={() => setStagedData(null)} 
-        />
-      </div>
+      <VerificationStaging 
+        rawData={stagedData} 
+        rawText={rawText} 
+        onSave={handleCommit} 
+        onCancel={() => setStagedData(null)} 
+      />
     );
   }
 

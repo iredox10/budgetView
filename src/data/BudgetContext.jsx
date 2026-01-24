@@ -59,7 +59,9 @@ export function BudgetProvider({ children }) {
         igr: newStateData.summary.igr || 0,
         grants: newStateData.summary.grants || 0,
         capital_receipts: newStateData.summary.capital_receipts || 0,
-        verified: true, // If it passed staging, it's verified
+        verified: true, 
+        isOfficialError: newStateData.isOfficialError || false,
+        errorExplanation: newStateData.errorExplanation || "",
         summarySources: JSON.stringify(newStateData.summarySources || {})
       });
 

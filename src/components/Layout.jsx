@@ -128,9 +128,9 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-30">
+        <header className="sticky top-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-40 shadow-sm">
           <button 
             className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
             onClick={() => setIsMobileMenuOpen(true)}

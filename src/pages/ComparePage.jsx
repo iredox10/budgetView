@@ -21,8 +21,9 @@ const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
-    maximumFractionDigits: 0
-  }).format(val);
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(val || 0);
 };
 
 export default function ComparePage() {
