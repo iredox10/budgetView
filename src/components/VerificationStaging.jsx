@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useBudget } from '../data/BudgetContext';
 import { 
   Card, Title, Text, TextInput, Button, Grid, Flex, Badge, 
   Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, 
@@ -19,7 +20,8 @@ const formatCurrency = (val) => {
   }).format(val || 0);
 };
 
-export default function VerificationStaging({ rawData, rawText, onSave, onCancel }) {
+export default function VerificationStaging({ rawData, rawText, onSave, onCancel, isProcessing }) {
+  const { uploadProgress } = useBudget();
   const [formData, setFormData] = useState({
     state: rawData.state,
     year: rawData.year,
@@ -97,23 +99,23 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
   return (
     <div className="fixed inset-0 bg-slate-50 z-[100] overflow-y-auto pb-20">
       <div className="space-y-8 animate-in fade-in duration-500 max-w-[1600px] mx-auto p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-3xl border border-slate-200 shadow-sm gap-4 sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <button onClick={onCancel} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-500" />
-            </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <Title className="text-2xl font-black text-slate-900">Audit & Evidence Console</Title>
-                <Badge color={isValid ? "emerald" : "rose"} icon={isValid ? CheckCircle2 : AlertCircle}>
-                  {isValid ? "Validated" : "Balance Required"}
-                </Badge>
-              </div>
-              <Text className="text-xs">Verify numbers against raw document evidence.</Text>
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-3xl border border-slate-200 shadow-sm gap-4 sticky top-0 z-30">
+        <div className="flex items-center gap-4">
+          <button onClick={onCancel} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+            <ArrowLeft className="w-5 h-5 text-slate-500" />
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <Title className="text-2xl font-black text-slate-900">Audit & Evidence Console</Title>
+              <Badge color={isValid ? "emerald" : "rose"} icon={isValid ? CheckCircle2 : AlertCircle}>
+                {isValid ? "Validated" : "Balance Required"}
+              </Badge>
             </div>
+            <Text className="text-xs">Verify numbers against raw document evidence.</Text>
           </div>
+        </div>
           <div className="flex items-center gap-3">
-            {selection && (
+            {selection && !uploadProgress.active && (
               <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl animate-in slide-in-from-right-4">
                 <MousePointer2 className="w-4 h-4 text-blue-600" />
                 <span className="text-xs font-bold text-blue-700">Selected: {selection}</span>
@@ -121,14 +123,16 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
             )}
             <Button 
               icon={Save} 
-              disabled={!isValid}
+              disabled={!isValid || uploadProgress.active}
               onClick={() => onSave({ ...rawData, ...formData })}
               className={isValid ? "bg-slate-900 hover:bg-slate-800 border-none text-white font-black px-8 py-6 rounded-2xl shadow-xl shadow-slate-200 transition-all active:scale-95" : "bg-slate-300"}
             >
-              COMMIT VERIFIED DATA
+              {uploadProgress.active 
+                ? `SYNCING: ${Math.round((uploadProgress.current / uploadProgress.total) * 100)}%` 
+                : "COMMIT VERIFIED DATA"}
             </Button>
           </div>
-        </div>
+      </div>
 
         <Grid numItemsLg={3} className="gap-8">
           <div className="lg:col-span-1 space-y-6">
@@ -168,7 +172,7 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
                       <TextInput 
-                        value={formData.summary[field.id]?.toString() || ''}
+                        value={formData.summary[field.id]?.toLocaleString('en-NG', { minimumFractionDigits: 2 }) || ''}
                         onChange={(e) => handleSummaryChange(field.id, e.target.value)}
                         onFocus={() => setFocusedField(field.id)}
                         className="font-mono font-bold pl-8"
@@ -216,7 +220,7 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₦</span>
                       <TextInput 
-                        value={formData.summary[field.id]?.toString() || ''}
+                        value={formData.summary[field.id]?.toLocaleString('en-NG', { minimumFractionDigits: 2 }) || ''}
                         onChange={(e) => handleSummaryChange(field.id, e.target.value)}
                         onFocus={() => setFocusedField(field.id)}
                         className="font-mono font-bold pl-8"
@@ -264,7 +268,7 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
             <Grid numItemsMd={2} className="gap-6">
               <Card className="h-[calc(100vh-250px)] flex flex-col p-0 overflow-hidden rounded-3xl border-slate-200 shadow-xl shadow-slate-200/50">
                 <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-4">
-                  <Flex items-center justify-between>
+                  <Flex className="items-center justify-between">
                     <div>
                       <Title className="text-slate-900">Source Document</Title>
                       <Text className="text-[10px]">Highlight numbers to map them.</Text>

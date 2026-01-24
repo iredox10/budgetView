@@ -99,6 +99,7 @@ export default function UploadPage() {
         rawText={rawText} 
         onSave={handleCommit} 
         onCancel={() => setStagedData(null)} 
+        isProcessing={isProcessing}
       />
     );
   }

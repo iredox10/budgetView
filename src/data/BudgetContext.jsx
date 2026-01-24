@@ -7,6 +7,7 @@ const BudgetContext = createContext();
 export function BudgetProvider({ children }) {
   const [states, setStates] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [uploadProgress, setUploadStatus] = useState({ active: false, current: 0, total: 0 });
 
   useEffect(() => {
     fetchStates();
@@ -15,8 +16,6 @@ export function BudgetProvider({ children }) {
   const fetchStates = async () => {
     try {
       const response = await databases.listDocuments(DB_ID, COLLECTIONS.STATES);
-      // Fetch MDAs and Sectors for each state to maintain current local-like structure
-      // In a large app, we would fetch these on-demand, but for now we'll maintain the existing logic
       const statesWithData = await Promise.all(response.documents.map(async (doc) => {
         const [mdaRes, sectorRes] = await Promise.all([
           databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [Query.equal('state_id', doc.$id), Query.limit(5000)]),
@@ -43,7 +42,23 @@ export function BudgetProvider({ children }) {
     }
   };
 
+  const throttledCreateDocument = async (collectionId, data, retries = 5) => {
+    try {
+      return await databases.createDocument(DB_ID, collectionId, ID.unique(), data);
+    } catch (e) {
+      if (e.code === 429 && retries > 0) {
+        // Linear backoff: increase wait time with each retry
+        const waitTime = (6 - retries) * 2000; 
+        console.warn(`Rate limited. Retrying in ${waitTime/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return throttledCreateDocument(collectionId, data, retries - 1);
+      }
+      throw e;
+    }
+  };
+
   const addState = async (newStateData) => {
+    setUploadStatus({ active: true, current: 0, total: newStateData.mdas.length + newStateData.sectors.length + 1 });
     try {
       const stateId = ID.unique();
       
@@ -64,60 +79,65 @@ export function BudgetProvider({ children }) {
         errorExplanation: newStateData.errorExplanation || "",
         summarySources: JSON.stringify(newStateData.summarySources || {})
       });
+      setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
 
-      // 2. Batch Create MDAs (Using Promise.all for speed)
-      // Note: Appwrite has rate limits, for thousands of MDAs we'd need a worker or chunking
-      const mdaChunks = [];
-      for (let i = 0; i < newStateData.mdas.length; i += 50) {
-        mdaChunks.push(newStateData.mdas.slice(i, i + 50));
-      }
-
-      for (const chunk of mdaChunks) {
-        await Promise.all(chunk.map(mda => 
-          databases.createDocument(DB_ID, COLLECTIONS.MDAS, ID.unique(), {
-            state_id: stateId,
-            code: mda.code || "000000000000",
-            name: mda.name || "Unknown Agency",
-            total: mda.total || 0,
-            personnel: mda.personnel || 0,
-            overhead: mda.overhead || 0,
-            capital: mda.capital || 0,
-            sourceLine: mda.sourceLine || ""
-          })
-        ));
+      // 2. Sequential Upload for MDAs with strict throttling
+      const mdas = newStateData.mdas;
+      for (let i = 0; i < mdas.length; i++) {
+        const mda = mdas[i];
+        await throttledCreateDocument(COLLECTIONS.MDAS, {
+          state_id: stateId,
+          code: mda.code || "000000000000",
+          name: mda.name || "Unknown Agency",
+          total: mda.total || 0,
+          personnel: mda.personnel || 0,
+          overhead: mda.overhead || 0,
+          capital: mda.capital || 0,
+          sourceLine: mda.sourceLine || ""
+        });
+        setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
+        
+        // Safety delay: 150ms between EVERY request to stay under 120/min burst
+        // This is slow but guaranteed to succeed
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
 
       // 3. Create Sectors
-      await Promise.all(newStateData.sectors.map(sector => 
-        databases.createDocument(DB_ID, COLLECTIONS.SECTORS, ID.unique(), {
+      for (const sector of newStateData.sectors) {
+        await throttledCreateDocument(COLLECTIONS.SECTORS, {
           state_id: stateId,
           code: sector.code || "000",
           name: sector.name || "Unknown Sector",
           amount: sector.amount || 0
-        })
-      ));
+        });
+        setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
 
       await fetchStates();
+      setUploadStatus({ active: false, current: 0, total: 0 });
       return stateId;
     } catch (e) {
       console.error("Appwrite upload failed", e);
+      setUploadStatus({ active: false, current: 0, total: 0 });
       throw e;
     }
   };
 
   const deleteState = async (id) => {
     try {
-      // 1. Delete MDAs
       const mdas = await databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [Query.equal('state_id', id), Query.limit(5000)]);
-      await Promise.all(mdas.documents.map(m => databases.deleteDocument(DB_ID, COLLECTIONS.MDAS, m.$id)));
+      for (const m of mdas.documents) {
+        await databases.deleteDocument(DB_ID, COLLECTIONS.MDAS, m.$id);
+        await new Promise(resolve => setTimeout(resolve, 50)); // Throttled delete
+      }
       
-      // 2. Delete Sectors
       const sectors = await databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', id)]);
-      await Promise.all(sectors.documents.map(s => databases.deleteDocument(DB_ID, COLLECTIONS.SECTORS, s.$id)));
+      for (const s of sectors.documents) {
+        await databases.deleteDocument(DB_ID, COLLECTIONS.SECTORS, s.$id);
+      }
 
-      // 3. Delete State
       await databases.deleteDocument(DB_ID, COLLECTIONS.STATES, id);
-      
       await fetchStates();
     } catch (e) {
       console.error("Appwrite delete failed", e);
@@ -125,7 +145,7 @@ export function BudgetProvider({ children }) {
   };
 
   return (
-    <BudgetContext.Provider value={{ states, addState, deleteState, isInitialized }}>
+    <BudgetContext.Provider value={{ states, addState, deleteState, isInitialized, uploadProgress }}>
       {children}
     </BudgetContext.Provider>
   );
