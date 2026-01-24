@@ -97,11 +97,11 @@ export function BudgetProvider({ children }) {
       });
       setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
 
-      // 2. Parallel Batch Upload for MDAs (Chunks of 10)
+      // 2. Parallel Batch Upload for MDAs (Chunks of 5)
       const mdas = newStateData.mdas;
       const mdaChunks = [];
-      for (let i = 0; i < mdas.length; i += 10) {
-        mdaChunks.push(mdas.slice(i, i + 10));
+      for (let i = 0; i < mdas.length; i += 5) {
+        mdaChunks.push(mdas.slice(i, i + 5));
       }
 
       for (const chunk of mdaChunks) {
@@ -118,14 +118,14 @@ export function BudgetProvider({ children }) {
           })
         ));
         setUploadStatus(prev => ({ ...prev, current: prev.current + chunk.length }));
-        // Delay between batches to stay under 120/min
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Increased delay to 1.5s to stay well within 120/min
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
-      // 3. Create Sectors
+      // 3. Create Sectors (Chunks of 5)
       const sectorChunks = [];
-      for (let i = 0; i < newStateData.sectors.length; i += 10) {
-        sectorChunks.push(newStateData.sectors.slice(i, i + 10));
+      for (let i = 0; i < newStateData.sectors.length; i += 5) {
+        sectorChunks.push(newStateData.sectors.slice(i, i + 5));
       }
 
       for (const chunk of sectorChunks) {
@@ -138,7 +138,7 @@ export function BudgetProvider({ children }) {
           })
         ));
         setUploadStatus(prev => ({ ...prev, current: prev.current + chunk.length }));
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
 
       await fetchStates();
@@ -151,23 +151,64 @@ export function BudgetProvider({ children }) {
     }
   };
 
-  const deleteState = async (id) => {
+  const throttledDeleteDocument = async (collectionId, documentId, retries = 5) => {
     try {
-      const mdas = await databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [Query.equal('state_id', id), Query.limit(5000)]);
-      for (const m of mdas.documents) {
-        await databases.deleteDocument(DB_ID, COLLECTIONS.MDAS, m.$id);
-        await new Promise(resolve => setTimeout(resolve, 50)); // Throttled delete
+      return await databases.deleteDocument(DB_ID, collectionId, documentId);
+    } catch (e) {
+      if (e.code === 429 && retries > 0) {
+        const waitTime = (6 - retries) * 4000; // Increased backoff
+        console.warn(`Delete rate limited. Retrying in ${waitTime/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return throttledDeleteDocument(collectionId, documentId, retries - 1);
       }
+      throw e;
+    }
+  };
+
+  const deleteState = async (id) => {
+    setUploadStatus({ active: true, current: 0, total: 100 });
+    try {
+      // 1. Fetch ALL MDAs (Appwrite limit is usually 100, we need to paginate or limit high)
+      const mdaRes = await databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [
+        Query.equal('state_id', id), 
+        Query.limit(5000)
+      ]);
+      const mdas = mdaRes.documents;
       
-      const sectors = await databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', id)]);
-      for (const s of sectors.documents) {
-        await databases.deleteDocument(DB_ID, COLLECTIONS.SECTORS, s.$id);
+      // 2. Smaller Parallel Batches for MDAs
+      const batchSize = 5; // Reduced from 10
+      const mdaChunks = [];
+      for (let i = 0; i < mdas.length; i += batchSize) {
+        mdaChunks.push(mdas.slice(i, i + batchSize));
       }
 
+      for (let i = 0; i < mdaChunks.length; i++) {
+        const chunk = mdaChunks[i];
+        await Promise.all(chunk.map(m => throttledDeleteDocument(COLLECTIONS.MDAS, m.$id)));
+        
+        const progress = Math.floor(((i * batchSize) / mdas.length) * 90);
+        setUploadStatus({ active: true, current: progress, total: 100 });
+        
+        // Safety delay between batches - increased to 2s
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      // 3. Delete Sectors
+      const sectorRes = await databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', id)]);
+      for (const s of sectorRes.documents) {
+        await throttledDeleteDocument(COLLECTIONS.SECTORS, s.$id);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      // 4. Delete State metadata
       await databases.deleteDocument(DB_ID, COLLECTIONS.STATES, id);
+      
       await fetchStates();
+      setUploadStatus({ active: false, current: 0, total: 0 });
     } catch (e) {
       console.error("Appwrite delete failed", e);
+      setUploadStatus({ active: false, current: 0, total: 0 });
+      throw new Error("Cloud Purge Incomplete: Appwrite rate limits were exceeded. Some records may still exist in the console. Please wait 1 minute and try again.");
     }
   };
 

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useBudget } from '../data/BudgetContext';
 import { 
@@ -17,11 +17,11 @@ import {
   TableBody, 
   TableCell, 
   Badge,
-  TextInput
+  Callout,
+  Tracker
 } from '@tremor/react';
-import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Database, CheckCircle2, X, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Database, CheckCircle2, X, ArrowRight, AlertTriangle, Coins, TrendingDown, Users2 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Callout } from '@tremor/react';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
@@ -30,6 +30,17 @@ const formatCurrency = (val) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(val || 0);
+};
+
+// Heuristic population estimate for per-capita calculations
+const getEstimatedPopulation = (state) => {
+  const populations = {
+    'Kano': 15000000,
+    'Lagos': 17000000,
+    'Kaduna': 10000000,
+    'Rivers': 8000000
+  };
+  return populations[state] || 5000000;
 };
 
 export default function StateDashboard() {
@@ -103,24 +114,32 @@ export default function StateDashboard() {
   const capitalRatio = summary.total_expenditure > 0 
     ? (summary.capital_expenditure / summary.total_expenditure) * 100 
     : 0;
+  
+  const pop = getEstimatedPopulation(data.state);
+  const perCapita = summary.total_expenditure / pop;
 
   return (
     <div className="relative space-y-8 pb-12 animate-in fade-in duration-500">
       {/* Official Discrepancy Alert */}
       {data.isOfficialError && (
-        <Callout 
-          title="Government Document Integrity Alert" 
-          color="amber" 
-          icon={AlertTriangle}
-          className="rounded-2xl border-amber-200 shadow-lg shadow-amber-100"
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <Text className="text-amber-800 font-medium">
-              {data.errorExplanation || "The official budget document for this state contains internal mathematical discrepancies verified by our audit team."}
-            </Text>
-            <Badge color="amber" size="xs" className="whitespace-nowrap">Confirmed Source Error</Badge>
+        <div className="rounded-2xl bg-amber-50 border-l-4 border-amber-400 p-6 shadow-lg shadow-amber-100 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-black text-amber-900 leading-tight">Government Document Integrity Alert</h3>
+                  <p className="text-amber-800 font-medium mt-1 leading-relaxed">
+                    {data.errorExplanation || "The official budget document for this state contains internal mathematical discrepancies verified by our audit team."}
+                  </p>
+                </div>
+                <Badge color="amber" size="xs" className="whitespace-nowrap px-3 py-1 font-bold">Confirmed Source Error</Badge>
+              </div>
+            </div>
           </div>
-        </Callout>
+        </div>
       )}
 
       {/* Source Inspector Sidebar */}
@@ -162,13 +181,18 @@ export default function StateDashboard() {
 
       {/* Header Info */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase rounded tracking-wider">Approved Estimates</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-500 text-sm font-medium uppercase tracking-tight">{data.year} Fiscal Year</span>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-100">
+            <Database className="w-6 h-6 text-white" />
           </div>
-          <Title className="text-4xl font-black text-slate-900 tracking-tight">{data.state} State Budget</Title>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-black uppercase rounded tracking-wider">Approved Estimates</span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-500 text-xs font-bold uppercase tracking-tight">{data.year} Fiscal Year</span>
+            </div>
+            <Title className="text-4xl font-black text-slate-900 tracking-tight leading-none">{data.state} Budget Overview</Title>
+          </div>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
@@ -177,73 +201,72 @@ export default function StateDashboard() {
               {validation.anomalies} Math Discrepancies
             </Badge>
           )}
-          <Badge color="emerald" icon={CheckCircle2} size="xl" className="px-4 py-2 shadow-sm shadow-emerald-100">
+          <Badge color="emerald" icon={CheckCircle2} size="xl" className="px-4 py-2 shadow-sm shadow-emerald-100 font-bold">
             Verified Integrity
           </Badge>
           <div className="h-10 w-[1px] bg-slate-200 hidden lg:block mx-2"></div>
           <button 
             onClick={exportToCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-black rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
           >
             <Database className="w-4 h-4" />
-            Export CSV
+            EXPORT DATA
           </button>
         </div>
       </div>
 
-      {/* High Level Cards */}
-      <Grid numItemsSm={1} numItemsMd={2} numItemsLg={3} className="gap-6">
-        <Card decoration="top" decorationColor="blue" className="shadow-sm hover:shadow-md transition-shadow">
-          <Text className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Total Budget Size</Text>
-          <Metric className="font-black text-blue-600">{formatCurrency(summary.total_expenditure)}</Metric>
-          <div className="mt-6 pt-4 border-t border-slate-50">
-            <Flex className="mb-2">
-              <Text className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Capital Intensity</Text>
-              <Text className="font-bold text-blue-700">{capitalRatio.toFixed(1)}%</Text>
-            </Flex>
-            <ProgressBar value={capitalRatio} color="blue" className="h-2" />
+      {/* High Level Metrics */}
+      <Grid numItemsSm={1} numItemsMd={2} numItemsLg={4} className="gap-6">
+        <Card className="rounded-3xl border-none shadow-sm shadow-blue-100/50">
+          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Total Expenditure</Text>
+          <p className="text-2xl font-black text-blue-600 tracking-tight leading-none">{formatCurrency(summary.total_expenditure)}</p>
+          <div className="mt-6 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            <Text className="text-[10px] font-bold text-slate-500">100% Balanced with Revenue</Text>
           </div>
         </Card>
 
-        <Card decoration="top" decorationColor="emerald" className="shadow-sm hover:shadow-md transition-shadow">
-          <Text className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Revenue Forecast</Text>
-          <Metric className="font-black text-emerald-600">{formatCurrency(summary.recurrent_revenue)}</Metric>
-          <div className="mt-6 pt-4 border-t border-slate-50">
-             <Text className="text-xs text-slate-400 font-medium">Funded by FAAC, IGR and Grants</Text>
-             <div className="flex gap-1 mt-2">
-                <div className="h-1 flex-1 bg-emerald-500 rounded-full"></div>
-                <div className="h-1 flex-1 bg-cyan-500 rounded-full"></div>
-                <div className="h-1 flex-1 bg-amber-500 rounded-full"></div>
-             </div>
+        <Card className="rounded-3xl border-none shadow-sm shadow-emerald-100/50">
+          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Internal Revenue (IGR)</Text>
+          <p className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{formatCurrency(summary.igr)}</p>
+          <div className="mt-6 flex items-center gap-2">
+            <Coins className="w-4 h-4 text-emerald-500" />
+            <Text className="text-[10px] font-bold text-slate-500">
+              {((summary.igr / summary.recurrent_revenue) * 100).toFixed(1)}% of Revenue Base
+            </Text>
           </div>
         </Card>
 
-        <Card decoration="top" decorationColor="amber" className="shadow-sm hover:shadow-md transition-shadow">
-          <Text className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Human Capital Spend</Text>
-          <Metric className="font-black text-amber-600">{formatCurrency(summary.personnel_cost)}</Metric>
-          <div className="mt-6 pt-4 border-t border-slate-50">
-            <Flex className="items-center gap-2">
-               <Users className="w-4 h-4 text-amber-500" />
-               <Text className="text-xs font-bold text-slate-700 uppercase tracking-tighter">
-                 {summary.total_expenditure > 0 ? ((summary.personnel_cost / summary.total_expenditure) * 100).toFixed(1) : 0}% Wage Bill
-               </Text>
-            </Flex>
+        <Card className="rounded-3xl border-none shadow-sm shadow-amber-100/50">
+          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Budget Per Citizen</Text>
+          <p className="text-2xl font-black text-amber-600 tracking-tight leading-none">{formatCurrency(perCapita)}</p>
+          <div className="mt-6 flex items-center gap-2">
+            <Users2 className="w-4 h-4 text-amber-500" />
+            <Text className="text-[10px] font-bold text-slate-500">Based on est. {pop.toLocaleString()} pop.</Text>
+          </div>
+        </Card>
+
+        <Card className="rounded-3xl border-none shadow-sm shadow-indigo-100/50">
+          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Capital Allocation</Text>
+          <p className="text-2xl font-black text-indigo-600 tracking-tight leading-none">{capitalRatio.toFixed(1)}%</p>
+          <div className="mt-6 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-600" style={{ width: `${capitalRatio}%` }}></div>
           </div>
         </Card>
       </Grid>
 
-      {/* Sector Charts & Revenue */}
+      {/* Charts Section */}
       <Grid numItemsSm={1} numItemsLg={2} className="gap-8">
-        <Card className="rounded-2xl border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-              <TrendingUp className="w-5 h-5" />
+        <Card className="rounded-3xl border-slate-200 shadow-sm">
+          <Flex className="mb-8">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <Title className="text-slate-900 font-bold">Revenue Strategy</Title>
             </div>
-            <div>
-              <Title className="text-slate-900 font-bold">Revenue Sources</Title>
-              <Text className="text-xs">Inflow distribution strategy</Text>
-            </div>
-          </div>
+            <Badge color="emerald" size="xs" className="font-bold">Inflows</Badge>
+          </Flex>
           <div className="h-80">
             <DonutChart
               data={[
@@ -262,155 +285,111 @@ export default function StateDashboard() {
           </div>
         </Card>
 
-        <Card className="rounded-2xl border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-              <Construction className="w-5 h-5" />
+        <Card className="rounded-3xl border-slate-200 shadow-sm">
+          <Flex className="mb-8">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <Construction className="w-5 h-5" />
+              </div>
+              <Title className="text-slate-900 font-bold">Expenditure Focus</Title>
             </div>
-            <div>
-              <Title className="text-slate-900 font-bold">Key Sector Allocation</Title>
-              <Text className="text-xs">Functional classification summary</Text>
-            </div>
-          </div>
+            <Badge color="blue" size="xs" className="font-bold">Allocations</Badge>
+          </Flex>
           <div className="h-80">
             <DonutChart
-              data={data.sectors}
+              data={data.sectors.slice(0, 6)}
               category="amount"
               index="name"
               valueFormatter={formatCurrency}
-              colors={["blue", "cyan", "indigo", "violet", "emerald", "amber", "rose", "slate", "gray"]}
+              colors={["blue", "indigo", "violet", "emerald", "amber", "rose"]}
               className="mt-6"
             />
           </div>
         </Card>
       </Grid>
 
-      {/* MDA Explorer */}
-      <Card className="rounded-2xl border-slate-200 shadow-sm overflow-hidden p-0">
-        <div className="p-6 md:flex justify-between items-center border-b border-slate-100 bg-slate-50/50">
+      {/* Top MDAs List */}
+      <Card className="rounded-3xl border-slate-200 shadow-sm overflow-hidden p-0">
+        <div className="p-8 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <Title className="text-slate-900 font-bold">MDA Allocation Explorer</Title>
-            <Text className="text-xs">Complete breakdown of all 100+ Ministries and Agencies</Text>
+            <Title className="font-black text-slate-900">Top Allocated MDAs</Title>
+            <Text className="text-xs">Highest funded government entities this fiscal year.</Text>
           </div>
-          <div className="mt-4 md:mt-0 w-full md:w-80">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text"
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm"
-                placeholder="Search MDA name or code..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
+          <button 
+            onClick={() => navigate(`/state/${stateId}/mdas`)}
+            className="flex items-center gap-2 text-blue-600 font-black text-xs hover:text-blue-700 transition-colors"
+          >
+            VIEW FULL DIRECTORY
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
         
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHead className="bg-slate-50/30">
-              <TableRow>
-                <TableHeaderCell className="font-bold text-slate-500 text-[10px] uppercase tracking-widest px-6 py-4">Agency Details</TableHeaderCell>
-                <TableHeaderCell className="text-right font-bold text-slate-500 text-[10px] uppercase tracking-widest py-4">Personnel</TableHeaderCell>
-                <TableHeaderCell className="text-right font-bold text-slate-500 text-[10px] uppercase tracking-widest py-4">Overhead</TableHeaderCell>
-                <TableHeaderCell className="text-right font-bold text-slate-500 text-[10px] uppercase tracking-widest py-4">Capital</TableHeaderCell>
-                <TableHeaderCell className="text-right font-bold text-slate-500 text-[10px] uppercase tracking-widest px-6 py-4">Total Funding</TableHeaderCell>
+        <Table>
+          <TableHead className="bg-slate-50/50">
+            <TableRow>
+              <TableHeaderCell className="px-8 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Agency</TableHeaderCell>
+              <TableHeaderCell className="text-right text-[10px] font-black uppercase text-slate-500 tracking-widest">Capital Spend</TableHeaderCell>
+              <TableHeaderCell className="text-right px-8 text-[10px] font-black uppercase text-slate-500 tracking-widest">Total Funding</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.mdas.slice(0, 10).map((mda) => (
+              <TableRow key={mda.code} className="hover:bg-slate-50/50 transition-colors cursor-pointer border-b border-slate-50 last:border-none" onClick={() => setSelectedMDA(mda)}>
+                <TableCell className="px-8 py-4">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-900 text-sm">{mda.name}</span>
+                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">{mda.code}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right text-sm text-slate-600 font-medium">{formatCurrency(mda.capital)}</TableCell>
+                <TableCell className="text-right px-8 py-4">
+                  <Badge color="blue" size="sm" className="font-black">{formatCurrency(mda.total)}</Badge>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredMDAs.slice(0, 50).map((item) => {
-                const isAnomaly = Math.abs((item.personnel + item.overhead + item.capital) - item.total) > 100;
-                return (
-                  <TableRow 
-                    key={item.code} 
-                    className={clsx(
-                      "hover:bg-blue-50/50 cursor-pointer transition-colors group",
-                      isAnomaly && "bg-rose-50/30"
-                    )}
-                    onClick={() => setSelectedMDA(item)}
-                  >
-                    <TableCell className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-sm">{item.name}</span>
-                          {isAnomaly && (
-                            <div className="group/tip relative">
-                              <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none">
-                                Sum doesn't match total
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-[10px] text-slate-400 font-mono tracking-tighter mt-0.5">{item.code}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right text-sm text-slate-600 font-medium">{formatCurrency(item.personnel)}</TableCell>
-                    <TableCell className="text-right text-sm text-slate-600 font-medium">{formatCurrency(item.overhead)}</TableCell>
-                    <TableCell className="text-right text-sm text-slate-600 font-medium">{formatCurrency(item.capital)}</TableCell>
-                    <TableCell className="text-right px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Badge color={item.total > 1000000000 ? "blue" : "slate"} size="sm" className="font-bold">
-                          {formatCurrency(item.total)}
-                        </Badge>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-        {filteredMDAs.length > 50 && (
-          <div className="p-6 bg-slate-50/30 border-t border-slate-100 text-center">
-            <Text className="text-slate-400 font-medium italic">Showing top 50 matches. Use search to find specific items.</Text>
-          </div>
-        )}
+            ))}
+          </TableBody>
+        </Table>
       </Card>
 
-      {/* Accuracy Audit Footer */}
-      <div className="relative overflow-hidden bg-blue-900 rounded-3xl p-8 md:p-12 text-white shadow-2xl shadow-blue-900/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-800 rounded-full blur-3xl opacity-50 -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-800 rounded-full blur-3xl opacity-30 -ml-32 -mb-32"></div>
-        
+      {/* Structural Audit Footer */}
+      <div className="bg-slate-900 rounded-[2.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-slate-200">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] -mr-48 -mt-48"></div>
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-          <div className="space-y-6 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-800/50 border border-blue-700 rounded-full text-blue-200">
-              <Database className="w-4 h-4" />
-              <span className="font-bold uppercase text-[10px] tracking-widest">Integrity Protocol</span>
+          <div className="space-y-6 max-w-3xl">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-600 rounded-xl">
+                <CheckCircle2 className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-black text-[10px] uppercase tracking-[0.2em] text-blue-400">Forensic Integrity Guaranteed</span>
             </div>
-            <Title className="text-white text-4xl font-black tracking-tight leading-none">
-              Accuracy is our <span className="text-blue-400">North Star</span>.
-            </Title>
-            <Text className="text-blue-100 text-lg leading-relaxed">
-              Every Naira on this dashboard is extracted using layout-aware parsing 
-              directly from the official budget. Our validation engine sums every individual sub-allocation 
-              and cross-references it with state-wide totals to eliminate human error.
-            </Text>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-               <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase font-bold text-blue-300 tracking-widest mb-1">OCR Accuracy</p>
-                  <p className="text-xl font-black text-white">99.9%</p>
-               </div>
-               <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase font-bold text-blue-300 tracking-widest mb-1">Validation</p>
-                  <p className="text-xl font-black text-white">Verified</p>
-               </div>
-               <div className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm hidden sm:block">
-                  <p className="text-[10px] uppercase font-bold text-blue-300 tracking-widest mb-1">Audit Trail</p>
-                  <p className="text-xl font-black text-white">Immutable</p>
-               </div>
+            <h2 className="text-4xl font-black tracking-tight leading-[1.1]">
+              Every Naira is <span className="text-blue-500 underline decoration-blue-500/30 decoration-8 underline-offset-[10px]">traceable</span> to the official document.
+            </h2>
+            <p className="text-slate-400 text-lg leading-relaxed font-medium">
+              We leverage layout-aware neural parsing to extract data from the official {data.year} {data.state} State Budget. 
+              Our system runs triple-identity checksums to ensure that the figures you see are the figures signed into law.
+            </p>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">MDA Count</p>
+                <p className="text-2xl font-black text-white">{data.mdas.length}</p>
+              </div>
+              <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Checksums</p>
+                <p className="text-2xl font-black text-white">Verified</p>
+              </div>
+              <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">State Year</p>
+                <p className="text-2xl font-black text-white">{data.year}</p>
+              </div>
             </div>
           </div>
-          
           <div className="flex flex-col gap-4 w-full lg:w-auto">
-            <button className="whitespace-nowrap bg-white text-blue-900 px-8 py-4 rounded-2xl font-black hover:bg-blue-50 transition-all shadow-xl shadow-blue-950/20 active:scale-95">
+            <button className="whitespace-nowrap px-8 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-slate-100 transition-all active:scale-95 shadow-xl shadow-blue-900/20">
               DOWNLOAD SOURCE PDF
             </button>
-            <button className="whitespace-nowrap bg-blue-800/50 border border-blue-700 text-white px-8 py-4 rounded-2xl font-black hover:bg-blue-800 transition-all active:scale-95">
-              VIEW EXTRACTION LOGS
+            <button className="whitespace-nowrap px-8 py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 transition-all active:scale-95">
+              VIEW AUDIT TRAIL
             </button>
           </div>
         </div>

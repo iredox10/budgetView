@@ -3,7 +3,7 @@ import { useBudget } from '../data/BudgetContext';
 import { 
   Card, Title, Text, TextInput, Button, Grid, Flex, Badge, 
   Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, 
-  Callout, Divider, Tracker
+  Divider, Tracker
 } from '@tremor/react';
 import { 
   CheckCircle2, AlertCircle, Save, ArrowLeft, RefreshCw, Scale, 
@@ -388,9 +388,18 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
                     </div>
 
                     <div className="pt-4 mt-4 border-t border-slate-100">
-                      <Callout title="Audit Result" color={isValid ? "emerald" : "rose"} icon={isValid ? CheckCircle2 : AlertCircle} className="text-[10px]">
-                        {isValid ? "All financial identities are accounted for." : "The current selection does not balance."}
-                      </Callout>
+                      <div className={clsx(
+                        "p-4 rounded-2xl flex items-center gap-3 animate-in zoom-in duration-300",
+                        isValid ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-rose-50 border border-rose-100 text-rose-700"
+                      )}>
+                        {isValid ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                        <div>
+                          <p className="font-black text-[10px] uppercase tracking-widest leading-none">Audit Result</p>
+                          <p className="text-[11px] font-medium mt-1">
+                            {isValid ? "All financial identities are accounted for." : "The current selection does not balance."}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card>

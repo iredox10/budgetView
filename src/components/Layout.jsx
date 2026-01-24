@@ -1,4 +1,4 @@
-import { Outlet, Link, useParams, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBudget } from '../data/BudgetContext';
 import { LayoutDashboard, Database, Search, Menu, X, Upload, BarChart2, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
@@ -92,21 +92,57 @@ export default function Layout() {
               Monitored States
             </div>
             <div className="space-y-1">
-              {states.map((state) => (
-                <Link
-                  key={state.id}
-                  to={`/state/${state.id}`}
-                  className={clsx(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group",
-                    stateId === state.id
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-200"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  )}
-                >
-                  <LayoutDashboard className={clsx("w-4 h-4", stateId === state.id ? "text-blue-100" : "text-slate-400 group-hover:text-slate-600")} />
-                  <span className="truncate">{state.name} {state.year}</span>
-                </Link>
-              ))}
+              {states.map((state) => {
+                const isActive = stateId === state.id;
+                return (
+                  <div key={state.id} className="space-y-1">
+                    <Link
+                      to={`/state/${state.id}`}
+                      className={clsx(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group",
+                        isActive
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                    >
+                      <LayoutDashboard className={clsx("w-4 h-4", isActive ? "text-blue-100" : "text-slate-400 group-hover:text-slate-600")} />
+                      <span className="truncate">{state.name} {state.year}</span>
+                    </Link>
+                    
+                    {isActive && (
+                      <div className="ml-9 space-y-1 border-l border-blue-100 pl-3 py-1">
+                        <Link 
+                          to={`/state/${state.id}`} 
+                          className={clsx(
+                            "block text-xs py-1.5 font-medium transition-colors",
+                            location.pathname === `/state/${state.id}` ? "text-blue-600" : "text-slate-500 hover:text-slate-900"
+                          )}
+                        >
+                          Overview
+                        </Link>
+                        <Link 
+                          to={`/state/${state.id}/mdas`} 
+                          className={clsx(
+                            "block text-xs py-1.5 font-medium transition-colors",
+                            location.pathname === `/state/${state.id}/mdas` ? "text-blue-600" : "text-slate-500 hover:text-slate-900"
+                          )}
+                        >
+                          MDAs Directory
+                        </Link>
+                        <Link 
+                          to={`/state/${state.id}/sectors`} 
+                          className={clsx(
+                            "block text-xs py-1.5 font-medium transition-colors",
+                            location.pathname === `/state/${state.id}/sectors` ? "text-blue-600" : "text-slate-500 hover:text-slate-900"
+                          )}
+                        >
+                          Sector Analysis
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </nav>
