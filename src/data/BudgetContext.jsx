@@ -22,12 +22,28 @@ export function BudgetProvider({ children }) {
           databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', doc.$id)])
         ]);
         
+        // Reconstruct the nested structure expected by the UI
         return {
           id: doc.$id,
           name: doc.name,
           year: doc.year,
           data: {
-            ...doc,
+            state: doc.name,
+            year: doc.year,
+            verified: doc.verified,
+            isOfficialError: doc.isOfficialError,
+            errorExplanation: doc.errorExplanation,
+            summarySources: doc.summarySources ? JSON.parse(doc.summarySources) : {},
+            summary: {
+              total_expenditure: doc.total_expenditure,
+              capital_expenditure: doc.capital_expenditure,
+              personnel_cost: doc.personnel_cost,
+              recurrent_revenue: doc.recurrent_revenue,
+              faac: doc.faac,
+              igr: doc.igr,
+              grants: doc.grants,
+              capital_receipts: doc.capital_receipts
+            },
             mdas: mdaRes.documents,
             sectors: sectorRes.documents
           }
@@ -47,8 +63,7 @@ export function BudgetProvider({ children }) {
       return await databases.createDocument(DB_ID, collectionId, ID.unique(), data);
     } catch (e) {
       if (e.code === 429 && retries > 0) {
-        // Linear backoff: increase wait time with each retry
-        const waitTime = (6 - retries) * 2000; 
+        const waitTime = (6 - retries) * 3000; 
         console.warn(`Rate limited. Retrying in ${waitTime/1000}s...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         return throttledCreateDocument(collectionId, data, retries - 1);
@@ -58,7 +73,8 @@ export function BudgetProvider({ children }) {
   };
 
   const addState = async (newStateData) => {
-    setUploadStatus({ active: true, current: 0, total: newStateData.mdas.length + newStateData.sectors.length + 1 });
+    const totalSteps = newStateData.mdas.length + newStateData.sectors.length + 1;
+    setUploadStatus({ active: true, current: 0, total: totalSteps });
     try {
       const stateId = ID.unique();
       
@@ -81,37 +97,48 @@ export function BudgetProvider({ children }) {
       });
       setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
 
-      // 2. Sequential Upload for MDAs with strict throttling
+      // 2. Parallel Batch Upload for MDAs (Chunks of 10)
       const mdas = newStateData.mdas;
-      for (let i = 0; i < mdas.length; i++) {
-        const mda = mdas[i];
-        await throttledCreateDocument(COLLECTIONS.MDAS, {
-          state_id: stateId,
-          code: mda.code || "000000000000",
-          name: mda.name || "Unknown Agency",
-          total: mda.total || 0,
-          personnel: mda.personnel || 0,
-          overhead: mda.overhead || 0,
-          capital: mda.capital || 0,
-          sourceLine: mda.sourceLine || ""
-        });
-        setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
-        
-        // Safety delay: 150ms between EVERY request to stay under 120/min burst
-        // This is slow but guaranteed to succeed
-        await new Promise(resolve => setTimeout(resolve, 150));
+      const mdaChunks = [];
+      for (let i = 0; i < mdas.length; i += 10) {
+        mdaChunks.push(mdas.slice(i, i + 10));
+      }
+
+      for (const chunk of mdaChunks) {
+        await Promise.all(chunk.map(mda => 
+          throttledCreateDocument(COLLECTIONS.MDAS, {
+            state_id: stateId,
+            code: mda.code || "000000000000",
+            name: mda.name || "Unknown Agency",
+            total: mda.total || 0,
+            personnel: mda.personnel || 0,
+            overhead: mda.overhead || 0,
+            capital: mda.capital || 0,
+            sourceLine: mda.sourceLine || ""
+          })
+        ));
+        setUploadStatus(prev => ({ ...prev, current: prev.current + chunk.length }));
+        // Delay between batches to stay under 120/min
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
       // 3. Create Sectors
-      for (const sector of newStateData.sectors) {
-        await throttledCreateDocument(COLLECTIONS.SECTORS, {
-          state_id: stateId,
-          code: sector.code || "000",
-          name: sector.name || "Unknown Sector",
-          amount: sector.amount || 0
-        });
-        setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
-        await new Promise(resolve => setTimeout(resolve, 150));
+      const sectorChunks = [];
+      for (let i = 0; i < newStateData.sectors.length; i += 10) {
+        sectorChunks.push(newStateData.sectors.slice(i, i + 10));
+      }
+
+      for (const chunk of sectorChunks) {
+        await Promise.all(chunk.map(sector => 
+          throttledCreateDocument(COLLECTIONS.SECTORS, {
+            state_id: stateId,
+            code: sector.code || "000",
+            name: sector.name || "Unknown Sector",
+            amount: sector.amount || 0
+          })
+        ));
+        setUploadStatus(prev => ({ ...prev, current: prev.current + chunk.length }));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       await fetchStates();

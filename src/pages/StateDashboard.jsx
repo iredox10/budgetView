@@ -95,11 +95,14 @@ export default function StateDashboard() {
     <div className="p-8 text-center bg-white rounded-2xl shadow-sm border border-slate-200 mt-12">
       <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
       <Title className="text-red-900">State Data Not Found</Title>
-      <Text className="text-slate-500 mt-2">The state budget you are looking for has not been uploaded yet.</Text>
+      <Text className="text-slate-500 mt-2">The state budget you are looking for has not been uploaded yet or is still being processed.</Text>
     </div>
   );
 
-  const capitalRatio = (data.summary.capital_expenditure / data.summary.total_expenditure) * 100;
+  const summary = data?.summary || {};
+  const capitalRatio = summary.total_expenditure > 0 
+    ? (summary.capital_expenditure / summary.total_expenditure) * 100 
+    : 0;
 
   return (
     <div className="relative space-y-8 pb-12 animate-in fade-in duration-500">
@@ -192,7 +195,7 @@ export default function StateDashboard() {
       <Grid numItemsSm={1} numItemsMd={2} numItemsLg={3} className="gap-6">
         <Card decoration="top" decorationColor="blue" className="shadow-sm hover:shadow-md transition-shadow">
           <Text className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Total Budget Size</Text>
-          <Metric className="font-black text-blue-600">{formatCurrency(data.summary.total_expenditure)}</Metric>
+          <Metric className="font-black text-blue-600">{formatCurrency(summary.total_expenditure)}</Metric>
           <div className="mt-6 pt-4 border-t border-slate-50">
             <Flex className="mb-2">
               <Text className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Capital Intensity</Text>
@@ -204,7 +207,7 @@ export default function StateDashboard() {
 
         <Card decoration="top" decorationColor="emerald" className="shadow-sm hover:shadow-md transition-shadow">
           <Text className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Revenue Forecast</Text>
-          <Metric className="font-black text-emerald-600">{formatCurrency(data.summary.recurrent_revenue)}</Metric>
+          <Metric className="font-black text-emerald-600">{formatCurrency(summary.recurrent_revenue)}</Metric>
           <div className="mt-6 pt-4 border-t border-slate-50">
              <Text className="text-xs text-slate-400 font-medium">Funded by FAAC, IGR and Grants</Text>
              <div className="flex gap-1 mt-2">
@@ -217,12 +220,12 @@ export default function StateDashboard() {
 
         <Card decoration="top" decorationColor="amber" className="shadow-sm hover:shadow-md transition-shadow">
           <Text className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Human Capital Spend</Text>
-          <Metric className="font-black text-amber-600">{formatCurrency(data.summary.personnel_cost)}</Metric>
+          <Metric className="font-black text-amber-600">{formatCurrency(summary.personnel_cost)}</Metric>
           <div className="mt-6 pt-4 border-t border-slate-50">
             <Flex className="items-center gap-2">
                <Users className="w-4 h-4 text-amber-500" />
                <Text className="text-xs font-bold text-slate-700 uppercase tracking-tighter">
-                 {((data.summary.personnel_cost / data.summary.total_expenditure) * 100).toFixed(1)}% Wage Bill
+                 {summary.total_expenditure > 0 ? ((summary.personnel_cost / summary.total_expenditure) * 100).toFixed(1) : 0}% Wage Bill
                </Text>
             </Flex>
           </div>
@@ -244,10 +247,10 @@ export default function StateDashboard() {
           <div className="h-80">
             <DonutChart
               data={[
-                { name: 'FAAC Share', amount: data.summary.faac },
-                { name: 'Independent (IGR)', amount: data.summary.igr },
-                { name: 'Aids & Grants', amount: data.summary.grants },
-                { name: 'Capital Receipts', amount: data.summary.capital_receipts },
+                { name: 'FAAC Share', amount: summary.faac || 0 },
+                { name: 'Independent (IGR)', amount: summary.igr || 0 },
+                { name: 'Aids & Grants', amount: summary.grants || 0 },
+                { name: 'Capital Receipts', amount: summary.capital_receipts || 0 },
               ]}
               category="amount"
               index="name"
