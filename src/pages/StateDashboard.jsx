@@ -17,11 +17,12 @@ import {
   TableBody, 
   TableCell, 
   Badge,
-  Callout,
   Tracker
 } from '@tremor/react';
-import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Database, CheckCircle2, X, ArrowRight, AlertTriangle, Coins, TrendingDown, Users2 } from 'lucide-react';
+import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Database, CheckCircle2, X, ArrowRight, AlertTriangle, Coins, TrendingDown, Users2, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
+import AIChatbot from '../components/AIChatbot';
+import ShareButton from '../components/ShareButton';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
@@ -120,6 +121,7 @@ export default function StateDashboard() {
 
   return (
     <div className="relative space-y-8 pb-12 animate-in fade-in duration-500">
+      <AIChatbot budgetData={data} />
       {/* Official Discrepancy Alert */}
       {data.isOfficialError && (
         <div className="rounded-2xl bg-amber-50 border-l-4 border-amber-400 p-6 shadow-lg shadow-amber-100 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -217,8 +219,11 @@ export default function StateDashboard() {
 
       {/* High Level Metrics */}
       <Grid numItemsSm={1} numItemsMd={2} numItemsLg={4} className="gap-6">
-        <Card className="rounded-3xl border-none shadow-sm shadow-blue-100/50">
-          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Total Expenditure</Text>
+        <Card id="card-total" className="rounded-3xl border-none shadow-sm shadow-blue-100/50">
+          <Flex className="items-start justify-between">
+            <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Total Expenditure</Text>
+            <ShareButton targetId="card-total" fileName={`${data.state}-total-budget`} />
+          </Flex>
           <p className="text-2xl font-black text-blue-600 tracking-tight leading-none">{formatCurrency(summary.total_expenditure)}</p>
           <div className="mt-6 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-emerald-500" />
@@ -226,8 +231,11 @@ export default function StateDashboard() {
           </div>
         </Card>
 
-        <Card className="rounded-3xl border-none shadow-sm shadow-emerald-100/50">
-          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Internal Revenue (IGR)</Text>
+        <Card id="card-igr" className="rounded-3xl border-none shadow-sm shadow-emerald-100/50">
+          <Flex className="items-start justify-between">
+            <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Internal Revenue (IGR)</Text>
+            <ShareButton targetId="card-igr" fileName={`${data.state}-igr-base`} />
+          </Flex>
           <p className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{formatCurrency(summary.igr)}</p>
           <div className="mt-6 flex items-center gap-2">
             <Coins className="w-4 h-4 text-emerald-500" />

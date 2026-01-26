@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { databases, DB_ID, COLLECTIONS, ID } from '../utils/appwrite';
+import { databases, functions, DB_ID, COLLECTIONS, ID, DELETE_FUNCTION_ID } from '../utils/appwrite';
 import { Query } from 'appwrite';
 
 const BudgetContext = createContext();
@@ -59,14 +59,27 @@ export function BudgetProvider({ children }) {
   };
 
   const throttledCreateDocument = async (collectionId, data, retries = 5) => {
+    // Generate ID outside the try block so if we retry, we can decide 
+    // whether to use a new one or the same one. 
+    // For Appwrite, on a 429 retry, we SHOULD use a new unique ID 
+    // to avoid "already exists" if the previous request actually succeeded 
+    // but the client didn't know.
     try {
       return await databases.createDocument(DB_ID, collectionId, ID.unique(), data);
     } catch (e) {
+      // If it's a rate limit error, wait and retry with a NEW ID
       if (e.code === 429 && retries > 0) {
-        const waitTime = (6 - retries) * 3000; 
-        console.warn(`Rate limited. Retrying in ${waitTime/1000}s...`);
+        const waitTime = (6 - retries) * 3000;
+        console.warn(`Rate limited. Retrying with new ID in ${waitTime/1000}s...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         return throttledCreateDocument(collectionId, data, retries - 1);
+      }
+      // If it's a conflict error (already exists), it means a previous 
+      // "failed" attempt actually succeeded. We can ignore this and move on
+      // OR we can return the existing one.
+      if (e.code === 409) {
+        console.info("Document already exists (likely from a ghost retry success). Continuing...");
+        return { $id: "existing" }; 
       }
       throw e;
     }
@@ -75,11 +88,21 @@ export function BudgetProvider({ children }) {
   const addState = async (newStateData) => {
     const totalSteps = newStateData.mdas.length + newStateData.sectors.length + 1;
     setUploadStatus({ active: true, current: 0, total: totalSteps });
+    
     try {
-      const stateId = ID.unique();
+      // Pre-check: Does this state/year already exist? 
+      // This prevents the "ID already exists" if the user is uploading a duplicate
+      const existing = await databases.listDocuments(DB_ID, COLLECTIONS.STATES, [
+        Query.equal('name', newStateData.state),
+        Query.equal('year', newStateData.year)
+      ]);
       
+      if (existing.total > 0) {
+        throw new Error(`A budget for ${newStateData.state} (${newStateData.year}) already exists in the cloud. Please delete the existing one from the Admin Console first.`);
+      }
+
       // 1. Create State Document
-      await databases.createDocument(DB_ID, COLLECTIONS.STATES, stateId, {
+      const stateDoc = await databases.createDocument(DB_ID, COLLECTIONS.STATES, ID.unique(), {
         name: newStateData.state || "Unknown State",
         year: newStateData.year || 2024,
         total_expenditure: newStateData.summary.total_expenditure || 0,
@@ -95,6 +118,8 @@ export function BudgetProvider({ children }) {
         errorExplanation: newStateData.errorExplanation || "",
         summarySources: JSON.stringify(newStateData.summarySources || {})
       });
+      
+      const stateId = stateDoc.$id;
       setUploadStatus(prev => ({ ...prev, current: prev.current + 1 }));
 
       // 2. Parallel Batch Upload for MDAs (Chunks of 5)
@@ -118,7 +143,6 @@ export function BudgetProvider({ children }) {
           })
         ));
         setUploadStatus(prev => ({ ...prev, current: prev.current + chunk.length }));
-        // Increased delay to 1.5s to stay well within 120/min
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
@@ -151,64 +175,56 @@ export function BudgetProvider({ children }) {
     }
   };
 
-  const throttledDeleteDocument = async (collectionId, documentId, retries = 5) => {
-    try {
-      return await databases.deleteDocument(DB_ID, collectionId, documentId);
-    } catch (e) {
-      if (e.code === 429 && retries > 0) {
-        const waitTime = (6 - retries) * 4000; // Increased backoff
-        console.warn(`Delete rate limited. Retrying in ${waitTime/1000}s...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        return throttledDeleteDocument(collectionId, documentId, retries - 1);
-      }
-      throw e;
-    }
-  };
-
   const deleteState = async (id) => {
     setUploadStatus({ active: true, current: 0, total: 100 });
     try {
-      // 1. Fetch ALL MDAs (Appwrite limit is usually 100, we need to paginate or limit high)
-      const mdaRes = await databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [
-        Query.equal('state_id', id), 
-        Query.limit(5000)
-      ]);
-      const mdas = mdaRes.documents;
+      console.log(`🗑️ Triggering async cloud purge for state ${id}...`);
       
-      // 2. Smaller Parallel Batches for MDAs
-      const batchSize = 5; // Reduced from 10
-      const mdaChunks = [];
-      for (let i = 0; i < mdas.length; i += batchSize) {
-        mdaChunks.push(mdas.slice(i, i + batchSize));
+      // 1. Create asynchronous execution
+      // We don't wait for completion via getExecution (to avoid scope errors)
+      // Instead we poll the database for the state document's existence.
+      await functions.createExecution(
+        DELETE_FUNCTION_ID,
+        JSON.stringify({ stateId: id }),
+        true // ASYNC = true
+      );
+
+      console.log(`⏳ Purge initiated. Monitoring database for completion...`);
+
+      // 2. Poll the database. When the document is deleted, the purge is done.
+      let isDeleted = false;
+      let pollingCount = 0;
+      const maxPolls = 120; // 10 minutes (5s intervals)
+
+      while (!isDeleted) {
+        if (pollingCount > maxPolls) throw new Error("Cloud purge timed out after 10 minutes.");
+        
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        try {
+          await databases.getDocument(DB_ID, COLLECTIONS.STATES, id);
+          // If we reach here, it still exists
+          pollingCount++;
+          setUploadStatus(prev => ({ 
+            ...prev, 
+            current: Math.min(prev.current + 5, 95) 
+          }));
+        } catch (e) {
+          if (e.code === 404) {
+            isDeleted = true;
+          } else {
+            throw e;
+          }
+        }
       }
 
-      for (let i = 0; i < mdaChunks.length; i++) {
-        const chunk = mdaChunks[i];
-        await Promise.all(chunk.map(m => throttledDeleteDocument(COLLECTIONS.MDAS, m.$id)));
-        
-        const progress = Math.floor(((i * batchSize) / mdas.length) * 90);
-        setUploadStatus({ active: true, current: progress, total: 100 });
-        
-        // Safety delay between batches - increased to 2s
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-      
-      // 3. Delete Sectors
-      const sectorRes = await databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', id)]);
-      for (const s of sectorRes.documents) {
-        await throttledDeleteDocument(COLLECTIONS.SECTORS, s.$id);
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-
-      // 4. Delete State metadata
-      await databases.deleteDocument(DB_ID, COLLECTIONS.STATES, id);
-      
+      console.log("✅ Deletion confirmed via Database check.");
       await fetchStates();
       setUploadStatus({ active: false, current: 0, total: 0 });
     } catch (e) {
       console.error("Appwrite delete failed", e);
       setUploadStatus({ active: false, current: 0, total: 0 });
-      throw new Error("Cloud Purge Incomplete: Appwrite rate limits were exceeded. Some records may still exist in the console. Please wait 1 minute and try again.");
+      throw new Error(`Cloud Purge Status Unknown: ${e.message}. Please refresh the page in a few moments.`);
     }
   };
 

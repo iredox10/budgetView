@@ -2,7 +2,7 @@ import { Outlet, Link, useParams, useNavigate, useLocation } from 'react-router-
 import { useBudget } from '../data/BudgetContext';
 import { LayoutDashboard, Database, Search, Menu, X, Upload, BarChart2, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { Badge } from '@tremor/react';
 
 export default function Layout() {
@@ -60,18 +60,6 @@ export default function Layout() {
               Navigation
             </div>
             <div className="space-y-1">
-              <Link
-                to="/upload"
-                className={clsx(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                  window.location.pathname === '/upload'
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                )}
-              >
-                <Upload className="w-4 h-4" />
-                Upload Budget
-              </Link>
               <Link
                 to="/compare"
                 className={clsx(
@@ -241,14 +229,6 @@ export default function Layout() {
             </div>
             <nav className="flex-1 px-4 py-6 space-y-6">
                <div className="space-y-1">
-                  <Link
-                    to="/upload"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Upload Budget
-                  </Link>
                   <Link
                     to="/compare"
                     onClick={() => setIsMobileMenuOpen(false)}

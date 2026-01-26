@@ -7,6 +7,7 @@ import { BudgetParser } from '../utils/BudgetParser';
 import VerificationStaging from '../components/VerificationStaging';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment } from 'react';
+import { storage, BUCKET_ID, ID } from '../utils/appwrite';
 
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
@@ -40,11 +41,14 @@ export default function UploadPage() {
         };
         reader.readAsText(file);
       } else if (file.type === "application/pdf") {
+        // 1. Extract text locally using high-accuracy anchor strategy
         const text = await BudgetParser.extractTextFromPDF(file);
         const json = BudgetParser.parseText(text);
-        if (!json.mdas.length) {
-          throw new Error("Automated structure detection failed. This document might be encrypted or use a non-standard layout.");
+        
+        if (!json.mdas || !json.mdas.length) {
+          throw new Error("Automated structure detection failed. This document might use a non-standard layout.");
         }
+
         setStagedData(json);
         setRawText(text);
         setIsProcessing(false);
@@ -59,18 +63,22 @@ export default function UploadPage() {
         throw new Error("Incompatible file type. Please provide a Budget PDF, JSON, or TXT file.");
       }
     } catch (err) {
-      setError(err.message);
+      console.error("Upload process error:", err);
+      setError(err.message || "An unexpected error occurred during processing.");
       setIsProcessing(false);
     }
   };
 
   const handleCommit = async (finalData) => {
+    setIsProcessing(true);
     try {
       const id = await addState(finalData);
       setStagedData(null);
+      setIsProcessing(false);
       navigate(`/state/${id}`);
     } catch (err) {
       setError("Cloud Sync Failed: " + err.message);
+      setIsProcessing(false);
     }
   };
 
@@ -180,27 +188,36 @@ export default function UploadPage() {
           </div>
 
           <div className="p-8 bg-slate-900 rounded-3xl text-white">
-            <Title className="text-white font-bold">Smart Analysis Guide</Title>
-            <div className="mt-6 space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">1</div>
-                <div>
-                  <Text className="text-white font-bold">Upload PDF Directly</Text>
-                  <Text className="text-slate-400 text-sm">Drop the official Budget Estimates PDF. Our AI-driven parser will identify sections automatically.</Text>
+            <Flex className="mb-6">
+              <Title className="text-white font-black">Smart Analysis Guide</Title>
+              <Badge color="blue" size="xs">High Accuracy Mode</Badge>
+            </Flex>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">1</div>
+                  <div>
+                    <Text className="text-white font-bold">Use the Python Toolkit</Text>
+                    <Text className="text-slate-400 text-xs leading-relaxed">For 100% forensic accuracy, run the local <code>budget_extractor.py</code> tool found in the <code>tools/</code> directory.</Text>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">2</div>
+                  <div>
+                    <Text className="text-white font-bold">Upload Generated JSON</Text>
+                    <Text className="text-slate-400 text-xs leading-relaxed">Drop the resulting <code>_extracted.json</code> file above. It contains high-fidelity table mappings.</Text>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">2</div>
+              
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-between">
                 <div>
-                  <Text className="text-white font-bold">Verify Traceability</Text>
-                  <Text className="text-slate-400 text-sm">Click on any number in the dashboard to see the exact line of text from the PDF it was extracted from.</Text>
+                  <Text className="text-blue-400 font-black text-[10px] uppercase tracking-widest mb-2">New: Desktop GUI</Text>
+                  <Text className="text-white text-sm font-medium leading-tight">Non-technical users can now run <code>streamlit run gui.py</code> for a simple drag-and-drop desktop experience.</Text>
                 </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">3</div>
-                <div>
-                  <Text className="text-white font-bold">Audit Anomalies</Text>
-                  <Text className="text-slate-400 text-sm">The system will flag rows where government totals don't match sub-component sums.</Text>
+                <div className="mt-4 flex items-center gap-2 text-slate-500 italic text-[10px]">
+                  <ShieldCheck className="w-3 h-3" />
+                  Local processing • Zero cloud lag
                 </div>
               </div>
             </div>

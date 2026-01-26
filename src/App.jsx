@@ -11,17 +11,18 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import BackupPage from './pages/BackupPage';
 import SystemLogsPage from './pages/SystemLogsPage';
 
+import HomePage from './pages/HomePage';
+
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/state/kano" replace />} />
+          <Route index element={<HomePage />} />
           <Route path="state/:stateId" element={<StateDashboard />} />
           <Route path="state/:stateId/mdas" element={<MDADirectory />} />
           <Route path="state/:stateId/sectors" element={<SectorAnalysis />} />
-          <Route path="upload" element={<UploadPage />} />
           <Route path="compare" element={<ComparePage />} />
         </Route>
 

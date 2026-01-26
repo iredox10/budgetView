@@ -1,0 +1,3 @@
+appwrite
+pdfplumber
+python-dotenv

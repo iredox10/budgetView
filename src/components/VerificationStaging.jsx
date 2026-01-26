@@ -9,7 +9,7 @@ import {
   CheckCircle2, AlertCircle, Save, ArrowLeft, RefreshCw, Scale, 
   MousePointer2, Hash, Link2, Info, AlertTriangle, Search
 } from 'lucide-react';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {

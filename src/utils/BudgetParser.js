@@ -1,15 +1,27 @@
 import { BUDGET_ALIASES } from '../data/aliases';
 
 export class BudgetParser {
-  // ... existing parseNumber and extractTextFromPDF ...
   static parseNumber(s) {
-    if (!s || s.trim() === '-' || s.trim() === '0.00' || s.trim() === '.') return 0;
+    if (!s) return 0;
     const clean = s.trim().replace(/,/g, '');
+    if (clean === '-' || clean === '.' || clean === '0.00' || clean === '0') return 0;
+    
+    // Handle (1,234.00) style
     if (clean.startsWith('(') && clean.endsWith(')')) {
-      return -parseFloat(clean.slice(1, -1).replace(/[^\d.-]/g, '')) || 0;
+      const val = parseFloat(clean.slice(1, -1).replace(/[^\d.-]/g, ''));
+      return isNaN(val) ? 0 : -val;
     }
+    
     const val = parseFloat(clean.replace(/[^\d.-]/g, ''));
     return isNaN(val) ? 0 : val;
+  }
+
+  static isMoney(s) {
+    if (!s) return false;
+    const clean = s.replace(/[(),₦]/g, '').trim();
+    if (clean === '-' || clean === '.' || clean === '0.00' || clean === '0') return true;
+    // Standard budget format: 1,234,567.89 or 1234567.89
+    return /^-?[\d,]+\.\d{2}$/.test(clean) || (/^-?[\d,]+$/.test(clean) && clean.length >= 3);
   }
 
   static async extractTextFromPDF(file) {
@@ -22,32 +34,54 @@ export class BudgetParser {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       
-      // Group items by their y-coordinate (transform[5])
-      const lines = {};
-      for (const item of content.items) {
-        // Use a small epsilon for rounding y-coordinates to group baseline items
-        const y = Math.round(item.transform[5] * 2) / 2; 
-        if (!lines[y]) lines[y] = [];
-        lines[y].push(item);
+      // Advanced Line Grouping: Group items that overlap vertically
+      const items = content.items.map(item => ({
+        str: item.str,
+        x: item.transform[4],
+        y: item.transform[5],
+        height: item.height || 10,
+        width: item.width || (item.str.length * 5)
+      }));
+
+      // Sort by Y coordinate descending
+      items.sort((a, b) => b.y - a.y);
+
+      const lines = [];
+      if (items.length > 0) {
+        let currentLine = [items[0]];
+        let currentY = items[0].y;
+
+        for (let j = 1; j < items.length; j++) {
+          const item = items[j];
+          // If the item is on basically the same horizontal level (tolerance 4px)
+          if (Math.abs(item.y - currentY) < 4) {
+            currentLine.push(item);
+          } else {
+            lines.push(currentLine);
+            currentLine = [item];
+            currentY = item.y;
+          }
+        }
+        lines.push(currentLine);
       }
-      
-      const sortedY = Object.keys(lines).sort((a, b) => b - a);
-      
-      for (const y of sortedY) {
-        const lineItems = lines[y].sort((a, b) => a.transform[4] - b.transform[4]);
+
+      for (const lineItems of lines) {
+        // Sort items in line by X coordinate
+        lineItems.sort((a, b) => a.x - b.x);
         
         let lineText = '';
-        let lastX = 0;
+        let lastX = -1;
         for (const item of lineItems) {
-          const x = item.transform[4];
-          const gap = Math.floor((x - lastX) / 4); // Adjusted heuristic
-          if (gap > 1 && lastX !== 0) {
-            lineText += ' '.repeat(Math.min(gap, 30));
+          if (lastX !== -1) {
+            const gap = item.x - lastX;
+            // More deterministic spacing: Use exactly 1 space if small gap, else scaled
+            if (gap > 3) {
+              const spaces = Math.max(1, Math.min(Math.floor(gap / 6), 20));
+              lineText += ' '.repeat(spaces);
+            }
           }
           lineText += item.str;
-          // Estimate width if not provided (some pdfjs versions/configs vary)
-          const width = item.width || (item.str.length * 6); 
-          lastX = x + width;
+          lastX = item.x + item.width;
         }
         if (lineText.trim()) {
           fullText += lineText + '\n';
@@ -63,15 +97,15 @@ export class BudgetParser {
       state: stateName,
       year: year,
       summary: {},
-      summarySources: {}, // Store the raw lines for verification
+      summarySources: {},
       sectors: [],
       mdas: []
     };
 
-    // Auto-detect state/year
+    // 1. Metadata Detection
     for (let i = 0; i < Math.min(100, lines.length); i++) {
       const line = lines[i];
-      if (line.includes("Government") && (line.includes("Approved Budget") || line.includes("Estimates") || line.includes("Budget"))) {
+      if (line.includes("Government") && (line.includes("Approved") || line.includes("Budget") || line.includes("Estimates"))) {
         const stateMatch = line.match(/([A-Za-z]+)\s+State/i);
         if (stateMatch) data.state = stateMatch[1].charAt(0).toUpperCase() + stateMatch[1].slice(1).toLowerCase();
         const yearMatch = line.match(/(20\d{2})/);
@@ -79,16 +113,10 @@ export class BudgetParser {
       }
     }
 
-    if (data.state === "Unknown") {
-      const backupMatch = text.match(/([A-Z]+)\s+STATE\s+GOVERNMENT/i);
-      if (backupMatch) data.state = backupMatch[1].charAt(0).toUpperCase() + backupMatch[1].slice(1).toLowerCase();
-    }
-
-    // Parse Summary with aliases and capture source lines
+    // 2. Summary Extraction
     for (let i = 0; i < Math.min(1000, lines.length); i++) {
       const line = lines[i];
       const upperLine = line.toUpperCase();
-      
       for (const [field, keywords] of Object.entries(BUDGET_ALIASES)) {
         for (const keyword of keywords) {
           if (upperLine.includes(keyword.toUpperCase())) {
@@ -105,33 +133,30 @@ export class BudgetParser {
       }
     }
 
-    // Parse Functional Classification (Sectors)
+    // 3. Functional Classification
     let inFunctional = false;
     for (const line of lines) {
-      const stripped = line.trim();
-      if (stripped.toUpperCase().includes("TOTAL EXPENDITURE BY FUNCTIONAL CLASSIFICATION")) {
+      if (line.toUpperCase().includes("TOTAL EXPENDITURE BY FUNCTIONAL CLASSIFICATION")) {
         inFunctional = true;
         continue;
       }
       if (inFunctional) {
-        if (stripped.toUpperCase().includes("PERSONNEL EXPENDITURE") || stripped.toUpperCase().includes("ADMINISTRATIVE")) {
+        if (line.toUpperCase().includes("PERSONNEL EXPENDITURE") || line.toUpperCase().includes("ADMINISTRATIVE")) {
           inFunctional = false;
           continue;
         }
-        
-        const sectorMatch = stripped.match(/^(7\d{2})\s+(.+?)\s+([\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)$/);
+        const sectorMatch = line.trim().match(/^(7\d{2})\s+(.+?)\s+([\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)$/);
         if (sectorMatch) {
-          const [_, code, name, a22, b23, p23, b24] = sectorMatch;
           data.sectors.push({
-            code,
-            name: name.trim(),
-            amount: this.parseNumber(b24)
+            code: sectorMatch[1],
+            name: sectorMatch[2].trim(),
+            amount: this.parseNumber(sectorMatch[6])
           });
         }
       }
     }
 
-    // Parse Administrative Classification
+    // 4. Administrative Classification (The critical part)
     const sectionMap = {
       "TOTAL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "total",
       "PERSONNEL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "personnel",
@@ -146,43 +171,88 @@ export class BudgetParser {
     for (const line of lines) {
       const stripped = line.trim();
       if (!stripped) continue;
-      const upperStripped = stripped.toUpperCase();
+      const upperLine = stripped.toUpperCase();
 
+      let isHeader = false;
       for (const [title, key] of Object.entries(sectionMap)) {
-        if (upperStripped.includes(title)) {
+        if (upperLine.includes(title)) {
           currentSection = key;
+          isHeader = true;
+          break;
+        }
+      }
+      if (isHeader || !currentSection) continue;
+
+      // Handle noise at start of line (e.g. page numbers, serials)
+      const lineTokens = stripped.split(/\s+/);
+      let codeIdx = -1;
+      for (let k = 0; k < Math.min(3, lineTokens.length); k++) {
+        if (/^\d{8,15}$/.test(lineTokens[k])) {
+          codeIdx = k;
           break;
         }
       }
       
-      if (!currentSection) continue;
-      
-      const codeMatch = stripped.match(/^(\d{8,12})/);
-      if (codeMatch) {
-        const code = codeMatch[1];
-        const rest = stripped.substring(code.length).trim();
-        const columns = rest.match(/([\d,.-]+\.\d{2})|(\s-\s)/g);
+      if (codeIdx !== -1) {
+        const code = lineTokens[codeIdx];
+        const tokens = lineTokens.slice(codeIdx + 1);
         
-        if (columns && columns.length >= 1) {
-          const b24 = columns[columns.length - 1];
-          const val = this.parseNumber(b24);
-          const namePart = rest.split(/[\d,.-]+\.\d{2}/)[0].trim();
+        if (tokens.length === 0) continue;
+
+        // SCAN FROM RIGHT TO FIND FINANCIAL DATA
+        let value = 0;
+        let valueFound = false;
+        let nameEndIndex = tokens.length;
+
+        for (let j = tokens.length - 1; j >= 0; j--) {
+          const t = tokens[j];
           
-          if (!mdas[code]) {
-            mdas[code] = {
-              code,
-              name: namePart || "Unnamed Entity",
-              total: 0,
-              personnel: 0,
-              overhead: 0,
-              capital: 0,
-              sourceLine: stripped
-            };
+          if (this.isMoney(t)) {
+            if (!valueFound) {
+              value = this.parseNumber(t);
+              valueFound = true;
+            }
+            nameEndIndex = j;
+            continue;
           }
-          
-          mdas[code][currentSection] = val;
-          if (namePart.length > mdas[code].name.length) {
-            mdas[code].name = namePart;
+
+          const mergedMatch = t.match(/^(.+?)([\d,]+\.\d{2}|[\d,]{3,})$/);
+          if (mergedMatch) {
+            if (!valueFound) {
+              value = this.parseNumber(mergedMatch[2]);
+              valueFound = true;
+            }
+            nameEndIndex = j + 1; 
+            break;
+          }
+
+          if (/[A-Za-z]/.test(t)) {
+            nameEndIndex = j + 1;
+            break;
+          }
+        }
+
+        if (valueFound) {
+          let nameParts = tokens.slice(0, nameEndIndex);
+          if (nameParts.length > 0) {
+            const lastIdx = nameParts.length - 1;
+            const cleanPart = nameParts[lastIdx].match(/^([^0-9]+)/);
+            if (cleanPart) {
+              nameParts[lastIdx] = cleanPart[1];
+            }
+          }
+
+          let name = nameParts.join(" ").trim();
+          name = name.replace(/[.\-_: ]+$/, '').trim(); 
+
+          if (name && !/^\d+$/.test(name.replace(/[\s,.]/g, ''))) {
+            if (!mdas[code]) {
+              mdas[code] = { code, name, total: 0, personnel: 0, overhead: 0, capital: 0, sourceLine: stripped };
+            }
+            mdas[code][currentSection] = value;
+            if (name.length > mdas[code].name.length && !/\d/.test(name)) {
+              mdas[code].name = name;
+            }
           }
         }
       }
@@ -191,8 +261,6 @@ export class BudgetParser {
     data.mdas = Object.values(mdas)
       .filter(m => m.total > 0 || m.personnel > 0 || m.overhead > 0 || m.capital > 0)
       .map(m => {
-        // If the budget structure only lists components, sum them. 
-        // But if total is listed, we respect it.
         if (m.total === 0) m.total = m.personnel + m.overhead + m.capital;
         return m;
       })
