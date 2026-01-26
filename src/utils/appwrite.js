@@ -19,3 +19,4 @@ export const COLLECTIONS = {
 export const BUCKET_ID = import.meta.env.VITE_APPWRITE_BUDGET_BUCKET_ID;
 export const EXTRACT_FUNCTION_ID = import.meta.env.VITE_APPWRITE_EXTRACT_FUNCTION_ID;
 export const DELETE_FUNCTION_ID = import.meta.env.VITE_APPWRITE_DELETE_FUNCTION_ID;
+export const INGEST_FUNCTION_ID = import.meta.env.VITE_APPWRITE_INGEST_FUNCTION_ID;

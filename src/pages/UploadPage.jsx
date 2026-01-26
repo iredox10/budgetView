@@ -72,10 +72,16 @@ export default function UploadPage() {
   const handleCommit = async (finalData) => {
     setIsProcessing(true);
     try {
-      const id = await addState(finalData);
+      const result = await addState(finalData);
       setStagedData(null);
       setIsProcessing(false);
-      navigate(`/state/${id}`);
+      
+      if (result === "success-redirect") {
+        // Find the newly created state ID from the updated context
+        const stateId = finalData.state.toLowerCase().replace(/\s+/g, '-');
+        // Let fetchStates finish and then navigate
+        setTimeout(() => navigate(`/`), 1000);
+      }
     } catch (err) {
       setError("Cloud Sync Failed: " + err.message);
       setIsProcessing(false);
