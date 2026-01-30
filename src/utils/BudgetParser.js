@@ -5,13 +5,10 @@ export class BudgetParser {
     if (!s) return 0;
     const clean = s.trim().replace(/,/g, '');
     if (clean === '-' || clean === '.' || clean === '0.00' || clean === '0') return 0;
-    
-    // Handle (1,234.00) style
     if (clean.startsWith('(') && clean.endsWith(')')) {
       const val = parseFloat(clean.slice(1, -1).replace(/[^\d.-]/g, ''));
       return isNaN(val) ? 0 : -val;
     }
-    
     const val = parseFloat(clean.replace(/[^\d.-]/g, ''));
     return isNaN(val) ? 0 : val;
   }
@@ -20,7 +17,6 @@ export class BudgetParser {
     if (!s) return false;
     const clean = s.replace(/[(),₦]/g, '').trim();
     if (clean === '-' || clean === '.' || clean === '0.00' || clean === '0') return true;
-    // Standard budget format: 1,234,567.89 or 1234567.89
     return /^-?[\d,]+\.\d{2}$/.test(clean) || (/^-?[\d,]+$/.test(clean) && clean.length >= 3);
   }
 
@@ -28,13 +24,12 @@ export class BudgetParser {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
     const pdf = await window.pdfjsLib.getDocument({ data: uint8Array }).promise;
-    let fullText = '';
+    let pagesData = [];
     
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       
-      // Advanced Line Grouping: Group items that overlap vertically
       const items = content.items.map(item => ({
         str: item.str,
         x: item.transform[4],
@@ -43,7 +38,6 @@ export class BudgetParser {
         width: item.width || (item.str.length * 5)
       }));
 
-      // Sort by Y coordinate descending
       items.sort((a, b) => b.y - a.y);
 
       const lines = [];
@@ -53,7 +47,6 @@ export class BudgetParser {
 
         for (let j = 1; j < items.length; j++) {
           const item = items[j];
-          // If the item is on basically the same horizontal level (tolerance 4px)
           if (Math.abs(item.y - currentY) < 4) {
             currentLine.push(item);
           } else {
@@ -66,15 +59,12 @@ export class BudgetParser {
       }
 
       for (const lineItems of lines) {
-        // Sort items in line by X coordinate
         lineItems.sort((a, b) => a.x - b.x);
-        
         let lineText = '';
         let lastX = -1;
         for (const item of lineItems) {
           if (lastX !== -1) {
             const gap = item.x - lastX;
-            // More deterministic spacing: Use exactly 1 space if small gap, else scaled
             if (gap > 3) {
               const spaces = Math.max(1, Math.min(Math.floor(gap / 6), 20));
               lineText += ' '.repeat(spaces);
@@ -84,27 +74,27 @@ export class BudgetParser {
           lastX = item.x + item.width;
         }
         if (lineText.trim()) {
-          fullText += lineText + '\n';
+          pagesData.push({ text: lineText, page: i });
         }
       }
     }
-    return fullText;
+    return pagesData;
   }
 
-  static parseText(text, stateName = "Unknown", year = 2024) {
-    const lines = text.split('\n');
+  static parseText(pagesData, stateName = "Unknown", year = 2024) {
     const data = {
       state: stateName,
       year: year,
       summary: {},
       summarySources: {},
+      summaryPages: {},
       sectors: [],
       mdas: []
     };
 
     // 1. Metadata Detection
-    for (let i = 0; i < Math.min(100, lines.length); i++) {
-      const line = lines[i];
+    for (let i = 0; i < Math.min(100, pagesData.length); i++) {
+      const line = pagesData[i].text;
       if (line.includes("Government") && (line.includes("Approved") || line.includes("Budget") || line.includes("Estimates"))) {
         const stateMatch = line.match(/([A-Za-z]+)\s+State/i);
         if (stateMatch) data.state = stateMatch[1].charAt(0).toUpperCase() + stateMatch[1].slice(1).toLowerCase();
@@ -114,8 +104,8 @@ export class BudgetParser {
     }
 
     // 2. Summary Extraction
-    for (let i = 0; i < Math.min(1000, lines.length); i++) {
-      const line = lines[i];
+    for (let i = 0; i < Math.min(1000, pagesData.length); i++) {
+      const { text: line, page } = pagesData[i];
       const upperLine = line.toUpperCase();
       for (const [field, keywords] of Object.entries(BUDGET_ALIASES)) {
         for (const keyword of keywords) {
@@ -126,6 +116,7 @@ export class BudgetParser {
               if (val > 0) {
                 data.summary[field] = val;
                 data.summarySources[field] = line.trim();
+                data.summaryPages[field] = page;
               }
             }
           }
@@ -135,7 +126,7 @@ export class BudgetParser {
 
     // 3. Functional Classification
     let inFunctional = false;
-    for (const line of lines) {
+    for (const { text: line, page } of pagesData) {
       if (line.toUpperCase().includes("TOTAL EXPENDITURE BY FUNCTIONAL CLASSIFICATION")) {
         inFunctional = true;
         continue;
@@ -156,7 +147,7 @@ export class BudgetParser {
       }
     }
 
-    // 4. Administrative Classification (The critical part)
+    // 4. Administrative Classification
     const sectionMap = {
       "TOTAL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "total",
       "PERSONNEL EXPENDITURE BY ADMINISTRATIVE CLASSIFICATION": "personnel",
@@ -168,7 +159,7 @@ export class BudgetParser {
     const mdas = {};
     let currentSection = null;
 
-    for (const line of lines) {
+    for (const { text: line, page } of pagesData) {
       const stripped = line.trim();
       if (!stripped) continue;
       const upperLine = stripped.toUpperCase();
@@ -183,7 +174,6 @@ export class BudgetParser {
       }
       if (isHeader || !currentSection) continue;
 
-      // Handle noise at start of line (e.g. page numbers, serials)
       const lineTokens = stripped.split(/\s+/);
       let codeIdx = -1;
       for (let k = 0; k < Math.min(3, lineTokens.length); k++) {
@@ -196,17 +186,14 @@ export class BudgetParser {
       if (codeIdx !== -1) {
         const code = lineTokens[codeIdx];
         const tokens = lineTokens.slice(codeIdx + 1);
-        
         if (tokens.length === 0) continue;
 
-        // SCAN FROM RIGHT TO FIND FINANCIAL DATA
         let value = 0;
         let valueFound = false;
         let nameEndIndex = tokens.length;
 
         for (let j = tokens.length - 1; j >= 0; j--) {
           const t = tokens[j];
-          
           if (this.isMoney(t)) {
             if (!valueFound) {
               value = this.parseNumber(t);
@@ -215,7 +202,6 @@ export class BudgetParser {
             nameEndIndex = j;
             continue;
           }
-
           const mergedMatch = t.match(/^(.+?)([\d,]+\.\d{2}|[\d,]{3,})$/);
           if (mergedMatch) {
             if (!valueFound) {
@@ -225,7 +211,6 @@ export class BudgetParser {
             nameEndIndex = j + 1; 
             break;
           }
-
           if (/[A-Za-z]/.test(t)) {
             nameEndIndex = j + 1;
             break;
@@ -237,9 +222,7 @@ export class BudgetParser {
           if (nameParts.length > 0) {
             const lastIdx = nameParts.length - 1;
             const cleanPart = nameParts[lastIdx].match(/^([^0-9]+)/);
-            if (cleanPart) {
-              nameParts[lastIdx] = cleanPart[1];
-            }
+            if (cleanPart) nameParts[lastIdx] = cleanPart[1];
           }
 
           let name = nameParts.join(" ").trim();
@@ -247,7 +230,7 @@ export class BudgetParser {
 
           if (name && !/^\d+$/.test(name.replace(/[\s,.]/g, ''))) {
             if (!mdas[code]) {
-              mdas[code] = { code, name, total: 0, personnel: 0, overhead: 0, capital: 0, sourceLine: stripped };
+              mdas[code] = { code, name, total: 0, personnel: 0, overhead: 0, capital: 0, sourceLine: stripped, pageNumber: page };
             }
             mdas[code][currentSection] = value;
             if (name.length > mdas[code].name.length && !/\d/.test(name)) {

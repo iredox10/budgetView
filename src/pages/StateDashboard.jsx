@@ -23,6 +23,7 @@ import { Search, AlertCircle, TrendingUp, Users, Construction, Briefcase, Databa
 import { clsx } from 'clsx';
 import AIChatbot from '../components/AIChatbot';
 import ShareButton from '../components/ShareButton';
+import SourceInspector from '../components/SourceInspector';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
@@ -50,6 +51,7 @@ export default function StateDashboard() {
   const [data, setData] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMDA, setSelectedMDA] = useState(null);
+  const [summaryEvidence, setSummaryEvidence] = useState(null); // { field, label, pageNumber }
 
   useEffect(() => {
     if (isInitialized) {
@@ -61,6 +63,23 @@ export default function StateDashboard() {
       }
     }
   }, [stateId, states, isInitialized]);
+
+  const summaryPages = useMemo(() => {
+    if (!data?.summaryPages) return {};
+    try {
+      return typeof data.summaryPages === 'string' ? JSON.parse(data.summaryPages) : data.summaryPages;
+    } catch (e) {
+      return {};
+    }
+  }, [data]);
+
+  const handleSummaryClick = (field, label) => {
+    const page = summaryPages[field];
+    if (page) {
+      setSummaryEvidence({ field, label, pageNumber: page });
+      setSelectedMDA(null); // Clear MDA selection
+    }
+  };
 
   const filteredMDAs = useMemo(() => {
     if (!data) return [];
@@ -144,9 +163,43 @@ export default function StateDashboard() {
         </div>
       )}
 
+      {/* Summary Evidence Sidebar */}
+      {summaryEvidence && (
+        <div className="fixed inset-y-0 right-0 w-[450px] bg-white shadow-2xl border-l border-slate-200 z-50 p-8 animate-in slide-in-from-right duration-300 flex flex-col">
+          <div className="flex justify-between items-center mb-8">
+            <Title>Summary Evidence</Title>
+            <button onClick={() => setSummaryEvidence(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <X className="w-6 h-6 text-slate-400" />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar">
+            <div>
+              <Text className="text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">Global Metric</Text>
+              <p className="font-black text-slate-900 text-xl leading-tight">{summaryEvidence.label}</p>
+              <p className="text-2xl font-black text-blue-600 mt-2">{formatCurrency(summary[summaryEvidence.field])}</p>
+            </div>
+
+            {data.pdf_file_id && (
+              <SourceInspector 
+                pdfFileId={data.pdf_file_id} 
+                pageNumber={summaryEvidence.pageNumber} 
+              />
+            )}
+
+            <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
+              <Text className="text-[10px] font-bold uppercase text-blue-400 mb-3 tracking-widest">Source Context</Text>
+              <div className="text-[11px] font-mono text-blue-100 whitespace-pre-wrap leading-relaxed italic">
+                "{data.summarySources[summaryEvidence.field] || "Source line data not available."}"
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Source Inspector Sidebar */}
       {selectedMDA && (
-        <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl border-l border-slate-200 z-50 p-8 animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-y-0 right-0 w-[450px] bg-white shadow-2xl border-l border-slate-200 z-50 p-8 animate-in slide-in-from-right duration-300 flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <Title>Source Traceability</Title>
             <button onClick={() => setSelectedMDA(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
@@ -154,12 +207,20 @@ export default function StateDashboard() {
             </button>
           </div>
           
-          <div className="space-y-6">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar">
             <div>
               <Text className="text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">Target Entity</Text>
-              <p className="font-bold text-slate-900 text-lg leading-tight">{selectedMDA.name}</p>
+              <p className="font-black text-slate-900 text-xl leading-tight">{selectedMDA.name}</p>
               <p className="text-xs font-mono text-slate-500 mt-1">{selectedMDA.code}</p>
             </div>
+
+            {/* Visual Evidence Integration */}
+            {data.pdf_file_id && (
+              <SourceInspector 
+                pdfFileId={data.pdf_file_id} 
+                pageNumber={selectedMDA.pageNumber || 1} 
+              />
+            )}
 
             <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
               <Text className="text-[10px] font-bold uppercase text-blue-400 mb-3 tracking-widest">Extracted Row Data</Text>
@@ -168,13 +229,13 @@ export default function StateDashboard() {
               </div>
             </div>
 
-            <div className="space-y-3 pt-4">
+            <div className="space-y-3 pt-4 border-t border-slate-50">
               <div className="flex items-center gap-2 text-emerald-600">
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="text-sm font-bold">Verified Extraction</span>
               </div>
-              <Text className="text-sm text-slate-500 leading-relaxed italic">
-                "This number was parsed using layout-aware regex matching columns for Personnel, Overhead, and Capital across multiple budget sections."
+              <Text className="text-xs text-slate-500 leading-relaxed italic">
+                "This number was parsed using layout-aware neural parsing matching columns for Personnel, Overhead, and Capital across verified budget sections."
               </Text>
             </div>
           </div>
@@ -219,7 +280,11 @@ export default function StateDashboard() {
 
       {/* High Level Metrics */}
       <Grid numItemsSm={1} numItemsMd={2} numItemsLg={4} className="gap-6">
-        <Card id="card-total" className="rounded-3xl border-none shadow-sm shadow-blue-100/50">
+        <Card 
+          id="card-total" 
+          className="rounded-3xl border-none shadow-sm shadow-blue-100/50 cursor-pointer hover:ring-2 hover:ring-blue-500/30 transition-all"
+          onClick={() => handleSummaryClick('total_expenditure', 'Total Expenditure')}
+        >
           <Flex className="items-start justify-between">
             <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Total Expenditure</Text>
             <ShareButton targetId="card-total" fileName={`${data.state}-total-budget`} />
@@ -228,6 +293,24 @@ export default function StateDashboard() {
           <div className="mt-6 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-emerald-500" />
             <Text className="text-[10px] font-bold text-slate-500">100% Balanced with Revenue</Text>
+          </div>
+        </Card>
+
+        <Card 
+          id="card-igr" 
+          className="rounded-3xl border-none shadow-sm shadow-emerald-100/50 cursor-pointer hover:ring-2 hover:ring-emerald-500/30 transition-all"
+          onClick={() => handleSummaryClick('igr', 'Internal Revenue (IGR)')}
+        >
+          <Flex className="items-start justify-between">
+            <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Internal Revenue (IGR)</Text>
+            <ShareButton targetId="card-igr" fileName={`${data.state}-igr-base`} />
+          </Flex>
+          <p className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{formatCurrency(summary.igr)}</p>
+          <div className="mt-6 flex items-center gap-2">
+            <Coins className="w-4 h-4 text-emerald-500" />
+            <Text className="text-[10px] font-bold text-slate-500">
+              {summary.recurrent_revenue > 0 ? ((summary.igr / summary.recurrent_revenue) * 100).toFixed(1) : 0}% of Revenue Base
+            </Text>
           </div>
         </Card>
 
@@ -245,16 +328,22 @@ export default function StateDashboard() {
           </div>
         </Card>
 
-        <Card className="rounded-3xl border-none shadow-sm shadow-amber-100/50">
-          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Budget Per Citizen</Text>
-          <p className="text-2xl font-black text-amber-600 tracking-tight leading-none">{formatCurrency(perCapita)}</p>
+        <Card 
+          className="rounded-3xl border-none shadow-sm shadow-amber-100/50 cursor-pointer hover:ring-2 hover:ring-amber-500/30 transition-all"
+          onClick={() => handleSummaryClick('personnel_cost', 'Personnel Cost')}
+        >
+          <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Human Capital Spend</Text>
+          <p className="text-2xl font-black text-amber-600 tracking-tight leading-none">{formatCurrency(summary.personnel_cost)}</p>
           <div className="mt-6 flex items-center gap-2">
             <Users2 className="w-4 h-4 text-amber-500" />
             <Text className="text-[10px] font-bold text-slate-500">Based on est. {pop.toLocaleString()} pop.</Text>
           </div>
         </Card>
 
-        <Card className="rounded-3xl border-none shadow-sm shadow-indigo-100/50">
+        <Card 
+          className="rounded-3xl border-none shadow-sm shadow-indigo-100/50 cursor-pointer hover:ring-2 hover:ring-indigo-500/30 transition-all"
+          onClick={() => handleSummaryClick('capital_expenditure', 'Capital Expenditure')}
+        >
           <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-2">Capital Allocation</Text>
           <p className="text-2xl font-black text-indigo-600 tracking-tight leading-none">{capitalRatio.toFixed(1)}%</p>
           <div className="mt-6 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">

@@ -15,6 +15,7 @@ def main(context):
 
     file_id = payload.get('fileId')
     bucket_id = payload.get('bucketId')
+    pdf_file_id = payload.get('pdfFileId', "")
 
     if not file_id or not bucket_id:
         return context.res.json({"error": "Missing fileId or bucketId"}, 400)
@@ -56,7 +57,9 @@ def main(context):
             "verified": True,
             "isOfficialError": budget_data.get('isOfficialError', False),
             "errorExplanation": budget_data.get('errorExplanation', ""),
-            "summarySources": json.dumps(budget_data.get('summarySources', {}))
+            "summarySources": json.dumps(budget_data.get('summarySources', {})),
+            "summaryPages": json.dumps(budget_data.get('summaryPages', {})),
+            "pdf_file_id": pdf_file_id
         })
 
         # 3. Parallel MDA Ingestion
@@ -73,7 +76,8 @@ def main(context):
                     "personnel": mda.get('personnel', 0),
                     "overhead": mda.get('overhead', 0),
                     "capital": mda.get('capital', 0),
-                    "sourceLine": mda.get('sourceLine', '')
+                    "sourceLine": mda.get('sourceLine', ''),
+                    "pageNumber": mda.get('pageNumber', 0)
                 })
                 return True
             except Exception as e:

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useBudget } from '../data/BudgetContext';
 import { Card, Title, Text, Button, Flex, Badge, Grid, ProgressBar } from '@tremor/react';
-import { Upload, FileJson, CheckCircle2, AlertCircle, Trash2, ArrowRight, FileText, File, Database, X, Loader2 } from 'lucide-react';
+import { Upload, FileJson, CheckCircle2, AlertCircle, Trash2, ArrowRight, FileText, File, Database, X, Loader2, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BudgetParser } from '../utils/BudgetParser';
 import VerificationStaging from '../components/VerificationStaging';
@@ -15,7 +15,8 @@ export default function UploadPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [stagedData, setStagedData] = useState(null);
   const [rawText, setRawText] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(null); // { id, name }
+  const [confirmDelete, setConfirmDelete] = useState(null); 
+  const [pdfFile, setPdfFile] = useState(null);
   
   const { addState, states, deleteState, uploadProgress } = useBudget();
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function UploadPage() {
         };
         reader.readAsText(file);
       } else if (file.type === "application/pdf") {
+        setPdfFile(file);
         // 1. Extract text locally using high-accuracy anchor strategy
         const text = await BudgetParser.extractTextFromPDF(file);
         const json = BudgetParser.parseText(text);
@@ -72,8 +74,9 @@ export default function UploadPage() {
   const handleCommit = async (finalData) => {
     setIsProcessing(true);
     try {
-      const result = await addState(finalData);
+      const result = await addState(finalData, pdfFile);
       setStagedData(null);
+      setPdfFile(null);
       setIsProcessing(false);
       
       if (result === "success-redirect") {

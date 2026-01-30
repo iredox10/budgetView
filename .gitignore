@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Data & Evidence
+*.pdf
+*.txt
+*.json
+!src/data/*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+

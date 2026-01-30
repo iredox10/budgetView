@@ -58,7 +58,7 @@ async function setup() {
       console.log("✅ States collection created.");
     }
 
-    // Create State Attributes (Try each one)
+    // Create State Attributes
     const stateAttrs = [
       { id: 'name', type: 'string', size: 100, req: true },
       { id: 'year', type: 'integer', req: true },
@@ -74,7 +74,8 @@ async function setup() {
       { id: 'verified', type: 'boolean', req: false, default: true },
       { id: 'isOfficialError', type: 'boolean', req: false, default: false },
       { id: 'errorExplanation', type: 'string', size: 2000, req: false },
-      { id: 'summarySources', type: 'string', size: 2000, req: false }
+      { id: 'summarySources', type: 'string', size: 2000, req: false },
+      { id: 'summaryPages', type: 'string', size: 2000, req: false }
     ];
 
     for (const attr of stateAttrs) {
@@ -104,13 +105,15 @@ async function setup() {
       { id: 'personnel', type: 'float', req: false, default: 0 },
       { id: 'overhead', type: 'float', req: false, default: 0 },
       { id: 'capital', type: 'float', req: false, default: 0 },
-      { id: 'sourceLine', type: 'string', size: 2000, req: false }
+      { id: 'sourceLine', type: 'string', size: 2000, req: false },
+      { id: 'pageNumber', type: 'integer', req: false, default: 0 }
     ];
 
     for (const attr of mdaAttrs) {
       try {
         if (attr.type === 'string') await databases.createStringAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, attr.id, attr.size, attr.req);
         if (attr.type === 'float') await databases.createFloatAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, attr.id, attr.req, attr.default);
+        if (attr.type === 'integer') await databases.createIntegerAttribute(VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_MDAS_COLLECTION_ID, attr.id, attr.req, attr.default);
         console.log(`✅ MDA Attr: ${attr.id}`);
       } catch (e) {}
     }

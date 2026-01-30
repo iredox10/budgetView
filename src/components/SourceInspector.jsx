@@ -1,0 +1,96 @@
+import { useState, useEffect, useRef } from 'react';
+import { storage, BUCKET_ID } from '../utils/appwrite';
+import { Loader2, AlertCircle, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { Title, Text, Badge, Button } from '@tremor/react';
+
+export default function SourceInspector({ pdfFileId, pageNumber }) {
+  const [numPages, setNumPages] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
+
+  useEffect(() => {
+    if (!pdfFileId) return;
+    loadPDF();
+  }, [pdfFileId, pageNumber]);
+
+  const loadPDF = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (!window.pdfjsLib) {
+        throw new Error("PDF engine not initialized. Please refresh.");
+      }
+      const fileUrl = storage.getFileView(BUCKET_ID, pdfFileId);
+      const loadingTask = window.pdfjsLib.getDocument(fileUrl);
+      const pdf = await loadingTask.promise;
+      setNumPages(pdf.numPages);
+      
+      const page = await pdf.getPage(pageNumber || 1);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      // Cancel previous render task if it exists
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+      }
+
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+      
+      renderTaskRef.current = page.render(renderContext);
+      await renderTaskRef.current.promise;
+      setLoading(false);
+    } catch (err) {
+      console.error("PDF rendering error:", err);
+      setError("Unable to render source page. The file may be restricted or missing.");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge color="blue" size="xs">PAGE {pageNumber}</Badge>
+          <Text className="text-[10px] font-bold uppercase text-slate-400">Original Document Snippet</Text>
+        </div>
+        <button 
+          onClick={() => window.open(storage.getFileView(BUCKET_ID, pdfFileId), '_blank')}
+          className="text-blue-600 hover:text-blue-700 transition-colors p-1"
+          title="Open full PDF"
+        >
+          <Maximize2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="relative bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 min-h-[400px] flex items-center justify-center shadow-inner">
+        {loading && (
+          <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-3">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <Text className="text-xs font-bold text-slate-500 animate-pulse">RENDERING EVIDENCE...</Text>
+          </div>
+        )}
+
+        {error ? (
+          <div className="p-8 text-center space-y-2">
+            <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
+            <Text className="text-xs font-medium text-slate-500">{error}</Text>
+          </div>
+        ) : (
+          <canvas ref={canvasRef} className="max-w-full h-auto shadow-2xl" />
+        )}
+      </div>
+      
+      <p className="text-[9px] text-slate-400 italic text-center px-4 leading-tight">
+        High-integrity visual link to official 2024 Approved Budget estimates.
+      </p>
+    </div>
+  );
+}

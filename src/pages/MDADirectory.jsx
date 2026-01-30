@@ -16,8 +16,8 @@ import {
   Flex,
   Button
 } from '@tremor/react';
-import { Search, ArrowLeft, Filter, Download, ArrowRight, CheckCircle2, X } from 'lucide-react';
-import { clsx } from 'clsx';
+import { Search, ArrowLeft, Filter, Download, ArrowRight, CheckCircle2, X, Database } from 'lucide-react';
+import SourceInspector from '../components/SourceInspector';
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('en-NG', {
@@ -60,7 +60,7 @@ export default function MDADirectory() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       {/* Sidebar Inspector */}
       {selectedMDA && (
-        <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl border-l border-slate-200 z-50 p-8 animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-y-0 right-0 w-[450px] bg-white shadow-2xl border-l border-slate-200 z-50 p-8 animate-in slide-in-from-right duration-300 flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <Title>MDA Allocation Details</Title>
             <button onClick={() => setSelectedMDA(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
@@ -68,12 +68,20 @@ export default function MDADirectory() {
             </button>
           </div>
           
-          <div className="space-y-8">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar">
             <div>
               <Text className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">Agency Name</Text>
               <p className="font-black text-slate-900 text-xl leading-tight">{selectedMDA.name}</p>
               <p className="text-xs font-mono text-slate-500 mt-1">Classification Code: {selectedMDA.code}</p>
             </div>
+
+            {/* Visual Evidence Integration */}
+            {data.pdf_file_id && (
+              <SourceInspector 
+                pdfFileId={data.pdf_file_id} 
+                pageNumber={selectedMDA.pageNumber || 1} 
+              />
+            )}
 
             <div className="grid grid-cols-1 gap-4">
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -94,7 +102,7 @@ export default function MDADirectory() {
               </div>
             </div>
 
-            <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800">
+            <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
               <Text className="text-[10px] font-bold uppercase text-blue-400 mb-3 tracking-widest">Forensic Source Line</Text>
               <div className="text-[11px] font-mono text-blue-100 whitespace-pre-wrap leading-relaxed italic">
                 "{selectedMDA.sourceLine || "Source line data not available."}"

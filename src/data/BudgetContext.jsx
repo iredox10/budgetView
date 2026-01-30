@@ -34,6 +34,8 @@ export function BudgetProvider({ children }) {
             isOfficialError: doc.isOfficialError,
             errorExplanation: doc.errorExplanation,
             summarySources: doc.summarySources ? JSON.parse(doc.summarySources) : {},
+            summaryPages: doc.summaryPages ? JSON.parse(doc.summaryPages) : {},
+            pdf_file_id: doc.pdf_file_id,
             summary: {
               total_expenditure: doc.total_expenditure,
               capital_expenditure: doc.capital_expenditure,
@@ -58,7 +60,7 @@ export function BudgetProvider({ children }) {
     }
   };
 
-  const addState = async (newStateData) => {
+  const addState = async (newStateData, pdfFile = null) => {
     setUploadStatus({ active: true, current: 0, total: 100 });
     
     try {
@@ -74,7 +76,15 @@ export function BudgetProvider({ children }) {
 
       console.log("🚀 Initializing turbo cloud ingestion...");
 
-      // 2. Upload verified JSON data to storage
+      // 2. Upload original PDF if provided
+      let pdfFileId = "";
+      if (pdfFile) {
+        console.log("📄 Uploading original budget PDF...");
+        const uploadedPdf = await storage.createFile(BUCKET_ID, ID.unique(), pdfFile);
+        pdfFileId = uploadedPdf.$id;
+      }
+
+      // 3. Upload verified JSON data to storage for cloud ingestion
       const blob = new Blob([JSON.stringify(newStateData)], { type: 'application/json' });
       const file = new File([blob], "verify_staging.json");
       const tempFileId = ID.unique();
@@ -82,26 +92,29 @@ export function BudgetProvider({ children }) {
       
       setUploadStatus({ active: true, current: 20, total: 100 });
 
-      // 3. Trigger Ingestion Cloud Function
+      // 4. Trigger Ingestion Cloud Function
       const execution = await functions.createExecution(
         INGEST_FUNCTION_ID,
-        JSON.stringify({ fileId: tempFileId, bucketId: BUCKET_ID }),
+        JSON.stringify({ 
+          fileId: tempFileId, 
+          bucketId: BUCKET_ID,
+          pdfFileId: pdfFileId 
+        }),
         true // Async execution
       );
 
       const executionId = execution.$id;
       console.log(`⏳ Server-side ingestion started: ${executionId}. Monitoring database...`);
 
-      // 4. Poll database for the state document completion
+      // 5. Poll database for completion
       let isIngested = false;
       let pollingCount = 0;
-      const maxPolls = 180; // 15 mins (5s interval)
+      const maxPolls = 180; 
 
       while (!isIngested) {
         if (pollingCount > maxPolls) throw new Error("Cloud ingestion timed out.");
         await new Promise(resolve => setTimeout(resolve, 5000));
         
-        // Find if any document exists with this name and year
         const res = await databases.listDocuments(DB_ID, COLLECTIONS.STATES, [
           Query.equal('name', newStateData.state),
           Query.equal('year', newStateData.year)
@@ -118,7 +131,7 @@ export function BudgetProvider({ children }) {
       console.log("✅ Turbo ingestion complete.");
       await fetchStates();
       setUploadStatus({ active: false, current: 0, total: 0 });
-      return "success-redirect"; // Custom signal for UploadPage
+      return "success-redirect"; 
     } catch (e) {
       console.error("Turbo ingestion failed", e);
       setUploadStatus({ active: false, current: 0, total: 0 });
@@ -132,13 +145,19 @@ export function BudgetProvider({ children }) {
       console.log(`🗑️ Triggering async cloud purge for state ${id}...`);
       
       // 1. Create asynchronous execution
-      // We don't wait for completion via getExecution (to avoid scope errors)
-      // Instead we poll the database for the state document's existence.
-      await functions.createExecution(
-        DELETE_FUNCTION_ID,
-        JSON.stringify({ stateId: id }),
-        true // ASYNC = true
-      );
+      try {
+        await functions.createExecution(
+          DELETE_FUNCTION_ID,
+          JSON.stringify({ stateId: id }),
+          true // ASYNC = true
+        );
+      } catch (e) {
+        // Appwrite sometimes throws a scope error even if the execution was triggered
+        if (!e.message.includes('execution.read') && !e.message.includes('scope')) {
+          throw e;
+        }
+        console.log("ℹ️ Execution triggered (scope warning ignored).");
+      }
 
       console.log(`⏳ Purge initiated. Monitoring database for completion...`);
 
