@@ -1,62 +1,42 @@
 import { useBudget } from '../data/BudgetContext';
 import { 
-  Card, 
-  Title, 
-  Text, 
-  Table, 
-  TableHead, 
-  TableRow, 
-  TableHeaderCell, 
-  TableBody, 
-  TableCell, 
-  Badge, 
-  Button,
-  Flex,
-  Grid,
-  Metric,
-  ProgressBar,
-  DonutChart,
-  AreaChart,
-  Tracker
-} from '@tremor/react';
-import { 
   Trash2, ShieldCheck, Database, FileText, Settings, 
   AlertTriangle, ExternalLink, CheckCircle2, AlertCircle, 
-  Clock, Activity, HardDrive, Cpu, Zap, Landmark, Scale
+  Clock, Activity, HardDrive, Zap, Landmark, Plus,
+  ChevronRight, TrendingUp, Users, Building2, Download,
+  ArrowRight, Search, Filter, LogOut, BarChart3
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useState, Fragment, useMemo } from 'react';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { motion } from 'framer-motion';
-import clsx from 'clsx';
+import { useNavigate, Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { clsx } from 'clsx';
 
 export default function AdminDashboard() {
   const { states, deleteState, uploadProgress } = useBudget();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const totalMDAs = states.reduce((acc, s) => acc + s.data.mdas.length, 0);
-  const totalBudgetVolume = states.reduce((acc, s) => acc + s.data.summary.total_expenditure, 0);
-
-  const stateDistribution = useMemo(() => {
-    return states.map(s => ({
-      name: s.name,
-      amount: s.data.summary.total_expenditure
-    }));
+  const stats = useMemo(() => {
+    const totalMDAs = states.reduce((acc, s) => acc + (s.data?.mdas?.length || 0), 0);
+    const totalBudget = states.reduce((acc, s) => acc + (s.data?.summary?.total_expenditure || 0), 0);
+    const totalSectors = states.reduce((acc, s) => acc + (s.data?.sectors?.length || 0), 0);
+    
+    return {
+      totalStates: states.length,
+      totalMDAs,
+      totalBudget,
+      totalSectors
+    };
   }, [states]);
 
-  // Simulated activity feed
-  const recentActivities = useMemo(() => {
-    return states.map((s, index) => ({
-      id: s.id,
-      action: 'Budget Finalized',
-      user: 'Root Administrator',
-      target: `${s.name} ${s.year}`,
-      time: `${index + 1} day${index === 0 ? '' : 's'} ago`,
-      status: 'SUCCESS'
-    })).slice(0, 5);
-  }, [states]);
+  const filteredStates = useMemo(() => {
+    if (!searchQuery) return states;
+    return states.filter(s => 
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.year.toString().includes(searchQuery)
+    );
+  }, [states, searchQuery]);
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
@@ -69,413 +49,417 @@ export default function AdminDashboard() {
     }
   };
 
-  const formatCurrency = (val) => {
+  const formatCompact = (val) => {
+    if (!val || val === 0) return '₦0';
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(val || 0);
+      notation: 'compact',
+      maximumFractionDigits: 1
+    }).format(val);
   };
 
-  const isModalOpen = uploadProgress.active || !!error || !!confirmDelete;
+  const StatCard = ({ icon: Icon, label, value, sublabel, color = 'emerald' }) => {
+    const IconComponent = Icon;
+    return (
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div className="flex items-start justify-between mb-4">
+          <div className={clsx(
+            "w-12 h-12 rounded-xl flex items-center justify-center",
+            color === 'emerald' && "bg-emerald-50 text-emerald-600",
+            color === 'blue' && "bg-blue-50 text-blue-600",
+            color === 'amber' && "bg-amber-50 text-amber-600",
+            color === 'indigo' && "bg-indigo-50 text-indigo-600"
+          )}>
+            <IconComponent className="w-6 h-6" />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <p className="text-2xl font-bold text-slate-900">{value}</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+          {sublabel && <p className="text-sm text-slate-400">{sublabel}</p>}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-900/50">
-              <ShieldCheck className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Navigation */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Landmark className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-bold text-slate-900">BudgetView</span>
+              </Link>
+              <div className="h-6 w-px bg-slate-200 mx-2" />
+              <span className="text-sm text-slate-500">Admin Console</span>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Security Level: Alpha</span>
+            
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate('/admin/upload')}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Upload Budget
+              </button>
+              <button 
+                onClick={() => {
+                  sessionStorage.removeItem('is_admin');
+                  navigate('/');
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all text-sm font-medium"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
           </div>
-          <Title className="text-white text-4xl font-black tracking-tight">System Control Panel</Title>
-          <p className="text-slate-400 mt-2 font-medium">Core administrative interface for national budget forensic oversight.</p>
         </div>
-        <div className="flex flex-wrap gap-4 relative z-10">
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+              <p className="text-slate-500 mt-1">
+                Manage state budgets, monitor data integrity, and oversee system operations.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-semibold">
+                <ShieldCheck className="w-4 h-4" />
+                System Online
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-semibold">
+                <Database className="w-4 h-4" />
+                {states.length} States
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard 
+            icon={Building2}
+            label="Active States"
+            value={stats.totalStates}
+            sublabel={`Monitoring ${stats.totalStates} state budgets`}
+            color="emerald"
+          />
+          <StatCard 
+            icon={Users}
+            label="Total MDAs"
+            value={stats.totalMDAs.toLocaleString()}
+            sublabel="Agencies tracked"
+            color="blue"
+          />
+          <StatCard 
+            icon={Zap}
+            label="Total Sectors"
+            value={stats.totalSectors}
+            sublabel="Functional categories"
+            color="amber"
+          />
+          <StatCard 
+            icon={TrendingUp}
+            label="Total Budget Volume"
+            value={formatCompact(stats.totalBudget)}
+            sublabel="Combined state budgets"
+            color="indigo"
+          />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-8">
           <button 
             onClick={() => navigate('/admin/upload')}
-            className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-900/40 active:scale-95 flex items-center gap-2"
+            className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-200 hover:border-emerald-300 hover:shadow-lg transition-all group text-left"
           >
-            <Zap className="w-4 h-4 fill-white" />
-            IMPORT DATA
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+              <Plus className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">Upload New Budget</p>
+              <p className="text-sm text-slate-500">Add state budget data</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-emerald-600" />
           </button>
+          
           <button 
             onClick={() => navigate('/admin/backup')}
-            className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black rounded-2xl transition-all active:scale-95"
+            className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all group text-left"
           >
-            DB BACKUP
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+              <Download className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">Backup Data</p>
+              <p className="text-sm text-slate-500">Export system backup</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-blue-600" />
+          </button>
+          
+          <button 
+            onClick={() => navigate('/admin/logs')}
+            className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-200 hover:border-amber-300 hover:shadow-lg transition-all group text-left"
+          >
+            <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+              <Activity className="w-6 h-6 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">View Logs</p>
+              <p className="text-sm text-slate-500">System activity logs</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-amber-600" />
           </button>
         </div>
-      </div>
 
-      {/* Stats Grid */}
-      <Grid numItemsSm={1} numItemsMd={2} numItemsLg={4} className="gap-6">
-        <Card decoration="top" decorationColor="blue" className="rounded-3xl border-none shadow-sm shadow-slate-200">
-          <Flex className="items-start">
-            <div>
-              <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1">Active States</Text>
-              <Metric className="font-black text-slate-900">{states.length}</Metric>
+        {/* System Status */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <HardDrive className="w-5 h-5 text-emerald-600" />
+                <span className="text-sm font-semibold text-slate-700">Storage</span>
+              </div>
+              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                Healthy
+              </span>
             </div>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-              <Landmark className="w-5 h-5" />
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-500 rounded-full" style={{ width: '12%' }} />
             </div>
-          </Flex>
-          <div className="mt-4 flex items-center gap-2">
-            <Badge color="emerald" size="xs">Live Sync</Badge>
-            <Text className="text-[10px] font-medium text-slate-400">Connected to Cloud</Text>
+            <p className="text-xs text-slate-500 mt-2">12% used of 10GB limit</p>
           </div>
-        </Card>
-
-        <Card decoration="top" decorationColor="emerald" className="rounded-3xl border-none shadow-sm shadow-slate-200">
-          <Flex className="items-start">
-            <div>
-              <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1">MDAs Monitored</Text>
-              <Metric className="font-black text-slate-900">{totalMDAs}</Metric>
+          
+          <div className="bg-white rounded-2xl p-5 border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-semibold text-slate-700">Uptime</span>
+              </div>
+              <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                99.9%
+              </span>
             </div>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-              <Activity className="w-5 h-5" />
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500 rounded-full" style={{ width: '99.9%' }} />
             </div>
-          </Flex>
-          <div className="mt-4 flex items-center gap-2">
-            <Badge color="blue" size="xs">Verified</Badge>
-            <Text className="text-[10px] font-medium text-slate-400">Source evidence linked</Text>
+            <p className="text-xs text-slate-500 mt-2">System running smoothly</p>
           </div>
-        </Card>
-
-        <Card decoration="top" decorationColor="amber" className="lg:col-span-2 rounded-3xl border-none shadow-sm shadow-slate-200">
-          <Flex className="items-start">
-            <div>
-              <Text className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mb-1">Total Fiscal Volume</Text>
-              <Metric className="font-black text-slate-900">{formatCurrency(totalBudgetVolume)}</Metric>
+          
+          <div className="bg-white rounded-2xl p-5 border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-amber-600" />
+                <span className="text-sm font-semibold text-slate-700">Data Integrity</span>
+              </div>
+              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                Verified
+              </span>
             </div>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-              <Database className="w-5 h-5" />
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-500 rounded-full" style={{ width: '100%' }} />
             </div>
-          </Flex>
-          <div className="mt-4">
-            <ProgressBar value={100} color="amber" className="h-1.5" />
-            <Text className="text-[10px] font-medium text-slate-400 mt-2">Aggregate of all approved estimates in system storage.</Text>
-          </div>
-        </Card>
-      </Grid>
-
-      <Grid numItemsSm={1} numItemsLg={3} className="gap-8">
-        {/* State Distribution */}
-        <Card className="lg:col-span-1 rounded-[2rem] border-slate-200 shadow-sm">
-          <Flex className="mb-8">
-            <div>
-              <Title className="font-black text-slate-900">Resource Split</Title>
-              <Text className="text-xs">Volume distribution by state.</Text>
-            </div>
-            <Badge color="blue" icon={Scale} size="xs">Weight</Badge>
-          </Flex>
-          <div className="h-72">
-            <DonutChart
-              data={stateDistribution}
-              category="amount"
-              index="name"
-              valueFormatter={formatCurrency}
-              colors={["blue", "indigo", "violet", "emerald", "amber", "rose"]}
-              className="mt-6"
-            />
-          </div>
-        </Card>
-
-        {/* Recent System Activity */}
-        <Card className="lg:col-span-2 rounded-[2rem] border-slate-200 shadow-sm overflow-hidden p-0">
-          <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <div>
-              <Title className="font-black text-slate-900">Audit Trail</Title>
-              <Text className="text-xs">Recent security and data events.</Text>
-            </div>
-            <button 
-              onClick={() => navigate('/admin/logs')}
-              className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest"
-            >
-              View Full Logs
-            </button>
-          </div>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableHeaderCell className="px-8 text-[10px] font-black uppercase text-slate-500">Event</TableHeaderCell>
-                <TableHeaderCell className="text-[10px] font-black uppercase text-slate-500">Target</TableHeaderCell>
-                <TableHeaderCell className="text-[10px] font-black uppercase text-slate-500">Status</TableHeaderCell>
-                <TableHeaderCell className="text-right px-8 text-[10px] font-black uppercase text-slate-500">Time</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {recentActivities.map((act) => (
-                <TableRow key={act.id} className="border-b border-slate-50 last:border-none">
-                  <TableCell className="px-8">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <span className="text-sm font-bold text-slate-900">{act.action}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Text className="text-xs font-medium text-slate-500">{act.target}</Text>
-                  </TableCell>
-                  <TableCell>
-                    <Badge color="emerald" size="xs">{act.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right px-8">
-                    <Text className="text-[10px] font-mono text-slate-400">{act.time}</Text>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      </Grid>
-
-      {/* System Health Monitor */}
-      <Grid numItemsSm={1} numItemsMd={3} className="gap-6">
-        <Card className="rounded-3xl p-6 bg-slate-50 border-slate-200">
-          <Flex className="mb-4">
-            <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-blue-600" />
-              <Text className="font-black text-slate-900 text-xs uppercase tracking-widest">Parser Engine</Text>
-            </div>
-            <Badge color="emerald" size="xs">OPTIMAL</Badge>
-          </Flex>
-          <Tracker data={[{ color: 'emerald' }, { color: 'emerald' }, { color: 'emerald' }, { color: 'emerald' }]} className="h-1.5" />
-        </Card>
-        <Card className="rounded-3xl p-6 bg-slate-50 border-slate-200">
-          <Flex className="mb-4">
-            <div className="flex items-center gap-2">
-              <HardDrive className="w-4 h-4 text-emerald-600" />
-              <Text className="font-black text-slate-900 text-xs uppercase tracking-widest">Cloud Storage</Text>
-            </div>
-            <Badge color="emerald" size="xs">98% FREE</Badge>
-          </Flex>
-          <Tracker data={[{ color: 'emerald' }, { color: 'emerald' }, { color: 'emerald' }, { color: 'emerald' }]} className="h-1.5" />
-        </Card>
-        <Card className="rounded-3xl p-6 bg-slate-50 border-slate-200">
-          <Flex className="mb-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-600" />
-              <Text className="font-black text-slate-900 text-xs uppercase tracking-widest">Uptime</Text>
-            </div>
-            <Badge color="emerald" size="xs">99.9%</Badge>
-          </Flex>
-          <Tracker data={[{ color: 'emerald' }, { color: 'emerald' }, { color: 'emerald' }, { color: 'emerald' }]} className="h-1.5" />
-        </Card>
-      </Grid>
-
-      {/* Registered Budget Documents Table */}
-      <Card className="rounded-[2.5rem] border-slate-200 shadow-sm overflow-hidden p-0 mt-8">
-        <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white">
-          <div>
-            <Title className="font-black text-slate-900">Document Registry</Title>
-            <Text className="text-xs mt-1">Full inventory of high-integrity budget data.</Text>
-          </div>
-          <Badge color="blue" icon={FileText} className="font-bold">Cloud Source</Badge>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHead className="bg-slate-50/50">
-              <TableRow>
-                <TableHeaderCell className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Document Name</TableHeaderCell>
-                <TableHeaderCell className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Fiscal Year</TableHeaderCell>
-                <TableHeaderCell className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Integrity</TableHeaderCell>
-                <TableHeaderCell className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Data Size</TableHeaderCell>
-                <TableHeaderCell className="text-right px-8 text-[10px] font-black uppercase tracking-widest text-slate-500">Control</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {states.map((s) => (
-                <TableRow key={s.id} className="hover:bg-blue-50/20 transition-all border-b border-slate-50 last:border-none">
-                  <TableCell className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-black text-slate-900 text-base">{s.name} Budget</span>
-                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">REF: {s.id}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge color="blue" size="sm" className="font-black">{s.year}</Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      {s.data.verified ? (
-                        <div className="flex items-center gap-1.5 text-emerald-600">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span className="text-[10px] font-black uppercase">Forensic Pass</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-amber-500">
-                          <AlertCircle className="w-4 h-4" />
-                          <span className="text-[10px] font-black uppercase">Pending Audit</span>
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Text className="font-mono text-xs font-bold text-slate-500">
-                      {(JSON.stringify(s.data).length / 1024).toFixed(1)} KB
-                    </Text>
-                  </TableCell>
-                  <TableCell className="text-right px-8">
-                    <div className="flex justify-end gap-2">
-                      <button 
-                        onClick={() => navigate(`/state/${s.id}`)}
-                        className="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                        title="Open Monitor"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                      </button>
-                      <button 
-                        onClick={() => setConfirmDelete({ id: s.id, name: s.name })}
-                        className="p-3 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                        title="Wipe Data"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
-
-      {/* Safety & Encryption Note */}
-      <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex items-center gap-6">
-          <div className="p-4 bg-white rounded-[1.5rem] shadow-xl shadow-slate-200">
-            <Settings className="w-8 h-8 text-slate-400 animate-spin-slow" />
-          </div>
-          <div>
-            <Title className="text-slate-900 font-black">System Preferences</Title>
-            <Text className="text-slate-500 max-w-lg">Manage administrative keys, audit trail persistence, and cloud synchronization settings.</Text>
+            <p className="text-xs text-slate-500 mt-2">All checksums passed</p>
           </div>
         </div>
-        <button className="px-8 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-300 active:scale-95">
-          GO TO SETTINGS
-        </button>
-      </div>
 
-      {/* Status & Error Modals */}
-      <Transition show={isModalOpen} as={Fragment}>
-        <Dialog 
-          open={isModalOpen} 
-          onClose={() => !uploadProgress.active && !confirmDelete && setError(null)} 
-          className="relative z-[300]"
-        >
-          <TransitionChild
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" />
-          </TransitionChild>
-
-          <div className="fixed inset-0 z-10 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-              <TransitionChild
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enterTo="opacity-100 translate-y-0 sm:scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              >
-                <DialogPanel className="relative transform overflow-hidden rounded-[2.5rem] bg-white p-10 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-100">
-                  {confirmDelete ? (
-                    <>
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="p-4 bg-rose-100 text-rose-600 rounded-[1.5rem]">
-                          <Trash2 className="w-8 h-8" />
+        {/* States Table */}
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">State Budgets</h2>
+                <p className="text-sm text-slate-500 mt-1">Manage uploaded budget documents</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search states..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-emerald-500 outline-none transition-all w-full sm:w-64"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">State</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Year</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Total Budget</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">MDAs</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredStates.map((s) => (
+                  <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
-                          <DialogTitle as="h3" className="text-2xl font-black text-slate-900">
-                            Forensic Purge
-                          </DialogTitle>
-                          <Text className="text-[10px] font-bold uppercase text-rose-500 tracking-widest">Irreversible Action</Text>
+                          <p className="font-semibold text-slate-900">{s.name}</p>
+                          <p className="text-xs text-slate-500 font-mono">{s.id}</p>
                         </div>
                       </div>
-                      <div className="p-6 bg-rose-50 rounded-3xl mb-8 border border-rose-100 shadow-inner">
-                        <Text className="text-rose-700 font-bold leading-relaxed">
-                          Confirm permanent removal of <span className="font-black underline">{confirmDelete.name}</span> dataset. 
-                          All cloud records will be scrubbed.
-                        </Text>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg">
+                        {s.year}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <p className="font-semibold text-slate-900">{formatCompact(s.data?.summary?.total_expenditure || 0)}</p>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <p className="text-sm text-slate-600">{s.data?.mdas?.length || 0}</p>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {s.data?.verified ? (
+                        <span className="flex items-center justify-center gap-1 text-emerald-600 text-sm font-semibold">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-1 text-amber-600 text-sm font-semibold">
+                          <AlertCircle className="w-4 h-4" />
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <button 
-                          className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black rounded-2xl transition-all"
-                          onClick={() => setConfirmDelete(null)}
+                          onClick={() => navigate(`/state/${s.id}`)}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                          title="View"
                         >
-                          CANCEL
+                          <ExternalLink className="w-5 h-5" />
                         </button>
                         <button 
-                          className="w-full py-4 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-rose-200 active:scale-95"
-                          onClick={handleDelete}
+                          onClick={() => setConfirmDelete({ id: s.id, name: s.name })}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                          title="Delete"
                         >
-                          PURGE DATA
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
-                    </>
-                  ) : uploadProgress.active ? (
-                    <div className="flex flex-col items-center justify-center py-6">
-                      <div className="relative mb-8">
-                        <div className="w-24 h-24 border-[6px] border-blue-50 rounded-full animate-spin border-t-blue-600"></div>
-                        <Database className="w-10 h-10 text-blue-600 absolute inset-0 m-auto" />
-                      </div>
-                      <DialogTitle as="h3" className="text-2xl font-black text-slate-900 text-center">
-                        Syncing Evidence
-                      </DialogTitle>
-                      <Text className="text-center mt-2 text-slate-500 font-medium">
-                        Writing high-integrity data blocks... {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
-                      </Text>
-                      <div className="w-full mt-8 px-4">
-                        <ProgressBar value={(uploadProgress.current / uploadProgress.total) * 100} color="blue" className="h-2" />
-                      </div>
-                    </div>
-                  ) : error ? (
-                    <>
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="p-4 bg-rose-100 text-rose-600 rounded-[1.5rem]">
-                          <AlertCircle className="w-8 h-8" />
-                        </div>
-                        <DialogTitle as="h3" className="text-2xl font-black text-slate-900">
-                          Critical Error
-                        </DialogTitle>
-                      </div>
-                      <div className="p-6 bg-rose-50 border border-rose-100 rounded-3xl mb-8">
-                        <Text className="text-rose-700 font-bold leading-relaxed">
-                          {error}
-                        </Text>
-                      </div>
-                      <button 
-                        className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl shadow-xl shadow-slate-200"
-                        onClick={() => setError(null)}
-                      >
-                        DISMISS
-                      </button>
-                    </>
-                  ) : null}
-                </DialogPanel>
-              </TransitionChild>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredStates.length === 0 && (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-slate-400" />
+              </div>
+              <p className="text-slate-500">No states match your search</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setConfirmDelete(null)} />
+          <div className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">Delete Budget Data</h3>
+                <p className="text-sm text-rose-600 font-semibold">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-slate-600 mb-6">
+              Are you sure you want to delete the budget data for <span className="font-semibold text-slate-900">{confirmDelete.name}</span>? 
+              All associated MDAs and sector data will be permanently removed.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all"
+                onClick={() => setConfirmDelete(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl transition-all"
+                onClick={handleDelete}
+              >
+                Delete
+              </button>
             </div>
           </div>
-        </Dialog>
-      </Transition>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {error && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setError(null)} />
+          <div className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-rose-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Error</h3>
+            </div>
+            <p className="text-slate-600 mb-6">{error}</p>
+            <button 
+              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all"
+              onClick={() => setError(null)}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Progress Modal */}
+      {uploadProgress.active && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center">
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Database className="w-8 h-8 text-blue-600 animate-pulse" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Uploading Data</h3>
+            <p className="text-slate-500 mb-6">Please wait while we process your budget data...</p>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+              />
+            </div>
+            <p className="text-sm text-slate-500 mt-2">
+              {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

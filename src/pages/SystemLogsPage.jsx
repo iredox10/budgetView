@@ -1,16 +1,20 @@
-import { Card, Title, Text, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, Badge, Flex, Grid, ProgressBar } from '@tremor/react';
-import { FileText, CheckCircle2, AlertCircle, Clock, Search, Terminal, Filter, RefreshCcw, Wifi, Shield } from 'lucide-react';
+import { 
+  FileText, CheckCircle2, AlertCircle, Clock, Search, 
+  Terminal, Filter, RefreshCcw, Shield, ChevronLeft,
+  AlertTriangle, Info, Download
+} from 'lucide-react';
 import { useState, useMemo } from 'react';
-import clsx from 'clsx';
+import { Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 
 const initialLogs = [
-  { id: 1, type: 'SUCCESS', action: 'Cloud Sync', details: 'Kano State 2024 - 579 documents successfully committed to Appwrite.', time: '5 mins ago', user: 'Admin' },
-  { id: 2, type: 'INFO', action: 'Auth Event', details: 'New secure console session initialized from IP 192.168.1.1.', time: '12 mins ago', user: 'System' },
-  { id: 3, type: 'WARNING', action: 'Audit Alert', details: 'Math discrepancy of ₦1.2B flagged in Lagos Budget (Official Source Error).', time: '1 hour ago', user: 'Admin' },
-  { id: 4, type: 'SUCCESS', action: 'PDF Analysis', details: 'High-accuracy anchor strategy applied to Bauchi_Final_Estimates.pdf.', time: '3 hours ago', user: 'System' },
-  { id: 5, type: 'ERROR', action: 'Network Timeout', details: 'Cloud execution failed for Ogun State (Retry triggered automatically).', time: '5 hours ago', user: 'System' },
-  { id: 6, type: 'SUCCESS', action: 'Backup', details: 'Full system archive (3.2MB) generated and downloaded.', time: '1 day ago', user: 'Admin' },
-  { id: 7, type: 'INFO', action: 'Schema Update', details: 'Appwrite collection indexes recalculated for optimized searching.', time: '2 days ago', user: 'Root' },
+  { id: 1, type: 'SUCCESS', action: 'Data Sync', details: 'Kano State 2024 budget data synchronized successfully', time: '5 mins ago', user: 'System' },
+  { id: 2, type: 'INFO', action: 'User Login', details: 'Admin console accessed from IP 192.168.1.1', time: '12 mins ago', user: 'Admin' },
+  { id: 3, type: 'WARNING', action: 'Data Validation', details: 'Minor discrepancy detected in Lagos budget calculations', time: '1 hour ago', user: 'System' },
+  { id: 4, type: 'SUCCESS', action: 'PDF Upload', details: 'Bauchi State budget PDF processed and indexed', time: '3 hours ago', user: 'System' },
+  { id: 5, type: 'ERROR', action: 'Network Error', details: 'Connection timeout during Ogun State data upload', time: '5 hours ago', user: 'System' },
+  { id: 6, type: 'SUCCESS', action: 'Backup Complete', details: 'Full system backup (3.2MB) generated successfully', time: '1 day ago', user: 'Admin' },
+  { id: 7, type: 'INFO', action: 'Database Update', details: 'Search indexes rebuilt for optimized queries', time: '2 days ago', user: 'System' },
 ];
 
 export default function SystemLogsPage() {
@@ -26,49 +30,72 @@ export default function SystemLogsPage() {
     });
   }, [searchTerm, filterType]);
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200">
-            <Terminal className="w-6 h-6 text-blue-400" />
-          </div>
-          <div>
-            <Title className="text-3xl font-black text-slate-900 tracking-tight">System Events</Title>
-            <Text className="text-slate-500">Live operational audit trail and extraction performance.</Text>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
-          <Wifi className="w-3 h-3 text-emerald-600 animate-pulse" />
-          <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Realtime Feed Active</span>
-        </div>
-      </div>
+  const getLogIcon = (type) => {
+    switch (type) {
+      case 'SUCCESS': return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
+      case 'ERROR': return <AlertCircle className="w-4 h-4 text-rose-600" />;
+      case 'WARNING': return <AlertTriangle className="w-4 h-4 text-amber-600" />;
+      default: return <Info className="w-4 h-4 text-blue-600" />;
+    }
+  };
 
-      {/* Control Panel */}
-      <Grid numItemsSm={1} numItemsLg={3} className="gap-8">
-        <Card className="lg:col-span-2 rounded-3xl">
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
+  const getLogColor = (type) => {
+    switch (type) {
+      case 'SUCCESS': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'ERROR': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'WARNING': return 'bg-amber-50 text-amber-700 border-amber-200';
+      default: return 'bg-blue-50 text-blue-700 border-blue-200';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <Link 
+          to="/admin"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors mb-6"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center">
+              <Terminal className="w-6 h-6 text-slate-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">System Logs</h1>
+              <p className="text-slate-500">Monitor system events and audit trail</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Search logs by keyword..." 
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all font-medium"
+                placeholder="Search logs..." 
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-emerald-500 outline-none transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
-              {['ALL', 'SUCCESS', 'WARNING', 'ERROR'].map(type => (
+              {['ALL', 'SUCCESS', 'INFO', 'WARNING', 'ERROR'].map(type => (
                 <button
                   key={type}
                   onClick={() => setFilterType(type)}
                   className={clsx(
-                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                    "px-4 py-2 rounded-xl text-sm font-semibold transition-all",
                     filterType === type 
-                      ? "bg-slate-900 text-white shadow-lg" 
-                      : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+                      ? "bg-slate-900 text-white" 
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   )}
                 >
                   {type}
@@ -76,100 +103,75 @@ export default function SystemLogsPage() {
               ))}
             </div>
           </div>
-
-          <div className="overflow-hidden rounded-2xl border border-slate-50">
-            <Table>
-              <TableHead className="bg-slate-50/50">
-                <TableRow>
-                  <TableHeaderCell className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Status</TableHeaderCell>
-                  <TableHeaderCell className="text-[10px] font-black uppercase tracking-widest text-slate-500">Operation</TableHeaderCell>
-                  <TableHeaderCell className="text-[10px] font-black uppercase tracking-widest text-slate-500">Details</TableHeaderCell>
-                  <TableHeaderCell className="text-right px-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Age</TableHeaderCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredLogs.map((log) => (
-                  <TableRow key={log.id} className="hover:bg-blue-50/20 transition-colors border-b border-slate-50 last:border-none">
-                    <TableCell className="px-6 py-4">
-                      <Badge 
-                        color={log.type === 'SUCCESS' ? 'emerald' : log.type === 'ERROR' ? 'rose' : log.type === 'WARNING' ? 'amber' : 'blue'}
-                        size="xs"
-                        className="font-black"
-                      >
-                        {log.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Text className="font-bold text-slate-900">{log.action}</Text>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">BY {log.user}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Text className="text-xs text-slate-600 leading-relaxed max-w-md">{log.details}</Text>
-                    </TableCell>
-                    <TableCell className="text-right px-6 py-4">
-                      <div className="flex flex-col items-end">
-                        <Text className="text-[10px] font-bold text-slate-400">{log.time}</Text>
-                        <Clock className="w-3 h-3 text-slate-200 mt-1" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
-
-        <div className="space-y-8">
-          {/* Security Pulse */}
-          <Card className="rounded-[2.5rem] p-8 border-none bg-slate-900 text-white shadow-2xl">
-            <Flex className="mb-6">
-              <div className="p-2 bg-blue-600 rounded-xl">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <Badge color="blue">Secure</Badge>
-            </Flex>
-            <Title className="text-white font-black mb-2">Firewall Status</Title>
-            <Text className="text-slate-400 text-xs mb-6">Traffic filtered by Appwrite Security Layer.</Text>
-            <div className="space-y-4">
-              <div>
-                <Flex className="mb-1 text-[10px] font-black text-slate-500">
-                  <span>SSL HANDSHAKE</span>
-                  <span className="text-blue-400">ENCRYPTED</span>
-                </Flex>
-                <ProgressBar value={100} color="blue" className="h-1" />
-              </div>
-              <div>
-                <Flex className="mb-1 text-[10px] font-black text-slate-500">
-                  <span>API LATENCY</span>
-                  <span className="text-emerald-400">142ms</span>
-                </Flex>
-                <ProgressBar value={85} color="emerald" className="h-1" />
-              </div>
-            </div>
-          </Card>
-
-          {/* Engine Metrics */}
-          <Card className="rounded-[2.5rem] p-8">
-            <Title className="font-black mb-6">Extraction Metrics</Title>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Success Rate</p>
-                <p className="text-2xl font-black text-slate-900">99.4%</p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">OCR Drift</p>
-                <p className="text-2xl font-black text-rose-500">&lt; 0.1%</p>
-              </div>
-            </div>
-            <div className="mt-8 pt-6 border-t border-slate-100">
-              <button className="w-full py-3 bg-slate-50 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all flex items-center justify-center gap-2">
-                <RefreshCcw className="w-3 h-3" />
-                RECALIBRATE ENGINE
-              </button>
-            </div>
-          </Card>
         </div>
-      </Grid>
+
+        {/* Logs Table */}
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Action</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Details</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">User</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className={clsx(
+                        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border",
+                        getLogColor(log.type)
+                      )}>
+                        {getLogIcon(log.type)}
+                        {log.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-slate-900">{log.action}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-slate-600">{log.details}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-slate-500">{log.user}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2 text-sm text-slate-500">
+                        <Clock className="w-4 h-4" />
+                        {log.time}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredLogs.length === 0 && (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-slate-400" />
+              </div>
+              <p className="text-slate-500">No logs match your search criteria</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Showing {filteredLogs.length} of {initialLogs.length} log entries
+          </p>
+          <button className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all text-sm font-medium">
+            <Download className="w-4 h-4" />
+            Export Logs
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

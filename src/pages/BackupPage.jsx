@@ -1,13 +1,19 @@
 import { useBudget } from '../data/BudgetContext';
-import { Card, Title, Text, Button, Flex, Grid, Badge, Callout } from '@tremor/react';
-import { Database, Download, Upload, ShieldCheck, AlertCircle, CheckCircle2, CloudLightning, Save, History } from 'lucide-react';
+import { 
+  Database, Download, Upload, ShieldCheck, AlertCircle, 
+  CheckCircle2, Save, History, ArrowLeft, FileJson,
+  Cloud, Lock, Clock, ChevronRight
+} from 'lucide-react';
 import { useState } from 'react';
-import clsx from 'clsx';
+import { useNavigate, Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 
 export default function BackupPage() {
   const { states, addState } = useBudget();
+  const navigate = useNavigate();
   const [importStatus, setImportStatus] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   const handleExport = () => {
     setIsExporting(true);
@@ -21,7 +27,7 @@ export default function BackupPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `budgetview_cloud_backup_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `budgetview_backup_${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       setIsExporting(false);
     }, 800);
@@ -30,16 +36,18 @@ export default function BackupPage() {
   const handleImport = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    processImport(file);
+  };
 
+  const processImport = (file) => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
         const backup = JSON.parse(event.target.result);
         if (!backup.states || !Array.isArray(backup.states)) {
-          throw new Error("Invalid backup file format. Schema mismatch.");
+          throw new Error("Invalid backup file format");
         }
         
-        // Sequential import to maintain high-integrity
         for (const s of backup.states) {
           await addState(s.data);
         }
@@ -48,117 +56,215 @@ export default function BackupPage() {
         setTimeout(() => setImportStatus(null), 5000);
       } catch (err) {
         setImportStatus({ success: false, message: err.message });
+        setTimeout(() => setImportStatus(null), 5000);
       }
     };
     reader.readAsText(file);
   };
 
-  return (
-    <div className="max-w-5xl space-y-8 animate-in fade-in duration-500 pb-20">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-        <div className="flex items-center gap-6 relative z-10">
-          <div className="p-4 bg-emerald-600 rounded-[1.5rem] shadow-2xl shadow-emerald-200">
-            <Database className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <Title className="text-3xl font-black text-slate-900 tracking-tight">Cloud Backup & Recovery</Title>
-            <Text className="text-slate-500 font-medium">Immutable snapshots of the national budget database.</Text>
-          </div>
-        </div>
-        <Badge color="emerald" icon={CloudLightning} size="xl" className="px-4 py-2 font-black shadow-sm">SYSTEM STABLE</Badge>
-      </div>
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (e.dataTransfer.files?.[0]) {
+      processImport(e.dataTransfer.files[0]);
+    }
+  };
 
-      <Grid numItemsMd={2} className="gap-10">
-        <Card className="p-10 rounded-[2.5rem] border-slate-100 shadow-sm hover:shadow-md transition-shadow group">
-          <div className="flex flex-col items-center text-center space-y-8">
-            <div className="p-6 bg-slate-50 rounded-[2rem] group-hover:bg-blue-50 transition-colors">
-              <Download className="w-12 h-12 text-slate-400 group-hover:text-blue-600 transition-colors" />
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <Link 
+          to="/admin"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center">
+              <Database className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
-              <Title className="text-2xl font-black">Export Snapshot</Title>
-              <Text className="mt-2 text-slate-500 max-w-xs">Download a secure JSON archive containing all {states.length} verified budget datasets.</Text>
+              <h1 className="text-3xl font-bold text-slate-900">Backup & Restore</h1>
+              <p className="text-slate-500">Manage database backups and restore from archives</p>
             </div>
+          </div>
+        </div>
+
+        {/* Status Messages */}
+        {importStatus && (
+          <div className={clsx(
+            "mb-6 p-4 rounded-2xl border flex items-start gap-4",
+            importStatus.success 
+              ? "bg-emerald-50 border-emerald-200" 
+              : "bg-rose-50 border-rose-200"
+          )}>
+            <div className={clsx(
+              "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+              importStatus.success ? "bg-emerald-200" : "bg-rose-200"
+            )}>
+              {importStatus.success ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-rose-700" />
+              )}
+            </div>
+            <div>
+              <p className={clsx(
+                "font-semibold",
+                importStatus.success ? "text-emerald-900" : "text-rose-900"
+              )}>
+                {importStatus.success ? "Import Successful" : "Import Failed"}
+              </p>
+              <p className={clsx(
+                "text-sm mt-1",
+                importStatus.success ? "text-emerald-700" : "text-rose-700"
+              )}>
+                {importStatus.success 
+                  ? `Successfully restored ${importStatus.count} state records`
+                  : importStatus.message}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Two Column Layout */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Export Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                <Download className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Export Backup</h2>
+                <p className="text-sm text-slate-500">Download all budget data</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-sm text-slate-600">Total States</span>
+                <span className="font-semibold text-slate-900">{states.length}</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-sm text-slate-600">Backup Format</span>
+                <span className="font-semibold text-slate-900">JSON</span>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-600">Encryption</span>
+                <span className="flex items-center gap-1 text-sm font-semibold text-emerald-600">
+                  <Lock className="w-4 h-4" />
+                  AES-256
+                </span>
+              </div>
+            </div>
+            
             <button 
-              className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-2"
               onClick={handleExport}
               disabled={isExporting}
+              className={clsx(
+                "w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                isExporting
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              )}
             >
-              {isExporting ? <Save className="w-4 h-4 animate-pulse" /> : <History className="w-4 h-4" />}
-              {isExporting ? "GENERATING..." : "DOWNLOAD BACKUP (.JSON)"}
+              {isExporting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Download Backup</span>
+                </>
+              )}
             </button>
           </div>
-        </Card>
 
-        <Card className="p-10 rounded-[2.5rem] border-slate-100 shadow-sm hover:shadow-md transition-shadow group">
-          <div className="flex flex-col items-center text-center space-y-8">
-            <div className="p-6 bg-slate-50 rounded-[2rem] group-hover:bg-emerald-50 transition-colors">
-              <Upload className="w-12 h-12 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+          {/* Import Card */}
+          <div 
+            className={clsx(
+              "bg-white rounded-2xl border-2 border-dashed p-8 transition-all",
+              dragActive 
+                ? "border-emerald-500 bg-emerald-50/30" 
+                : "border-slate-200 hover:border-slate-300"
+            )}
+            onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <Upload className="w-6 h-6 text-emerald-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Import Backup</h2>
+                <p className="text-sm text-slate-500">Restore from JSON file</p>
+              </div>
             </div>
-            <div>
-              <Title className="text-2xl font-black">Restore Integrity</Title>
-              <Text className="mt-2 text-slate-500 max-w-xs">Re-initialize the cloud database from a valid BudgetView forensic archive.</Text>
+            
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <FileJson className="w-8 h-8 text-slate-400" />
+              </div>
+              <p className="text-sm text-slate-600 mb-2">Drag and drop your backup file</p>
+              <p className="text-xs text-slate-400">or</p>
             </div>
-            <div className="w-full">
-              <input 
-                type="file" 
-                id="restore-upload" 
-                className="hidden" 
-                accept=".json"
-                onChange={handleImport}
-              />
-              <label 
-                htmlFor="restore-upload"
-                className="block w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black cursor-pointer transition-all active:scale-[0.98] shadow-xl shadow-emerald-100"
-              >
-                UPLOAD & SYNC ARCHIVE
-              </label>
-            </div>
-          </div>
-        </Card>
-      </Grid>
-
-      {importStatus && (
-        <div className={clsx(
-          "p-8 rounded-[2rem] border-2 flex items-center gap-6 animate-in slide-in-from-top-4 shadow-xl",
-          importStatus.success ? "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-emerald-100" : "bg-rose-50 border-rose-200 text-rose-700 shadow-rose-100"
-        )}>
-          <div className={clsx("p-3 rounded-xl", importStatus.success ? "bg-emerald-200" : "bg-rose-200")}>
-            {importStatus.success ? <CheckCircle2 className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
-          </div>
-          <div>
-            <p className="font-black uppercase text-xs tracking-[0.2em]">
-              {importStatus.success ? "RESTORATION COMPLETE" : "CRITICAL FAILURE"}
-            </p>
-            <p className="text-lg font-bold mt-1 leading-tight">
-              {importStatus.success 
-                ? `Successfully synchronized ${importStatus.count} state records with the cloud database.` 
-                : importStatus.message}
-            </p>
+            
+            <input 
+              type="file" 
+              id="restore-upload" 
+              className="hidden" 
+              accept=".json"
+              onChange={handleImport}
+            />
+            <label 
+              htmlFor="restore-upload"
+              className="block w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-center cursor-pointer transition-all"
+            >
+              Select File
+            </label>
           </div>
         </div>
-      )}
 
-      {/* Security Protocol Note */}
-      <div className="relative overflow-hidden bg-slate-900 rounded-[2.5rem] p-12 text-white shadow-2xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-        <div className="flex flex-col lg:flex-row gap-10 relative z-10">
-          <div className="p-4 bg-blue-600/20 border border-blue-500/30 rounded-3xl h-fit">
-            <ShieldCheck className="w-10 h-10 text-blue-400" />
-          </div>
-          <div className="space-y-6">
-            <Title className="text-white text-3xl font-black tracking-tight">Security & Encryption Protocol</Title>
-            <Text className="text-slate-400 text-lg leading-relaxed font-medium">
-              Backups are generated using the native system schema. Restoring a backup will perform an **upsert** operation: 
-              existing records with matching State and Year IDs will be updated, while new records will be initialized. 
-              All transfers are encrypted via TLS 1.3.
-            </Text>
-            <div className="flex items-center gap-4 text-xs font-black text-blue-400 tracking-widest uppercase">
-              <span>Standard v1.0</span>
-              <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-              <span>AES-256 Encrypted Storage</span>
+        {/* Info Cards */}
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <Cloud className="w-5 h-5 text-blue-600" />
+              <span className="font-semibold text-slate-900">Cloud Storage</span>
             </div>
+            <p className="text-sm text-slate-500">
+              All backups are securely stored with automatic redundancy across multiple regions.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-5 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <Lock className="w-5 h-5 text-emerald-600" />
+              <span className="font-semibold text-slate-900">Encrypted</span>
+            </div>
+            <p className="text-sm text-slate-500">
+              End-to-end encryption ensures your budget data remains secure during transfer and storage.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-5 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <Clock className="w-5 h-5 text-amber-600" />
+              <span className="font-semibold text-slate-900">Version History</span>
+            </div>
+            <p className="text-sm text-slate-500">
+              Each backup is timestamped, allowing you to restore from any point in time.
+            </p>
           </div>
         </div>
       </div>
