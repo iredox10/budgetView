@@ -4,7 +4,7 @@ import {
   Scale, ArrowRight, TrendingUp, TrendingDown, Building2, Users,
   Wallet, Target, PieChart, ChevronDown, Download, Share2,
   ArrowUpRight, ArrowDownRight, Minus, Info, BarChart3,
-  Landmark, CheckCircle2, AlertCircle
+  Landmark, CheckCircle2, AlertCircle, ShieldCheck, FileSearch
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -464,6 +464,7 @@ export default function ComparePage() {
             {[
               { key: 'overview', label: 'Overview', icon: BarChart3 },
               { key: 'sectors', label: 'Sector Analysis', icon: PieChart },
+              { key: 'integrity', label: 'Data Integrity', icon: ShieldCheck },
               { key: 'details', label: 'Detailed Metrics', icon: Info }
             ].map((tab) => (
               <button
@@ -593,6 +594,127 @@ export default function ComparePage() {
                             </td>
                             <td className="px-6 py-3 text-right">
                               <p className="font-semibold text-blue-600">{formatCompact(sector.valueB)}</p>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* INTEGRITY TAB */}
+            {activeTab === 'integrity' && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Integrity Score Comparison */}
+                  <Card className="rounded-3xl border-none shadow-xl shadow-slate-200/50 bg-white">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                        <ShieldCheck className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <Title>Integrity Index</Title>
+                        <Text className="text-xs">Higher score indicates fewer mathematical errors</Text>
+                      </div>
+                    </div>
+
+                    <div className="space-y-10">
+                      <div className="relative pt-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-bold text-slate-700">{dataA.state}</span>
+                          <Badge color={dataA.audit?.reconciled ? "emerald" : "rose"}>
+                            {dataA.audit?.integrity_score || (dataA.audit?.reconciled ? 100 : 0)}%
+                          </Badge>
+                        </div>
+                        <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className={clsx("h-full transition-all duration-1000", dataA.audit?.reconciled ? "bg-emerald-500" : "bg-rose-500")}
+                            style={{ width: `${dataA.audit?.integrity_score || (dataA.audit?.reconciled ? 100 : 0)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="relative pt-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-bold text-slate-700">{dataB.state}</span>
+                          <Badge color={dataB.audit?.reconciled ? "emerald" : "rose"}>
+                            {dataB.audit?.integrity_score || (dataB.audit?.reconciled ? 100 : 0)}%
+                          </Badge>
+                        </div>
+                        <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className={clsx("h-full transition-all duration-1000", dataB.audit?.reconciled ? "bg-emerald-500" : "bg-rose-500")}
+                            style={{ width: `${dataB.audit?.integrity_score || (dataB.audit?.reconciled ? 100 : 0)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Audit Summary Card */}
+                  <Card className="rounded-3xl border-none shadow-xl shadow-slate-200/50 bg-slate-900 text-white">
+                    <Title className="text-white mb-6">Audit Summary</Title>
+                    <div className="space-y-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+                          <FileSearch className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm">{dataA.state}</p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {dataA.audit?.reconciled 
+                              ? "Clean document. All totals match." 
+                              : `Detected ${dataA.audit?.errors?.length || 0} mathematical discrepancies.`}
+                          </p>
+                        </div>
+                      </div>
+                      <Divider className="bg-white/10" />
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+                          <FileSearch className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm">{dataB.state}</p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {dataB.audit?.reconciled 
+                              ? "Clean document. All totals match." 
+                              : `Detected ${dataB.audit?.errors?.length || 0} mathematical discrepancies.`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Comparative Error Table */}
+                <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-slate-100">
+                    <h3 className="font-bold text-slate-900">Issue Type Comparison</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50/50">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Metric</th>
+                          <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">{dataA.state}</th>
+                          <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">{dataB.state}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {[
+                          { label: "Total Reconciliation Errors", countA: dataA.audit?.errors?.length || 0, countB: dataB.audit?.errors?.length || 0 },
+                          { label: "MDA Inconsistencies", countA: dataA.audit?.errors?.filter(e => e.code === 'mda_reconciliation_failed').length || 0, countB: dataB.audit?.errors?.filter(e => e.code === 'mda_reconciliation_failed').length || 0 },
+                          { label: "Global Balance Errors", countA: dataA.audit?.errors?.filter(e => e.code.includes('mismatch')).length || 0, countB: dataB.audit?.errors?.filter(e => e.code.includes('mismatch')).length || 0 },
+                        ].map((row, i) => (
+                          <tr key={i}>
+                            <td className="px-6 py-4 text-sm font-medium text-slate-700">{row.label}</td>
+                            <td className="px-6 py-4 text-center">
+                              <span className={clsx("font-bold", row.countA === 0 ? "text-emerald-600" : "text-rose-600")}>{row.countA}</span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className={clsx("font-bold", row.countB === 0 ? "text-emerald-600" : "text-rose-600")}>{row.countB}</span>
                             </td>
                           </tr>
                         ))}

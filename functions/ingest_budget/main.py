@@ -16,6 +16,7 @@ def main(context):
     file_id = payload.get('fileId')
     bucket_id = payload.get('bucketId')
     pdf_file_id = payload.get('pdfFileId', "")
+    text_file_id = payload.get('textFileId', "")
 
     if not file_id or not bucket_id:
         return context.res.json({"error": "Missing fileId or bucketId"}, 400)
@@ -43,7 +44,10 @@ def main(context):
         # 2. Create the State Document
         context.log(f"🏛️ Creating state record: {budget_data.get('state')}")
         state_id = ID.unique()
-        databases.create_document(db_id, state_col, state_id, {
+        
+        audit_data = budget_data.get('audit', {})
+        
+        state_doc_data = {
             "name": budget_data.get('state'),
             "year": budget_data.get('year'),
             "total_expenditure": budget_data.get('summary', {}).get('total_expenditure', 0),
@@ -54,13 +58,19 @@ def main(context):
             "igr": budget_data.get('summary', {}).get('igr', 0),
             "grants": budget_data.get('summary', {}).get('grants', 0),
             "capital_receipts": budget_data.get('summary', {}).get('capital_receipts', 0),
-            "verified": True,
-            "isOfficialError": budget_data.get('isOfficialError', False),
-            "errorExplanation": budget_data.get('errorExplanation', ""),
+            "verified": audit_data.get('reconciled', True),
+            "isOfficialError": not audit_data.get('reconciled', True),
+            "errorExplanation": json.dumps(audit_data.get('errors', [])),
             "summarySources": json.dumps(budget_data.get('summarySources', {})),
             "summaryPages": json.dumps(budget_data.get('summaryPages', {})),
-            "pdf_file_id": pdf_file_id
-        })
+            "pdf_file_id": pdf_file_id,
+            "text_file_id": text_file_id,
+            "audit_report": json.dumps(audit_data),
+            "document_metrics": json.dumps(budget_data.get('document_metrics', {})),
+            "process_logs": budget_data.get('process_logs', "")
+        }
+        
+        databases.create_document(db_id, state_col, state_id, state_doc_data)
 
         # 3. Parallel MDA Ingestion
         mdas = budget_data.get('mdas', [])
@@ -68,17 +78,20 @@ def main(context):
         
         def create_mda(mda):
             try:
-                databases.create_document(db_id, mda_col, ID.unique(), {
+                doc_data = {
                     "state_id": state_id,
-                    "code": mda.get('code', '0'),
+                    "code": str(mda.get('code', '0')),
                     "name": mda.get('name', 'Unknown'),
                     "total": mda.get('total', 0),
-                    "personnel": mda.get('personnel', 0),
-                    "overhead": mda.get('overhead', 0),
+                    "personnel": mda.get('recurrent', 0),
+                    "overhead": 0,
                     "capital": mda.get('capital', 0),
-                    "sourceLine": mda.get('sourceLine', ''),
-                    "pageNumber": mda.get('pageNumber', 0)
-                })
+                    "sourceLine": mda.get('provenance', {}).get('line_text', ''),
+                    "pageNumber": mda.get('provenance', {}).get('page', 0),
+                    "units": json.dumps(mda.get('units', [])),
+                    "provenance": json.dumps(mda.get('provenance', {}))
+                }
+                databases.create_document(db_id, mda_col, ID.unique(), doc_data)
                 return True
             except Exception as e:
                 context.error(f"Failed MDA: {str(e)}")

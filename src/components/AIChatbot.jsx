@@ -48,7 +48,14 @@ export default function AIChatbot({ budgetData }) {
       } else if (q.includes('capital')) {
         response = `The state is spending ${((budgetData.summary.capital_expenditure/budgetData.summary.total_expenditure)*100).toFixed(1)}% of its budget on Capital projects (₦${(budgetData.summary.capital_expenditure/1e9).toFixed(1)}B).`;
       } else {
-        response = "I can tell you about total spending, sector allocations (Education, Health), or the capital vs recurrent split. Try asking 'How much for education?'";
+        // Try to find a matching MDA or unit
+        const mda = budgetData.mdas.find(m => q.includes(m.name.toLowerCase()));
+        if (mda) {
+          const prov = mda.provenance?.page ? ` (Source: Page ${mda.provenance.page})` : "";
+          response = `${mda.name} has a budget of ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(mda.total)}.${prov}`;
+        } else {
+          response = "I can tell you about total spending, sector allocations (Education, Health), or specific agencies. Try asking 'How much for education?'";
+        }
       }
 
       setMessages(prev => [...prev, { role: 'bot', text: response }]);

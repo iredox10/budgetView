@@ -36,6 +36,10 @@ export function BudgetProvider({ children }) {
             summarySources: doc.summarySources ? JSON.parse(doc.summarySources) : {},
             summaryPages: doc.summaryPages ? JSON.parse(doc.summaryPages) : {},
             pdf_file_id: doc.pdf_file_id,
+            text_file_id: doc.text_file_id,
+            audit: doc.audit_report ? JSON.parse(doc.audit_report) : { errors: [], reconciled: doc.verified },
+            document_metrics: doc.document_metrics ? JSON.parse(doc.document_metrics) : {},
+            process_logs: doc.process_logs || "",
             summary: {
               total_expenditure: doc.total_expenditure,
               capital_expenditure: doc.capital_expenditure,
@@ -46,7 +50,11 @@ export function BudgetProvider({ children }) {
               grants: doc.grants,
               capital_receipts: doc.capital_receipts
             },
-            mdas: mdaRes.documents,
+            mdas: mdaRes.documents.map(m => ({
+              ...m,
+              units: m.units ? JSON.parse(m.units) : [],
+              provenance: m.provenance ? JSON.parse(m.provenance) : {}
+            })),
             sectors: sectorRes.documents
           }
         };
@@ -60,7 +68,7 @@ export function BudgetProvider({ children }) {
     }
   };
 
-  const addState = async (newStateData, pdfFile = null) => {
+  const addState = async (newStateData, pdfFile = null, textFile = null) => {
     setUploadStatus({ active: true, current: 0, total: 100 });
     
     try {
@@ -84,7 +92,15 @@ export function BudgetProvider({ children }) {
         pdfFileId = uploadedPdf.$id;
       }
 
-      // 3. Upload verified JSON data to storage for cloud ingestion
+      // 3. Upload Text Extract if provided
+      let textFileId = "";
+      if (textFile) {
+        console.log("📝 Uploading raw text extract...");
+        const uploadedText = await storage.createFile(BUCKET_ID, ID.unique(), textFile);
+        textFileId = uploadedText.$id;
+      }
+
+      // 4. Upload verified JSON data to storage for cloud ingestion
       const blob = new Blob([JSON.stringify(newStateData)], { type: 'application/json' });
       const file = new File([blob], "verify_staging.json");
       const tempFileId = ID.unique();
@@ -92,13 +108,14 @@ export function BudgetProvider({ children }) {
       
       setUploadStatus({ active: true, current: 20, total: 100 });
 
-      // 4. Trigger Ingestion Cloud Function
+      // 5. Trigger Ingestion Cloud Function
       const execution = await functions.createExecution(
         INGEST_FUNCTION_ID,
         JSON.stringify({ 
           fileId: tempFileId, 
           bucketId: BUCKET_ID,
-          pdfFileId: pdfFileId 
+          pdfFileId: pdfFileId,
+          textFileId: textFileId
         }),
         true // Async execution
       );

@@ -19,7 +19,8 @@ import {
   Receipt,
   PieChart,
   ExternalLink,
-  Search
+  Search,
+  Sparkles
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -98,10 +99,30 @@ const TrustBadge = ({ icon, label, value }) => {
 export default function HomePage() {
   const { states } = useBudget();
   const navigate = useNavigate();
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [showGlobalResults, setShowGlobalResults] = useState(false);
 
   const totalBudgetAcrossStates = states.reduce((acc, s) => acc + (s.data?.summary?.total_expenditure || 0), 0);
   const totalMDAs = states.reduce((acc, s) => acc + (s.data?.mdas?.length || 0), 0);
   const totalSectors = states.reduce((acc, s) => acc + (s.data?.sectors?.length || 0), 0);
+
+  const searchResults = useMemo(() => {
+    if (!globalSearch || globalSearch.length < 3) return { states: [], mdas: [] };
+    
+    const term = globalSearch.toLowerCase();
+    const foundStates = states.filter(s => s.name.toLowerCase().includes(term));
+    const foundMDAs = [];
+    
+    states.forEach(s => {
+      s.data?.mdas?.forEach(m => {
+        if (m.name.toLowerCase().includes(term)) {
+          foundMDAs.push({ ...m, stateName: s.name, stateId: s.id });
+        }
+      });
+    });
+
+    return { states: foundStates, mdas: foundMDAs.slice(0, 10) };
+  }, [globalSearch, states]);
 
   // Sample chart data for visual preview
   const chartData = [65, 45, 80, 55, 70, 90, 60, 75, 85, 50];
@@ -244,7 +265,75 @@ export default function HomePage() {
                 Transparent access to verified state budgets across Nigeria. Every figure sourced from official documents, validated for accuracy, and made accessible to every citizen.
               </motion.p>
 
-              {/* CTA Buttons */}
+                {/* Global Search Bar */}
+                <motion.div variants={itemVariants} className="relative z-30 mb-8 max-w-xl">
+                  <div className="relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-600 transition-colors" />
+                    <input 
+                      type="text" 
+                      placeholder="Search for any project, agency or keyword..."
+                      className="w-full pl-14 pr-6 py-5 bg-white border border-slate-200 rounded-[1.5rem] text-lg font-medium outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all shadow-xl shadow-slate-200/50"
+                      value={globalSearch}
+                      onChange={(e) => {
+                        setGlobalSearch(e.target.value);
+                        setShowGlobalResults(true);
+                      }}
+                      onBlur={() => setTimeout(() => setShowGlobalResults(false), 200)}
+                    />
+                  </div>
+
+                  {showGlobalResults && (searchResults.states.length > 0 || searchResults.mdas.length > 0) && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute top-full left-0 right-0 mt-3 bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden p-2"
+                    >
+                      {searchResults.states.length > 0 && (
+                        <div className="p-4 border-b border-slate-50">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">States</p>
+                          {searchResults.states.map(s => (
+                            <button 
+                              key={s.id} 
+                              onClick={() => navigate(`/state/${s.id}`)}
+                              className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-all group"
+                            >
+                              <span className="font-bold text-slate-900">{s.name}</span>
+                              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-all" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {searchResults.mdas.length > 0 && (
+                        <div className="p-4">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">Agencies & MDAs</p>
+                          {searchResults.mdas.map((m, i) => (
+                            <button 
+                              key={i} 
+                              onClick={() => navigate(`/state/${m.stateId}`)}
+                              className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-all group text-left"
+                            >
+                              <div>
+                                <p className="font-bold text-slate-900 text-sm">{m.name}</p>
+                                <p className="text-[10px] text-slate-400 font-medium">{m.stateName} State • {m.code}</p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-all" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div className="p-4 bg-slate-900 rounded-[1.5rem] m-2">
+                        <div className="flex items-center gap-3">
+                          <Sparkles className="w-5 h-5 text-emerald-400" />
+                          <p className="text-xs text-slate-300">
+                            Deep search enabled. We're searching <strong>{totalMDAs}</strong> agencies and <strong>{states.length}</strong> official PDFs.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* CTA Buttons */}
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start gap-4 mb-10">
                 <button 
                   onClick={() => navigate('/compare')}

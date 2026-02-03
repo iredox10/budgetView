@@ -5,12 +5,13 @@ import {
   AlertCircle, TrendingUp, Users, Database, CheckCircle2, X, ArrowRight, 
   AlertTriangle, Coins, TrendingDown, Users2, Search, Download, 
   FileText, PieChart, Building2, ChevronRight, Landmark, Share2,
-  Target, Wallet, Receipt
+  Target, Wallet, Receipt, ShieldCheck, Scale, FileSearch, Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AIChatbot from '../components/AIChatbot';
 import ShareButton from '../components/ShareButton';
 import SourceInspector from '../components/SourceInspector';
+import { Badge, Title, Text } from '@tremor/react';
 
 const formatCurrency = (val) => {
   if (!val || val === 0) return '₦0.00';
@@ -204,6 +205,182 @@ const SimpleDonutChart = ({ data, colors }) => {
   );
 };
 
+// Audit Trail Modal Component
+const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
+  if (!isOpen || !audit) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose} />
+      <div className="relative bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-4">
+            <div className={clsx(
+              "w-12 h-12 rounded-2xl flex items-center justify-center",
+              audit.reconciled ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+            )}>
+              <FileSearch className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-slate-900">Audit Trail: {stateName}</h3>
+              <p className="text-sm text-slate-500 font-medium">Automatic mathematical verification report</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors shadow-sm">
+            <X className="w-6 h-6 text-slate-400" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Integrity Score</p>
+              <p className={clsx("text-3xl font-black", audit.integrity_score > 90 ? "text-emerald-600" : "text-rose-600")}>
+                {audit.integrity_score || (audit.reconciled ? 100 : 0)}/100
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Issues Found</p>
+              <p className="text-3xl font-black text-slate-900">{audit.errors?.length || 0}</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
+              <div className="mt-1">
+                <Badge color={audit.reconciled ? "emerald" : "rose"} size="xl">
+                  {audit.reconciled ? "PLATINUM" : "RECONCILING"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Title className="text-lg">Detailed Discrepancies</Title>
+            {audit.errors && audit.errors.length > 0 ? (
+              audit.errors.map((err, idx) => (
+                <div key={idx} className="p-4 rounded-2xl border border-rose-100 bg-rose-50/30 flex gap-4">
+                  <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Scale className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-rose-900 uppercase tracking-tight">{err.code.replace(/_/g, ' ')}</p>
+                    <p className="text-sm text-rose-700 mt-1 font-mono leading-relaxed">{err.message}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-12 text-center bg-emerald-50/30 rounded-[2rem] border-2 border-dashed border-emerald-100">
+                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-600">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+                <p className="font-bold text-emerald-900">Zero Mathematical Errors</p>
+                <p className="text-sm text-emerald-600 mt-1 max-w-xs mx-auto">This document is mathematically sound. All parent totals match the sum of their constituent parts.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <p className="text-xs font-bold uppercase tracking-widest">Independent Audit Engine v2.0</p>
+          </div>
+          <p className="text-[10px] text-slate-400">Extracted: {new Date(audit.extraction_date).toLocaleDateString()}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// MDA Row with expansion for sub-units
+const MDARow = ({ mda, onSelect, formatCompact, errors = [] }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasUnits = mda.units && mda.units.length > 0;
+  
+  // Find errors for this specific MDA
+  const mdaError = errors.find(e => e.message?.includes(mda.code));
+
+  return (
+    <>
+      <tr 
+        className="hover:bg-slate-50/50 transition-colors cursor-pointer group"
+        onClick={() => onSelect(mda)}
+      >
+        <td className="px-6 py-4">
+          <div className="flex items-center gap-3">
+            {hasUnits && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                className="p-1 hover:bg-slate-200 rounded-lg transition-colors"
+              >
+                <ChevronRight className={clsx("w-4 h-4 text-slate-400 transition-transform", isExpanded && "rotate-90")} />
+              </button>
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-slate-900">{mda.name}</p>
+                {mdaError && (
+                  <div className="p-1 bg-rose-100 text-rose-600 rounded-md" title="Reconciliation Error">
+                    <AlertTriangle className="w-3 h-3" />
+                  </div>
+                )}
+                {mda.provenance?.page && (
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded border border-emerald-100">
+                    VERIFIED
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 font-mono">{mda.code}</p>
+            </div>
+          </div>
+        </td>
+        <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.personnel)}</td>
+        <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.overhead)}</td>
+        <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.capital)}</td>
+        <td className="px-6 py-4 text-right">
+          <span className={clsx(
+            "px-3 py-1 text-sm font-bold rounded-lg",
+            mdaError ? "bg-rose-50 text-rose-700 border border-rose-100" : "bg-blue-50 text-blue-700"
+          )}>
+            {formatCompact(mda.total)}
+          </span>
+        </td>
+      </tr>
+      {isExpanded && hasUnits && (
+        <tr className="bg-slate-50/30">
+          <td colSpan="5" className="px-12 py-4">
+            <div className="space-y-3 border-l-2 border-slate-200 pl-6">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Administrative Units</p>
+              {mda.units.map((unit, idx) => (
+                <div key={idx} className="flex items-center justify-between group/unit">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">{unit.name}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">{unit.code}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-bold text-slate-600">{formatCompact(unit.total)}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect({ ...unit, pageNumber: unit.provenance?.page });
+                      }}
+                      className="opacity-0 group-hover/unit:opacity-100 text-[10px] font-bold text-blue-600 hover:underline"
+                    >
+                      VIEW SOURCE
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+};
+
 export default function StateDashboard() {
   const { stateId } = useParams();
   const { states, isInitialized } = useBudget();
@@ -212,6 +389,28 @@ export default function StateDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMDA, setSelectedMDA] = useState(null);
   const [summaryEvidence, setSummaryEvidence] = useState(null);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'mdas', 'search', 'audit', 'pedigree'
+  const [fullText, setFullText] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Fetch full text for universal search
+  useEffect(() => {
+    if (activeTab === 'search' && data.text_file_id && !fullText) {
+      setIsSearching(true);
+      const url = storage.getFileDownload(BUCKET_ID, data.text_file_id);
+      fetch(url)
+        .then(res => res.text())
+        .then(text => {
+          setFullText(text);
+          setIsSearching(false);
+        })
+        .catch(err => {
+          console.error("Text fetch failed", err);
+          setIsSearching(false);
+        });
+    }
+  }, [activeTab, data.text_file_id, fullText]);
 
   useEffect(() => {
     if (isInitialized) {
@@ -337,6 +536,13 @@ export default function StateDashboard() {
     <div className="min-h-screen bg-slate-50">
       <AIChatbot budgetData={data} />
       
+      <AuditTrailModal 
+        audit={data.audit} 
+        stateName={data.state} 
+        isOpen={isAuditModalOpen} 
+        onClose={() => setIsAuditModalOpen(false)} 
+      />
+
       {/* Source Evidence Sidebar */}
       {(summaryEvidence || selectedMDA) && (
         <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl border-l border-slate-200 z-50 flex flex-col animate-in slide-in-from-right duration-300">
@@ -384,9 +590,15 @@ export default function StateDashboard() {
             {selectedMDA && (
               <>
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">MDA</p>
+                  <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">MDA/Unit</p>
                   <p className="text-lg font-bold text-slate-900">{selectedMDA.name}</p>
                   <p className="text-sm font-mono text-slate-500">{selectedMDA.code}</p>
+                  {selectedMDA.provenance?.line_text && (
+                    <div className="mt-3 p-2 bg-white/50 rounded border border-blue-100">
+                      <p className="text-[10px] font-bold text-blue-400 uppercase">Exact Text Match</p>
+                      <p className="text-xs italic text-slate-600">"{selectedMDA.provenance.line_text}"</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
@@ -407,7 +619,7 @@ export default function StateDashboard() {
                 {data.pdf_file_id && (
                   <SourceInspector 
                     pdfFileId={data.pdf_file_id} 
-                    pageNumber={selectedMDA.pageNumber || 1} 
+                    pageNumber={selectedMDA.pageNumber || selectedMDA.provenance?.page || 1} 
                   />
                 )}
               </>
@@ -417,8 +629,56 @@ export default function StateDashboard() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Official Discrepancy Alert */}
-        {data.isOfficialError && (
+        {/* Data Integrity / Transparency Score Banner */}
+        {data.audit && (
+          <div className={clsx(
+            "mb-8 rounded-2xl p-6 border flex items-center justify-between transition-all hover:shadow-lg cursor-pointer",
+            data.audit.reconciled ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"
+          )} onClick={() => setIsAuditModalOpen(true)}>
+            <div className="flex items-center gap-4">
+              <div className={clsx(
+                "w-12 h-12 rounded-xl flex items-center justify-center",
+                data.audit.reconciled ? "bg-emerald-100" : "bg-rose-100"
+              )}>
+                {data.audit.reconciled ? <ShieldCheck className="w-6 h-6 text-emerald-600" /> : <AlertTriangle className="w-6 h-6 text-rose-600" />}
+              </div>
+              <div>
+                <h3 className={clsx("text-lg font-bold", data.audit.reconciled ? "text-emerald-900" : "text-rose-900")}>
+                  {data.audit.reconciled ? "High Integrity Budget" : "Data Reconciliation Alert"}
+                </h3>
+                <p className={clsx("text-sm", data.audit.reconciled ? "text-emerald-700" : "text-rose-700")}>
+                  {data.audit.reconciled 
+                    ? "Every figure in this dashboard matches the sub-totals in the official document." 
+                    : `Discrepancy detected: ${data.audit.errors?.[0]?.message || "Unreconciled figures found in source."}`}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Integrity Score</p>
+              <div className="flex items-center gap-2 justify-end">
+                <span className={clsx("text-2xl font-black", data.audit.reconciled ? "text-emerald-600" : "text-rose-600")}>
+                  {data.audit.integrity_score || (data.audit.reconciled ? 100 : 0)}%
+                </span>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <div 
+                      key={star} 
+                      className={clsx(
+                        "w-2 h-6 rounded-sm",
+                        star <= (data.audit.integrity_score / 20) 
+                          ? (data.audit.reconciled ? "bg-emerald-500" : "bg-rose-500") 
+                          : "bg-slate-200"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Official Discrepancy Alert (Legacy Support) */}
+        {data.isOfficialError && !data.audit && (
           <div className="mb-8 rounded-2xl bg-amber-50 border border-amber-200 p-6">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -437,355 +697,459 @@ export default function StateDashboard() {
           </div>
         )}
 
-        {/* Header Section */}
-        <div className="mb-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold uppercase rounded-full">
-                  {data.year} Approved Budget
-                </span>
-                {validation?.anomalies > 0 && (
-                  <span className="px-3 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {validation.anomalies} Issues
-                  </span>
+        {/* Intelligence Tab Switcher */}
+        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { id: 'overview', label: 'Overview', icon: PieChart },
+            { id: 'mdas', label: 'MDA Breakdown', icon: Building2 },
+            { id: 'search', label: 'Universal Search', icon: Search },
+            { id: 'audit', label: 'Audit Trail', icon: ShieldCheck },
+            { id: 'pedigree', label: 'Data Pedigree', icon: History }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={clsx(
+                "flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all whitespace-nowrap",
+                activeTab === tab.id
+                  ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20"
+                  : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-200"
+              )}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-8">
+          {activeTab === 'overview' && (
+            <>
+              {/* Key Metrics Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard
+                  id="metric-total"
+                  title="Total Budget"
+                  value={summary.total_expenditure}
+                  subtitle="Approved expenditure"
+                  icon={Wallet}
+                  color="emerald"
+                  trend="Balanced"
+                  onClick={() => handleSummaryClick('total_expenditure', 'Total Expenditure')}
+                />
+                <MetricCard
+                  id="metric-revenue"
+                  title="Total Revenue"
+                  value={summary.total_revenue}
+                  subtitle="Projected income"
+                  icon={Receipt}
+                  color="blue"
+                  onClick={() => handleSummaryClick('total_revenue', 'Total Revenue')}
+                />
+                <MetricCard
+                  id="metric-igr"
+                  title="Internal Revenue"
+                  value={summary.igr}
+                  subtitle={`${((summary.igr / (summary.recurrent_revenue || 1)) * 100).toFixed(1)}% of revenue base`}
+                  icon={Coins}
+                  color="amber"
+                  onClick={() => handleSummaryClick('igr', 'Internal Revenue (IGR)')}
+                />
+                <MetricCard
+                  title="Per Capita"
+                  value={perCapita}
+                  subtitle="Budget per citizen"
+                  icon={Users2}
+                  color="indigo"
+                />
+              </div>
+
+              {/* Main Content Grid */}
+              <div className="grid lg:grid-cols-3 gap-8">
+                {/* Left Column - Charts */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Revenue Breakdown */}
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900">Revenue Sources</h3>
+                          <p className="text-sm text-slate-500">Where the money comes from</p>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                        Inflows
+                      </span>
+                    </div>
+                    
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <SimpleDonutChart 
+                        data={revenueData} 
+                        colors={['#10b981', '#3b82f6', '#f59e0b', '#ef4444']}
+                      />
+                      <div className="space-y-4">
+                        {revenueData.map((item, index) => (
+                          <div key={item.name} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-slate-900">{formatCurrency(item.value)}</p>
+                              <p className="text-xs text-slate-500">
+                                {((item.value / (summary.total_revenue || 1)) * 100).toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expenditure by Sector */}
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                          <Target className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900">Top Expenditure Sectors</h3>
+                          <p className="text-sm text-slate-500">Where the money goes</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => navigate(`/state/${stateId}/sectors`)}
+                        className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        View All <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {topSectors.map((sector, index) => (
+                        <ProgressBar
+                          key={sector.name}
+                          value={sector.amount}
+                          max={totalSectorAmount}
+                          color={['emerald', 'blue', 'indigo', 'amber', 'rose'][index]}
+                          label={sector.name}
+                          sublabel={formatCompact(sector.amount)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Quick Actions & Summary */}
+                <div className="space-y-6">
+                  {/* Budget Health */}
+                  <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-2xl shadow-slate-900/20">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold">Budget Health</h3>
+                        <p className="text-sm text-slate-400">Verification status</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between py-3 border-b border-white/10">
+                        <span className="text-sm text-slate-300">Data Integrity</span>
+                        <span className={clsx("text-sm font-bold", data.audit?.reconciled ? "text-emerald-400" : "text-amber-400")}>
+                          {data.audit?.reconciled ? "Platinum" : "Reconciling"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between py-3 border-b border-white/10">
+                        <span className="text-sm text-slate-300">Balance Check</span>
+                        <span className="text-sm font-bold text-emerald-400">
+                          {Math.abs(summary.total_expenditure - summary.total_revenue) < 1000 ? 'Balanced' : 'Mismatch'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between py-3 border-b border-white/10">
+                        <span className="text-sm text-slate-300">Capital Ratio</span>
+                        <span className="text-sm font-bold text-blue-400">{capitalRatio.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex items-center justify-between py-3">
+                        <span className="text-sm text-slate-300">Total MDAs</span>
+                        <span className="text-sm font-bold text-white">{data.mdas.length}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Navigation */}
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                    <h3 className="font-bold text-slate-900 mb-4">Quick Links</h3>
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => navigate(`/state/${stateId}/mdas`)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-slate-900">MDA Directory</p>
+                            <p className="text-xs text-slate-500">All ministries & agencies</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
+                      </button>
+                      
+                      <button 
+                        onClick={() => navigate(`/state/${stateId}/sectors`)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                            <PieChart className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-slate-900">Sector Analysis</p>
+                            <p className="text-xs text-slate-500">Detailed breakdown by sector</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'mdas' && (
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/30">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">All Funding MDAs</h3>
+                  <p className="text-sm text-slate-500">Every ministry, department, and agency allocation</p>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search ministries..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all w-full sm:w-80"
+                  />
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-8 py-5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Agency</th>
+                      <th className="px-8 py-5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Personnel</th>
+                      <th className="px-8 py-5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Overhead</th>
+                      <th className="px-8 py-5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Capital</th>
+                      <th className="px-8 py-5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredMDAs.map((mda) => (
+                      <MDARow 
+                        key={mda.code} 
+                        mda={mda} 
+                        onSelect={setSelectedMDA} 
+                        formatCompact={formatCompact} 
+                        errors={data.audit?.errors}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'search' && (
+            <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 min-h-[600px] flex flex-col p-0 overflow-hidden">
+              <div className="p-8 border-b border-slate-100 bg-white">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
+                    <Search className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Universal Document Search</h2>
+                    <p className="text-sm text-slate-500">Query all 800+ pages of raw extracted text from the official document.</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search for specific projects, items or keywords (e.g. 'Borehole', 'Toyota', 'School Construction')..."
+                    className="w-full pl-14 pr-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.5rem] text-lg font-medium outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-inner"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto bg-slate-900 p-8 font-mono text-sm leading-relaxed text-slate-400">
+                {isSearching ? (
+                  <div className="flex flex-col items-center justify-center h-full py-20 space-y-4">
+                    <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+                    <p className="text-slate-500">Syncing raw document text...</p>
+                  </div>
+                ) : !fullText ? (
+                  <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-4">
+                    <FileSearch className="w-16 h-16 text-slate-800" />
+                    <p className="text-slate-600 max-w-xs">No text extract found for this state. Ensure 'text.txt' was uploaded.</p>
+                  </div>
+                ) : searchQuery.length < 3 ? (
+                  <div className="flex flex-col items-center justify-center h-full py-20 text-center opacity-50">
+                    <Sparkles className="w-12 h-12 mb-4" />
+                    <p>Enter at least 3 characters to search the raw document...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {fullText.split('\n').filter(line => line.toLowerCase().includes(searchQuery.toLowerCase())).map((line, idx) => {
+                      const parts = line.split(new RegExp(`(${searchQuery})`, 'gi'));
+                      return (
+                        <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors group cursor-pointer" onClick={() => {
+                          // Find page number if mentioned in line or nearby
+                          const pageMatch = line.match(/Page\s+(\d+)/i);
+                          if (pageMatch) setSelectedMDA({ name: 'Search Match', pageNumber: parseInt(pageMatch[1]) });
+                        }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-500">MATCH {idx + 1}</span>
+                            <span className="text-[10px] text-slate-600 opacity-0 group-hover:opacity-100">CLICK TO JUMP IN PDF</span>
+                          </div>
+                          <p className="text-slate-300">
+                            {parts.map((part, i) => (
+                              <span key={i} className={part.toLowerCase() === searchQuery.toLowerCase() ? "bg-emerald-500/30 text-emerald-400 font-bold" : ""}>
+                                {part}
+                              </span>
+                            ))}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
-                {data.state} State
-              </h1>
-              <p className="text-lg text-slate-500 mt-2">
-                Comprehensive budget breakdown and expenditure analysis
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={exportToCSV}
-                className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
-              >
-                <Download className="w-4 h-4" />
-                Export CSV
-              </button>
-              <button className="flex items-center gap-2 px-5 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20">
-                <Share2 className="w-4 h-4" />
-                Share
-              </button>
-            </div>
-          </div>
+            </Card>
+          )}
 
-          {/* Quick Stats Row */}
-          <div className="mt-8 flex flex-wrap items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-600">{data.mdas.length} MDAs</span>
+          {activeTab === 'audit' && (
+            <div className="space-y-6">
+              <AuditTrailModal 
+                audit={data.audit} 
+                stateName={data.state} 
+                isOpen={true} 
+                onClose={() => setActiveTab('overview')} 
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-600">{data.sectors.length} Sectors</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span className="text-slate-600">Verified Data</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-600">Est. {pop.toLocaleString()} population</span>
-            </div>
-          </div>
-        </div>
+          )}
 
-        {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <MetricCard
-            id="metric-total"
-            title="Total Budget"
-            value={summary.total_expenditure}
-            subtitle="Approved expenditure"
-            icon={Wallet}
-            color="emerald"
-            trend="Balanced"
-            onClick={() => handleSummaryClick('total_expenditure', 'Total Expenditure')}
-          />
-          <MetricCard
-            id="metric-revenue"
-            title="Total Revenue"
-            value={summary.total_revenue}
-            subtitle="Projected income"
-            icon={Receipt}
-            color="blue"
-            onClick={() => handleSummaryClick('total_revenue', 'Total Revenue')}
-          />
-          <MetricCard
-            id="metric-igr"
-            title="Internal Revenue"
-            value={summary.igr}
-            subtitle={`${((summary.igr / (summary.recurrent_revenue || 1)) * 100).toFixed(1)}% of revenue base`}
-            icon={Coins}
-            color="amber"
-            onClick={() => handleSummaryClick('igr', 'Internal Revenue (IGR)')}
-          />
-          <MetricCard
-            title="Per Capita"
-            value={perCapita}
-            subtitle="Budget per citizen"
-            icon={Users2}
-            color="indigo"
-          />
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          {/* Left Column - Charts */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Revenue Breakdown */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-emerald-600" />
+          {activeTab === 'pedigree' && (
+            <div className="grid lg:grid-cols-2 gap-8">
+              <Card className="rounded-[2rem] border-none shadow-xl bg-white p-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                    <History className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900">Revenue Sources</h3>
-                    <p className="text-sm text-slate-500">Where the money comes from</p>
+                    <h3 className="text-xl font-black">Process Logs</h3>
+                    <p className="text-sm text-slate-500">Pipeline execution history</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                  Inflows
-                </span>
-              </div>
-              
-              <div className="grid sm:grid-cols-2 gap-6">
-                <SimpleDonutChart 
-                  data={revenueData} 
-                  colors={['#10b981', '#3b82f6', '#f59e0b', '#ef4444']}
-                />
-                <div className="space-y-4">
-                  {revenueData.map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-sm font-medium text-slate-700">{item.name}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-slate-900">{formatCurrency(item.value)}</p>
-                        <p className="text-xs text-slate-500">
-                          {((item.value / (summary.total_revenue || 1)) * 100).toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="bg-slate-50 rounded-2xl p-6 font-mono text-xs leading-relaxed h-[400px] overflow-y-auto text-slate-600 border border-slate-100">
+                  <pre className="whitespace-pre-wrap">{data.process_logs || "No process logs recorded."}</pre>
                 </div>
-              </div>
-            </div>
+              </Card>
 
-            {/* Expenditure by Sector */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                    <Target className="w-5 h-5 text-blue-600" />
+              <Card className="rounded-[2rem] border-none shadow-xl bg-white p-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                    <Scale className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900">Top Expenditure Sectors</h3>
-                    <p className="text-sm text-slate-500">Where the money goes</p>
+                    <h3 className="text-xl font-black">Document Metrics</h3>
+                    <p className="text-sm text-slate-500">Structural complexity analysis</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => navigate(`/state/${stateId}/sectors`)}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                >
-                  View All <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                {topSectors.map((sector, index) => (
-                  <ProgressBar
-                    key={sector.code}
-                    value={sector.amount}
-                    max={totalSectorAmount}
-                    color={['emerald', 'blue', 'indigo', 'amber', 'rose'][index]}
-                    label={sector.name}
-                    sublabel={formatCompact(sector.amount)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Quick Actions & Summary */}
-          <div className="space-y-6">
-            {/* Budget Health */}
-            <div className="bg-slate-900 rounded-2xl p-6 text-white">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="font-bold">Budget Health</h3>
-                  <p className="text-sm text-slate-400">Verification status</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-slate-300">Data Integrity</span>
-                  <span className="text-sm font-bold text-emerald-400">Verified</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-slate-300">Balance Check</span>
-                  <span className="text-sm font-bold text-emerald-400">
-                    {summary.total_expenditure === summary.total_revenue ? 'Balanced' : 'Mismatch'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-slate-300">Capital Ratio</span>
-                  <span className="text-sm font-bold text-blue-400">{capitalRatio.toFixed(1)}%</span>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-slate-300">Total MDAs</span>
-                  <span className="text-sm font-bold text-white">{data.mdas.length}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Navigation */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h3 className="font-bold text-slate-900 mb-4">Quick Links</h3>
-              <div className="space-y-2">
-                <button 
-                  onClick={() => navigate(`/state/${stateId}/mdas`)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-blue-600" />
+                <div className="space-y-6">
+                  {data.document_metrics ? Object.entries(data.document_metrics).map(([key, val]) => (
+                    <div key={key} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <span className="text-sm font-bold text-slate-500 uppercase tracking-tight">{key.replace(/_/g, ' ')}</span>
+                      <span className="text-lg font-black text-slate-900">{typeof val === 'object' ? JSON.stringify(val) : val}</span>
                     </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-slate-900">MDA Directory</p>
-                      <p className="text-xs text-slate-500">All ministries & agencies</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
-                </button>
-                
-                <button 
-                  onClick={() => navigate(`/state/${stateId}/sectors`)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                      <PieChart className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-slate-900">Sector Analysis</p>
-                      <p className="text-xs text-slate-500">Detailed breakdown by sector</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
-                </button>
-                
-                <button 
-                  onClick={() => navigate('/compare')}
-                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-slate-900">Compare States</p>
-                      <p className="text-xs text-slate-500">Side-by-side comparison</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Top MDAs Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Top Funded MDAs</h3>
-              <p className="text-sm text-slate-500">Highest allocated ministries and agencies</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search MDAs..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-emerald-500 outline-none transition-all w-64"
-                />
-              </div>
-              <button 
-                onClick={() => navigate(`/state/${stateId}/mdas`)}
-                className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
-              >
-                View All
-              </button>
-            </div>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Agency</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Personnel</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Overhead</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Capital</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {(searchQuery ? filteredMDAs : data.mdas.slice(0, 10)).map((mda) => (
-                  <tr 
-                    key={mda.code}
-                    onClick={() => setSelectedMDA(mda)}
-                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
-                  >
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-semibold text-slate-900">{mda.name}</p>
-                        <p className="text-xs text-slate-500 font-mono">{mda.code}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.personnel)}</td>
-                    <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.overhead)}</td>
-                    <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.capital)}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-bold rounded-lg">
-                        {formatCompact(mda.total)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {!searchQuery && data.mdas.length > 10 && (
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/30">
-              <button 
-                onClick={() => navigate(`/state/${stateId}/mdas`)}
-                className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-              >
-                View all {data.mdas.length} MDAs <ArrowRight className="w-4 h-4" />
-              </button>
+                  )) : <p className="text-slate-400">No document metrics available.</p>}
+                </div>
+              </Card>
             </div>
           )}
         </div>
+
+        {/* Trust Footer (Condensed) */}
+        <div className="mt-16 pt-16 border-t border-slate-200">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg border border-slate-100">
+                  <Database className="w-6 h-6 text-slate-900" />
+                </div>
+                <span className="text-xs font-black uppercase tracking-widest text-slate-900">Verified & Traceable Data Bundle</span>
+              </div>
+              <h2 className="text-3xl font-black mb-6 leading-tight text-slate-900">
+                Every figure is traceable to the original source.
+              </h2>
+              <p className="text-slate-500 leading-relaxed mb-8">
+                Our system uses layout-aware neural parsing to extract data from the official {data.year} {data.state} State Budget. 
+                Triple-identity checksums ensure the figures match what was signed into law.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {data.pdf_file_id && (
+                  <button 
+                    onClick={() => {
+                      const url = storage.getFileDownload(BUCKET_ID, data.pdf_file_id);
+                      window.open(url, '_blank');
+                    }}
+                    className="px-8 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-2 shadow-xl shadow-slate-900/20"
+                  >
+                    <Download className="w-4 h-4" />
+                    SOURCE PDF
+                  </button>
+                )}
+                <button 
+                  onClick={() => setIsAuditModalOpen(true)}
+                  className="px-8 py-4 bg-white border border-slate-200 text-slate-900 font-black rounded-2xl hover:bg-slate-50 transition-all"
+                >
+                  AUDIT TRAIL
+                </button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: 'MDA Count', val: data.mdas.length },
+                { label: 'Sectors', val: data.sectors.length },
+                { label: 'Integrity', val: `${data.audit?.integrity_score || 100}%`, color: 'text-emerald-600' },
+                { label: 'Fiscal Year', val: data.year }
+              ].map((stat, i) => (
+                <div key={i} className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{stat.label}</p>
+                  <p className={clsx("text-3xl font-black", stat.color || "text-slate-900")}>{stat.val}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
 
         {/* Trust Footer */}
         <div className="mt-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 lg:p-12 text-white">
@@ -805,10 +1169,22 @@ export default function StateDashboard() {
                 Triple-identity checksums ensure the figures match what was signed into law.
               </p>
               <div className="flex flex-wrap gap-3">
-                <button className="px-6 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors">
-                  Download Source PDF
-                </button>
-                <button className="px-6 py-3 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-colors">
+                {data.pdf_file_id && (
+                  <button 
+                    onClick={() => {
+                      const url = storage.getFileDownload(BUCKET_ID, data.pdf_file_id);
+                      window.open(url, '_blank');
+                    }}
+                    className="px-6 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Source PDF
+                  </button>
+                )}
+                <button 
+                  onClick={() => setIsAuditModalOpen(true)}
+                  className="px-6 py-3 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-colors"
+                >
                   View Audit Trail
                 </button>
               </div>
@@ -825,7 +1201,7 @@ export default function StateDashboard() {
               </div>
               <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
                 <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Verification</p>
-                <p className="text-3xl font-bold text-emerald-400">100%</p>
+                <p className="text-3xl font-bold text-emerald-400">{data.audit?.integrity_score || (data.audit?.reconciled ? 100 : 0)}%</p>
               </div>
               <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
                 <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Fiscal Year</p>

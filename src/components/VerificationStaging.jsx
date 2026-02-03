@@ -2,12 +2,11 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useBudget } from '../data/BudgetContext';
 import { 
   Card, Title, Text, TextInput, Button, Grid, Flex, Badge, 
-  Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, 
   Divider, Tracker
 } from '@tremor/react';
 import { 
   CheckCircle2, AlertCircle, Save, ArrowLeft, RefreshCw, Scale, 
-  MousePointer2, Hash, Link2, Info, AlertTriangle, Search
+  MousePointer2, Hash, Link2, Info, AlertTriangle, Search, Sparkles, X, Wand2
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -22,19 +21,38 @@ const formatCurrency = (val) => {
 
 export default function VerificationStaging({ rawData, rawText, onSave, onCancel, isProcessing }) {
   const { uploadProgress } = useBudget();
+  const [showHelp, setShowHelp] = useState(false);
+  const [heuristicMode, setHeuristicFix] = useState(false);
   const [formData, setFormData] = useState({
     state: rawData.state,
     year: rawData.year,
     summary: { ...rawData.summary },
     summarySources: { ...rawData.summarySources },
     isOfficialError: false,
-    errorExplanation: ''
+    errorExplanation: '',
+    audit: { ...rawData.audit }
   });
 
   const [focusedField, setFocusedField] = useState(null);
   const [selection, setSelection] = useState('');
   const [textSearch, setTextSearch] = useState('');
   const textContainerRef = useRef(null);
+
+  // Apply Heuristic Fixes
+  useEffect(() => {
+    if (heuristicMode) {
+      const s = { ...formData.summary };
+      const revTotal = (s.faac || 0) + (s.igr || 0) + (s.grants || 0) + (s.capital_receipts || 0);
+      
+      if (Math.abs(s.total_revenue - revTotal) > 1 && revTotal > 0) {
+        setFormData(prev => ({
+          ...prev,
+          summary: { ...prev.summary, total_revenue: revTotal },
+          errorExplanation: (prev.errorExplanation || "") + "\nNote: Total Revenue adjusted by Audit Engine to match sum of components."
+        }));
+      }
+    }
+  }, [heuristicMode]);
 
   const candidatePool = useMemo(() => {
     const numbers = rawText.match(/[\d,]+\.\d{2}/g) || [];
@@ -106,21 +124,45 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <Title className="text-2xl font-black text-slate-900">Audit & Evidence Console</Title>
+              <Title className="text-2xl font-black text-slate-900">Live Audit Console</Title>
               <Badge color={isValid ? "emerald" : "rose"} icon={isValid ? CheckCircle2 : AlertCircle}>
-                {isValid ? "Validated" : "Balance Required"}
+                {isValid ? "Audit Passed" : "Action Required"}
               </Badge>
             </div>
-            <Text className="text-xs">Verify numbers against raw document evidence.</Text>
+            <Text className="text-xs">Drag files to map budget figures to the source document evidence.</Text>
           </div>
         </div>
           <div className="flex items-center gap-3">
+            {!isValid && (
+              <div className="hidden lg:flex items-center gap-2 text-rose-600 animate-pulse mr-4">
+                <Info className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-tight">Totals must balance before commit</span>
+              </div>
+            )}
             {selection && !uploadProgress.active && (
               <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl animate-in slide-in-from-right-4">
                 <MousePointer2 className="w-4 h-4 text-blue-600" />
                 <span className="text-xs font-bold text-blue-700">Selected: {selection}</span>
               </div>
             )}
+            <button 
+              onClick={() => setShowHelp(true)}
+              className="p-3 bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 transition-all"
+              title="Help Guide"
+            >
+              <Info className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setHeuristicFix(!heuristicMode)}
+              className={clsx(
+                "p-3 rounded-xl transition-all flex items-center gap-2 font-bold text-xs",
+                heuristicMode ? "bg-emerald-600 text-white" : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
+              )}
+              title="Auto-Fix Inconsistencies"
+            >
+              <Wand2 className="w-5 h-5" />
+              {heuristicMode ? "AUTO-FIX ON" : "AUTO-FIX OFF"}
+            </button>
             <Button 
               icon={Save} 
               disabled={!isValid || uploadProgress.active}
@@ -278,7 +320,7 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                     <input 
-                      type="text"
+                      type="text" 
                       placeholder="Search document text..."
                       className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
                       value={textSearch}
@@ -408,6 +450,70 @@ export default function VerificationStaging({ rawData, rawText, onSave, onCancel
           </div>
         </Grid>
       </div>
+
+      {showHelp && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowHelp(false)} />
+          <div className="relative bg-white rounded-[2.5rem] p-8 max-w-2xl w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <Title className="text-2xl font-black">How to Audit Budgets</Title>
+              </div>
+              <button onClick={() => setShowHelp(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <X className="w-6 h-6 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                <div>
+                  <p className="font-bold text-slate-900">Upload Your Files</p>
+                  <p className="text-sm text-slate-500">Drag and drop your extraction folder. The system will load the raw text and data.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                <div>
+                  <p className="font-bold text-slate-900">Verify Totals</p>
+                  <p className="text-sm text-slate-500">Check if "Revenue Chain" and "Expenditure Chain" are balanced. The trackers on the right will turn green when they match.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">3</div>
+                <div>
+                  <p className="font-bold text-slate-900">Map Missing Evidence</p>
+                  <p className="text-sm text-slate-500">
+                    If a number is missing, highlight it in the <span className="font-bold">Source Document</span> text panel. 
+                    Then click <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px] font-black">ASSIGN SELECTION</span> 
+                    next to the target field. This proves where the number came from!
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-sm shrink-0">4</div>
+                <div>
+                  <p className="font-bold text-slate-900">Handle Discrepancies</p>
+                  <p className="text-sm text-slate-500">If the government's own PDF is mathematically wrong, check "Confirmed Source Error" and explain why. This flags the document for users.</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowHelp(false)}
+              className="w-full mt-10 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 transition-all active:scale-95"
+            >
+              GOT IT, LET'S AUDIT
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
