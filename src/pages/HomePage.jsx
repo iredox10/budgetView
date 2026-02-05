@@ -22,7 +22,7 @@ import {
   Search,
   Sparkles
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 const formatCurrency = (val) => {
   if (!val) return '₦0';

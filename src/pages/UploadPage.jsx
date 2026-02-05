@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useBudget } from '../data/BudgetContext';
 import { 
   Upload, FileJson, CheckCircle2, AlertCircle, Trash2, 
@@ -7,6 +7,7 @@ import {
   Package, Database, ListChecks, History, Scale, Wand2
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Badge } from '@tremor/react';
 import { BudgetParser } from '../utils/BudgetParser';
 import { BundleStandardizer } from '../utils/BundleStandardizer';
 import VerificationStaging from '../components/VerificationStaging';
@@ -41,7 +42,7 @@ export default function UploadPage() {
     setIsProcessing(true);
     try {
       const bundleData = {};
-      
+
       if (filesMap.output) bundleData.outputJson = JSON.parse(await filesMap.output.text());
       if (filesMap.appOutput) bundleData.appOutputJson = JSON.parse(await filesMap.appOutput.text());
       if (filesMap.patch) bundleData.metadataPatch = JSON.parse(await filesMap.patch.text());
@@ -69,15 +70,17 @@ export default function UploadPage() {
     if (!files || files.length === 0) return;
     
     const fileList = Array.from(files);
+    const getFile = (name) => fileList.find(f => f.name === name || f.name.endsWith('/' + name));
+
     const newBundle = {
-      output: fileList.find(f => f.name === "output.json"),
-      appOutput: fileList.find(f => f.name === "app_output.json"),
-      patch: fileList.find(f => f.name === "metadata_patch.json"),
-      metrics: fileList.find(f => f.name === "page_metrics.json"),
-      review: fileList.find(f => f.name === "review.json"),
-      logs: fileList.find(f => f.name === "run.log"),
-      pdf: fileList.find(f => f.type === "application/pdf" || f.name === "source.pdf"),
-      text: fileList.find(f => f.name === "text.txt")
+      output: getFile("output.json"),
+      appOutput: getFile("app_output.json"),
+      patch: getFile("metadata_patch.json"),
+      metrics: getFile("page_metrics.json"),
+      review: getFile("review.json"),
+      logs: getFile("run.log"),
+      pdf: fileList.find(f => f.type === "application/pdf" || f.name === "source.pdf" || f.name.endsWith('/source.pdf')),
+      text: getFile("text.txt")
     };
 
     setBundleFiles(newBundle);
@@ -115,7 +118,15 @@ export default function UploadPage() {
   const handleCommit = async (finalData) => {
     setIsProcessing(true);
     try {
-      await addState(finalData, pdfFile, textFile);
+      const payload = {
+        ...finalData,
+        process_logs: stagedData?.process_logs || "",
+        document_metrics: stagedData?.document_metrics || {},
+        summarySources: stagedData?.summarySources || finalData.summarySources || {},
+        summaryPages: stagedData?.summaryPages || finalData.summaryPages || {}
+      };
+
+      await addState(payload, pdfFile, textFile);
       setStagedData(null);
       setPdfFile(null);
       setTextFile(null);

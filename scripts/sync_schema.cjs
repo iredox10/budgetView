@@ -10,6 +10,7 @@ const databases = new sdk.Databases(client);
 
 const DB_ID = process.env.VITE_APPWRITE_DATABASE_ID;
 const STATES_COL = process.env.VITE_APPWRITE_STATES_COLLECTION_ID;
+const MDAS_COL = process.env.VITE_APPWRITE_MDAS_COLLECTION_ID;
 
 async function syncSchema() {
     console.log("🛠️ Syncing Appwrite Schema...");
@@ -37,6 +38,18 @@ async function syncSchema() {
         await databases.createStringAttribute(DB_ID, STATES_COL, 'process_logs', 65535, false);
         console.log("✅ Added process_logs");
     } catch (e) { console.log("ℹ️ process_logs already exists or error: " + e.message); }
+
+    try {
+        // Add units to MDAs (Large JSON string)
+        await databases.createStringAttribute(DB_ID, MDAS_COL, 'units', 1000000, false);
+        console.log("✅ Added mdas.units");
+    } catch (e) { console.log("ℹ️ mdas.units already exists or error: " + e.message); }
+
+    try {
+        // Add provenance to MDAs (JSON string)
+        await databases.createStringAttribute(DB_ID, MDAS_COL, 'provenance', 10000, false);
+        console.log("✅ Added mdas.provenance");
+    } catch (e) { console.log("ℹ️ mdas.provenance already exists or error: " + e.message); }
 
     console.log("🚀 Schema Sync Complete!");
 }

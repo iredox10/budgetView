@@ -33,6 +33,8 @@ async function deploy() {
   const name = 'Delete State Data';
   const runtime = 'python-3.12';
   const executePermissions = ['any']; 
+  const entrypoint = 'main.py';
+  const commands = 'pip install -r requirements.txt';
 
   try {
     console.log(`🚀 Deploying function: ${name}...`);
@@ -41,7 +43,19 @@ async function deploy() {
     try {
       fn = await functions.get(functionId);
       console.log("ℹ️ Function exists, updating configuration (900s timeout)...");
-      await functions.update(functionId, name, runtime, executePermissions, undefined, '', 900);
+      await functions.update(
+        functionId,
+        name,
+        runtime,
+        executePermissions,
+        undefined,
+        '',
+        900,
+        undefined,
+        undefined,
+        entrypoint,
+        commands
+      );
     } catch (e) {
       console.log("ℹ️ Function doesn't exist, creating with 900s timeout...");
       fn = await functions.create(functionId, name, runtime, executePermissions, undefined, '', 900);

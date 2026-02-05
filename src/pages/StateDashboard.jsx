@@ -5,13 +5,15 @@ import {
   AlertCircle, TrendingUp, Users, Database, CheckCircle2, X, ArrowRight, 
   AlertTriangle, Coins, TrendingDown, Users2, Search, Download, 
   FileText, PieChart, Building2, ChevronRight, Landmark, Share2,
-  Target, Wallet, Receipt, ShieldCheck, Scale, FileSearch, Sparkles
+  Target, Wallet, Receipt, ShieldCheck, Scale, FileSearch, Sparkles,
+  History, Eye, FileJson, Loader2
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AIChatbot from '../components/AIChatbot';
 import ShareButton from '../components/ShareButton';
 import SourceInspector from '../components/SourceInspector';
 import { Badge, Title, Text } from '@tremor/react';
+import { storage, BUCKET_ID } from '../utils/appwrite';
 
 const formatCurrency = (val) => {
   if (!val || val === 0) return '₦0.00';
@@ -393,10 +395,22 @@ export default function StateDashboard() {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'mdas', 'search', 'audit', 'pedigree'
   const [fullText, setFullText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [verificationMode, setVerificationMode] = useState('pdf'); // 'pdf', 'raw', 'process'
+
+  useEffect(() => {
+    if (isInitialized) {
+      const stateInfo = states.find(s => s.id === stateId);
+      if (stateInfo) {
+        setData(stateInfo.data);
+      } else {
+        setData(null);
+      }
+    }
+  }, [stateId, states, isInitialized]);
 
   // Fetch full text for universal search
   useEffect(() => {
-    if (activeTab === 'search' && data.text_file_id && !fullText) {
+    if ((activeTab === 'search' || verificationMode === 'raw') && data?.text_file_id && !fullText) {
       setIsSearching(true);
       const url = storage.getFileDownload(BUCKET_ID, data.text_file_id);
       fetch(url)
@@ -410,18 +424,7 @@ export default function StateDashboard() {
           setIsSearching(false);
         });
     }
-  }, [activeTab, data.text_file_id, fullText]);
-
-  useEffect(() => {
-    if (isInitialized) {
-      const stateInfo = states.find(s => s.id === stateId);
-      if (stateInfo) {
-        setData(stateInfo.data);
-      } else {
-        setData(null);
-      }
-    }
-  }, [stateId, states, isInitialized]);
+  }, [activeTab, verificationMode, data?.text_file_id, fullText]);
 
   const summaryPages = useMemo(() => {
     if (!data?.summaryPages) return {};
@@ -545,15 +548,15 @@ export default function StateDashboard() {
 
       {/* Source Evidence Sidebar */}
       {(summaryEvidence || selectedMDA) && (
-        <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl border-l border-slate-200 z-50 flex flex-col animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-y-0 right-0 w-full sm:w-[520px] bg-white shadow-2xl border-l border-slate-200 z-50 flex flex-col animate-in slide-in-from-right duration-300">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
                 <FileText className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">Source Evidence</h3>
-                <p className="text-xs text-slate-500">Verified from official document</p>
+                <h3 className="font-bold text-slate-900">Intelligence Sidebar</h3>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Multi-Mode Verification</p>
               </div>
             </div>
             <button 
@@ -566,137 +569,75 @@ export default function StateDashboard() {
               <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
+
+          {/* Mode Switcher */}
+          <div className="px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {[
+              { id: 'pdf', label: 'OFFICIAL PDF', icon: FileText },
+              { id: 'raw', label: 'RAW OCR TEXT', icon: Search },
+              { id: 'process', label: 'PROCESS LOG', icon: History }
+            ].map(mode => (
+              <button 
+                key={mode.id}
+                onClick={() => setVerificationMode(mode.id)}
+                className={clsx(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap",
+                  verificationMode === mode.id ? "bg-slate-900 text-white shadow-lg" : "bg-white text-slate-500 border border-slate-200 hover:bg-slate-100"
+                )}
+              >
+                <mode.icon className="w-3 h-3" />
+                {mode.label}
+              </button>
+            ))}
+          </div>
           
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {summaryEvidence && (
-              <>
-                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-                  <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1">Metric</p>
-                  <p className="text-lg font-bold text-slate-900">{summaryEvidence.label}</p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-1">
-                    {formatCurrency(summary[summaryEvidence.field])}
-                  </p>
+            <div className="p-4 bg-slate-900 rounded-2xl text-white">
+              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Context</p>
+              <p className="text-lg font-bold">{(summaryEvidence || selectedMDA).name || summaryEvidence?.label}</p>
+              <p className="text-sm font-mono text-slate-400">{(summaryEvidence || selectedMDA).code || ""}</p>
+              {(summaryEvidence || selectedMDA).provenance?.line_text && (
+                <div className="mt-3 p-3 bg-white/5 rounded-xl border border-white/10 italic text-xs text-slate-300">
+                  "{ (summaryEvidence || selectedMDA).provenance.line_text }"
                 </div>
-                
-                {data.pdf_file_id && (
-                  <SourceInspector 
-                    pdfFileId={data.pdf_file_id} 
-                    pageNumber={summaryEvidence.pageNumber} 
-                  />
-                )}
-              </>
-            )}
-            
-            {selectedMDA && (
-              <>
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">MDA/Unit</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedMDA.name}</p>
-                  <p className="text-sm font-mono text-slate-500">{selectedMDA.code}</p>
-                  {selectedMDA.provenance?.line_text && (
-                    <div className="mt-3 p-2 bg-white/50 rounded border border-blue-100">
-                      <p className="text-[10px] font-bold text-blue-400 uppercase">Exact Text Match</p>
-                      <p className="text-xs italic text-slate-600">"{selectedMDA.provenance.line_text}"</p>
+              )}
+            </div>
+
+            <div className="h-[500px] rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 relative">
+              {verificationMode === 'pdf' && data.pdf_file_id && (
+                <SourceInspector 
+                  pdfFileId={data.pdf_file_id} 
+                  pageNumber={summaryEvidence?.pageNumber || selectedMDA?.pageNumber || selectedMDA?.provenance?.page || 1} 
+                />
+              )}
+
+              {verificationMode === 'raw' && (
+                <div className="h-full flex flex-col">
+                  {isSearching ? (
+                    <div className="flex flex-col items-center justify-center h-full space-y-4">
+                      <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+                      <p className="text-xs text-slate-500 font-bold">Loading Raw Text...</p>
+                    </div>
+                  ) : (
+                    <div className="flex-1 p-6 font-mono text-[11px] leading-relaxed bg-slate-900 text-slate-400 overflow-y-auto whitespace-pre-wrap">
+                      {fullText || "No raw text extract available."}
                     </div>
                   )}
                 </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3 bg-slate-50 rounded-xl text-center">
-                    <p className="text-xs text-slate-500 mb-1">Personnel</p>
-                    <p className="text-sm font-bold text-slate-900">{formatCompact(selectedMDA.personnel)}</p>
-                  </div>
-                  <div className="p-3 bg-slate-50 rounded-xl text-center">
-                    <p className="text-xs text-slate-500 mb-1">Overhead</p>
-                    <p className="text-sm font-bold text-slate-900">{formatCompact(selectedMDA.overhead)}</p>
-                  </div>
-                  <div className="p-3 bg-slate-50 rounded-xl text-center">
-                    <p className="text-xs text-slate-500 mb-1">Capital</p>
-                    <p className="text-sm font-bold text-slate-900">{formatCompact(selectedMDA.capital)}</p>
-                  </div>
+              )}
+
+              {verificationMode === 'process' && (
+                <div className="h-full p-6 font-mono text-[11px] leading-relaxed bg-slate-50 text-slate-600 overflow-y-auto">
+                  <Title className="text-xs mb-4">Pipeline Execution Log</Title>
+                  <pre className="whitespace-pre-wrap">{data.process_logs || "No logs available."}</pre>
                 </div>
-                
-                {data.pdf_file_id && (
-                  <SourceInspector 
-                    pdfFileId={data.pdf_file_id} 
-                    pageNumber={selectedMDA.pageNumber || selectedMDA.provenance?.page || 1} 
-                  />
-                )}
-              </>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Data Integrity / Transparency Score Banner */}
-        {data.audit && (
-          <div className={clsx(
-            "mb-8 rounded-2xl p-6 border flex items-center justify-between transition-all hover:shadow-lg cursor-pointer",
-            data.audit.reconciled ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"
-          )} onClick={() => setIsAuditModalOpen(true)}>
-            <div className="flex items-center gap-4">
-              <div className={clsx(
-                "w-12 h-12 rounded-xl flex items-center justify-center",
-                data.audit.reconciled ? "bg-emerald-100" : "bg-rose-100"
-              )}>
-                {data.audit.reconciled ? <ShieldCheck className="w-6 h-6 text-emerald-600" /> : <AlertTriangle className="w-6 h-6 text-rose-600" />}
-              </div>
-              <div>
-                <h3 className={clsx("text-lg font-bold", data.audit.reconciled ? "text-emerald-900" : "text-rose-900")}>
-                  {data.audit.reconciled ? "High Integrity Budget" : "Data Reconciliation Alert"}
-                </h3>
-                <p className={clsx("text-sm", data.audit.reconciled ? "text-emerald-700" : "text-rose-700")}>
-                  {data.audit.reconciled 
-                    ? "Every figure in this dashboard matches the sub-totals in the official document." 
-                    : `Discrepancy detected: ${data.audit.errors?.[0]?.message || "Unreconciled figures found in source."}`}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Integrity Score</p>
-              <div className="flex items-center gap-2 justify-end">
-                <span className={clsx("text-2xl font-black", data.audit.reconciled ? "text-emerald-600" : "text-rose-600")}>
-                  {data.audit.integrity_score || (data.audit.reconciled ? 100 : 0)}%
-                </span>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <div 
-                      key={star} 
-                      className={clsx(
-                        "w-2 h-6 rounded-sm",
-                        star <= (data.audit.integrity_score / 20) 
-                          ? (data.audit.reconciled ? "bg-emerald-500" : "bg-rose-500") 
-                          : "bg-slate-200"
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Official Discrepancy Alert (Legacy Support) */}
-        {data.isOfficialError && !data.audit && (
-          <div className="mb-8 rounded-2xl bg-amber-50 border border-amber-200 p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-6 h-6 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-amber-900 mb-1">Government Document Integrity Alert</h3>
-                <p className="text-amber-800 text-sm leading-relaxed">
-                  {data.errorExplanation || "The official budget document for this state contains internal mathematical discrepancies verified by our audit team."}
-                </p>
-              </div>
-              <span className="px-3 py-1 bg-amber-200 text-amber-800 text-xs font-bold rounded-full whitespace-nowrap">
-                Source Error
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Intelligence Tab Switcher */}
         <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
           {[
@@ -726,6 +667,41 @@ export default function StateDashboard() {
         <div className="space-y-8">
           {activeTab === 'overview' && (
             <>
+              {/* Data Integrity / Transparency Score Banner */}
+              {data.audit && (
+                <div className={clsx(
+                  "mb-8 rounded-2xl p-6 border flex items-center justify-between transition-all hover:shadow-lg cursor-pointer",
+                  data.audit.reconciled ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"
+                )} onClick={() => setActiveTab('audit')}>
+                  <div className="flex items-center gap-4">
+                    <div className={clsx(
+                      "w-12 h-12 rounded-xl flex items-center justify-center",
+                      data.audit.reconciled ? "bg-emerald-100" : "bg-rose-100"
+                    )}>
+                      {data.audit.reconciled ? <ShieldCheck className="w-6 h-6 text-emerald-600" /> : <AlertTriangle className="w-6 h-6 text-rose-600" />}
+                    </div>
+                    <div>
+                      <h3 className={clsx("text-lg font-bold", data.audit.reconciled ? "text-emerald-900" : "text-rose-900")}>
+                        {data.audit.reconciled ? "High Integrity Budget" : "Data Reconciliation Alert"}
+                      </h3>
+                      <p className={clsx("text-sm", data.audit.reconciled ? "text-emerald-700" : "text-rose-700")}>
+                        {data.audit.reconciled 
+                          ? "Every figure in this dashboard matches the sub-totals in the official document." 
+                          : `Discrepancy detected: ${data.audit.errors?.[0]?.message || "Unreconciled figures found in source."}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Integrity Score</p>
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className={clsx("text-2xl font-black", data.audit.reconciled ? "text-emerald-600" : "text-rose-600")}>
+                        {data.audit.integrity_score || (data.audit.reconciled ? 100 : 0)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Key Metrics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard
@@ -891,7 +867,7 @@ export default function StateDashboard() {
                     <h3 className="font-bold text-slate-900 mb-4">Quick Links</h3>
                     <div className="space-y-2">
                       <button 
-                        onClick={() => navigate(`/state/${stateId}/mdas`)}
+                        onClick={() => setActiveTab('mdas')}
                         className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
                       >
                         <div className="flex items-center gap-3">
@@ -1022,7 +998,7 @@ export default function StateDashboard() {
                         <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors group cursor-pointer" onClick={() => {
                           // Find page number if mentioned in line or nearby
                           const pageMatch = line.match(/Page\s+(\d+)/i);
-                          if (pageMatch) setSelectedMDA({ name: 'Search Match', pageNumber: parseInt(pageMatch[1]) });
+                          setSelectedMDA({ name: 'Search Match', pageNumber: pageMatch ? parseInt(pageMatch[1]) : 1, provenance: { line_text: line } });
                         }}>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-500">MATCH {idx + 1}</span>
@@ -1146,67 +1122,6 @@ export default function StateDashboard() {
                   <p className={clsx("text-3xl font-black", stat.color || "text-slate-900")}>{stat.val}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-
-
-        {/* Trust Footer */}
-        <div className="mt-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 lg:p-12 text-white">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                  <Database className="w-6 h-6 text-emerald-400" />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Verified & Traceable</span>
-              </div>
-              <h2 className="text-3xl font-bold mb-4">
-                Every figure is traceable to the official document
-              </h2>
-              <p className="text-slate-400 leading-relaxed mb-6">
-                Our system uses layout-aware neural parsing to extract data from the official {data.year} {data.state} State Budget. 
-                Triple-identity checksums ensure the figures match what was signed into law.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {data.pdf_file_id && (
-                  <button 
-                    onClick={() => {
-                      const url = storage.getFileDownload(BUCKET_ID, data.pdf_file_id);
-                      window.open(url, '_blank');
-                    }}
-                    className="px-6 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Source PDF
-                  </button>
-                )}
-                <button 
-                  onClick={() => setIsAuditModalOpen(true)}
-                  className="px-6 py-3 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-colors"
-                >
-                  View Audit Trail
-                </button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">MDA Count</p>
-                <p className="text-3xl font-bold">{data.mdas.length}</p>
-              </div>
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Sectors</p>
-                <p className="text-3xl font-bold">{data.sectors.length}</p>
-              </div>
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Verification</p>
-                <p className="text-3xl font-bold text-emerald-400">{data.audit?.integrity_score || (data.audit?.reconciled ? 100 : 0)}%</p>
-              </div>
-              <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Fiscal Year</p>
-                <p className="text-3xl font-bold">{data.year}</p>
-              </div>
             </div>
           </div>
         </div>

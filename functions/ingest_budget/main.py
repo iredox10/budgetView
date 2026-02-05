@@ -1,9 +1,17 @@
 import json
+import os
 import concurrent.futures
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from appwrite.services.storage import Storage
 from appwrite.id import ID
+
+def get_env(context, key):
+    if hasattr(context, "variables") and context.variables:
+        value = context.variables.get(key)
+        if value:
+            return value
+    return os.environ.get(key)
 
 def main(context):
     payload = context.req.body
@@ -22,18 +30,25 @@ def main(context):
         return context.res.json({"error": "Missing fileId or bucketId"}, 400)
 
     # Initialize Appwrite SDK
+    endpoint = get_env(context, 'VITE_APPWRITE_ENDPOINT')
+    project_id = get_env(context, 'VITE_APPWRITE_PROJECT_ID')
+    api_key = get_env(context, 'APPWRITE_API_KEY')
+
+    if not endpoint or not project_id or not api_key:
+        return context.res.json({"error": "Missing Appwrite environment configuration"}, 500)
+
     client = Client()
-    client.set_endpoint(context.variables.get('VITE_APPWRITE_ENDPOINT'))
-    client.set_project(context.variables.get('VITE_APPWRITE_PROJECT_ID'))
-    client.set_key(context.variables.get('APPWRITE_API_KEY'))
+    client.set_endpoint(endpoint)
+    client.set_project(project_id)
+    client.set_key(api_key)
 
     databases = Databases(client)
     storage = Storage(client)
     
-    db_id = context.variables.get('VITE_APPWRITE_DATABASE_ID')
-    state_col = context.variables.get('VITE_APPWRITE_STATES_COLLECTION_ID')
-    mda_col = context.variables.get('VITE_APPWRITE_MDAS_COLLECTION_ID')
-    sector_col = context.variables.get('VITE_APPWRITE_SECTORS_COLLECTION_ID')
+    db_id = get_env(context, 'VITE_APPWRITE_DATABASE_ID')
+    state_col = get_env(context, 'VITE_APPWRITE_STATES_COLLECTION_ID')
+    mda_col = get_env(context, 'VITE_APPWRITE_MDAS_COLLECTION_ID')
+    sector_col = get_env(context, 'VITE_APPWRITE_SECTORS_COLLECTION_ID')
 
     try:
         # 1. Download the budget JSON file

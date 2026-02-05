@@ -1,9 +1,17 @@
 import json
+import os
 import time
 import concurrent.futures
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from appwrite.query import Query
+
+def get_env(context, key):
+    if hasattr(context, "variables") and context.variables:
+        value = context.variables.get(key)
+        if value:
+            return value
+    return os.environ.get(key)
 
 def main(context):
     payload = context.req.body
@@ -17,16 +25,23 @@ def main(context):
     if not state_id:
         return context.res.json({"error": "Missing stateId"}, 400)
 
+    endpoint = get_env(context, 'VITE_APPWRITE_ENDPOINT')
+    project_id = get_env(context, 'VITE_APPWRITE_PROJECT_ID')
+    api_key = get_env(context, 'APPWRITE_API_KEY')
+
+    if not endpoint or not project_id or not api_key:
+        return context.res.json({"error": "Missing Appwrite environment configuration"}, 500)
+
     client = Client()
-    client.set_endpoint(context.variables.get('VITE_APPWRITE_ENDPOINT'))
-    client.set_project(context.variables.get('VITE_APPWRITE_PROJECT_ID'))
-    client.set_key(context.variables.get('APPWRITE_API_KEY'))
+    client.set_endpoint(endpoint)
+    client.set_project(project_id)
+    client.set_key(api_key)
 
     databases = Databases(client)
-    db_id = context.variables.get('VITE_APPWRITE_DATABASE_ID')
-    mda_col = context.variables.get('VITE_APPWRITE_MDAS_COLLECTION_ID')
-    sector_col = context.variables.get('VITE_APPWRITE_SECTORS_COLLECTION_ID')
-    state_col = context.variables.get('VITE_APPWRITE_STATES_COLLECTION_ID')
+    db_id = get_env(context, 'VITE_APPWRITE_DATABASE_ID')
+    mda_col = get_env(context, 'VITE_APPWRITE_MDAS_COLLECTION_ID')
+    sector_col = get_env(context, 'VITE_APPWRITE_SECTORS_COLLECTION_ID')
+    state_col = get_env(context, 'VITE_APPWRITE_STATES_COLLECTION_ID')
 
     def delete_batch(collection_id, document_ids):
         def delete_single(doc_id):
@@ -62,13 +77,20 @@ def main(context):
 
         # 2. Delete Sectors
         context.log(f"📁 Deleting Sectors...")
-        sectors = databases.list_documents(db_id, sector_col, [
-            Query.equal('state_id', state_id),
-            Query.limit(100)
-        ])
-        if sectors['documents']:
+        total_deleted_sectors = 0
+        while True:
+            sectors = databases.list_documents(db_id, sector_col, [
+                Query.equal('state_id', state_id),
+                Query.limit(100)
+            ])
+            if not sectors['documents']:
+                break
+
             doc_ids = [s['$id'] for s in sectors['documents']]
             delete_batch(sector_col, doc_ids)
+            total_deleted_sectors += len(doc_ids)
+            context.log(f"🧹 Purged batch of {len(doc_ids)} sectors (Total: {total_deleted_sectors})")
+            time.sleep(0.5)
 
         # 3. Delete State metadata
         context.log(f"📝 Finalizing state metadata removal...")
@@ -76,7 +98,7 @@ def main(context):
 
         return context.res.json({
             "status": "success", 
-            "message": f"Purge complete. {total_deleted_mdas} MDAs removed."
+            "message": f"Purge complete. {total_deleted_mdas} MDAs removed, {total_deleted_sectors} sectors removed."
         })
 
     except Exception as e:

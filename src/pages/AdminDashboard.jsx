@@ -59,6 +59,9 @@ export default function AdminDashboard() {
     }).format(val);
   };
 
+  const ingestMode = (import.meta.env.VITE_INGEST_MODE || 'direct').toLowerCase();
+  const ingestLabel = ingestMode === 'cloud' ? 'Cloud Function' : 'Direct Upload';
+
   const StatCard = ({ icon: Icon, label, value, sublabel, color = 'emerald' }) => {
     const IconComponent = Icon;
     return (
@@ -271,6 +274,22 @@ export default function AdminDashboard() {
               <div className="h-full bg-emerald-500 rounded-full" style={{ width: '100%' }} />
             </div>
             <p className="text-xs text-slate-500 mt-2">All checksums passed</p>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ingestion Mode</p>
+              <p className="text-lg font-bold text-slate-900">{ingestLabel}</p>
+              <p className="text-xs text-slate-500">Switch via <span className="font-mono">VITE_INGEST_MODE</span> in .env</p>
+            </div>
+            <div className={clsx(
+              "px-3 py-1 rounded-full text-xs font-semibold",
+              ingestMode === 'cloud' ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"
+            )}>
+              {ingestMode === 'cloud' ? 'cloud' : 'direct'}
+            </div>
           </div>
         </div>
 
