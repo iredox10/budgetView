@@ -12,7 +12,7 @@ import { clsx } from 'clsx';
 import AIChatbot from '../components/AIChatbot';
 import ShareButton from '../components/ShareButton';
 import SourceInspector from '../components/SourceInspector';
-import { Badge, Title, Text } from '@tremor/react';
+import { Badge, Title, Text, Card } from '@tremor/react';
 import { storage, BUCKET_ID } from '../utils/appwrite';
 
 const formatCurrency = (val) => {
@@ -425,6 +425,24 @@ export default function StateDashboard() {
         });
     }
   }, [activeTab, verificationMode, data?.text_file_id, fullText]);
+
+  useEffect(() => {
+    if (activeTab !== 'search') return;
+    if (!data?.text_file_id) return;
+    if (fullText) return;
+    setIsSearching(true);
+    const url = storage.getFileView(BUCKET_ID, data.text_file_id);
+    fetch(url)
+      .then(res => res.text())
+      .then(text => {
+        setFullText(text);
+        setIsSearching(false);
+      })
+      .catch(err => {
+        console.error("Text view fetch failed", err);
+        setIsSearching(false);
+      });
+  }, [activeTab, data?.text_file_id, fullText]);
 
   const summaryPages = useMemo(() => {
     if (!data?.summaryPages) return {};
@@ -1059,7 +1077,7 @@ export default function StateDashboard() {
                   </div>
                 </div>
                 <div className="space-y-6">
-                  {data.document_metrics ? Object.entries(data.document_metrics).map(([key, val]) => (
+                  {data.document_metrics && Object.keys(data.document_metrics).length > 0 ? Object.entries(data.document_metrics).map(([key, val]) => (
                     <div key={key} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                       <span className="text-sm font-bold text-slate-500 uppercase tracking-tight">{key.replace(/_/g, ' ')}</span>
                       <span className="text-lg font-black text-slate-900">{typeof val === 'object' ? JSON.stringify(val) : val}</span>

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { databases, functions, storage, DB_ID, COLLECTIONS, ID, DELETE_FUNCTION_ID, INGEST_FUNCTION_ID, BUCKET_ID } from '../utils/appwrite';
+import { Permission, Role } from 'appwrite';
 import { Query } from 'appwrite';
 
 const INGEST_MODE = import.meta.env.VITE_INGEST_MODE || 'direct';
@@ -108,6 +109,9 @@ export function BudgetProvider({ children }) {
         console.log("📄 Uploading original budget PDF...");
         const uploadedPdf = await storage.createFile(BUCKET_ID, ID.unique(), pdfFile);
         pdfFileId = uploadedPdf.$id;
+        await storage.updateFile(BUCKET_ID, pdfFileId, undefined, [
+          Permission.read(Role.any())
+        ]);
       }
 
       // 3. Upload Text Extract if provided
@@ -116,6 +120,15 @@ export function BudgetProvider({ children }) {
         console.log("📝 Uploading raw text extract...");
         const uploadedText = await storage.createFile(BUCKET_ID, ID.unique(), textFile);
         textFileId = uploadedText.$id;
+        await storage.updateFile(BUCKET_ID, textFileId, undefined, [
+          Permission.read(Role.any())
+        ]);
+      }
+
+      // 4. Validate bundle before any ingestion
+      const mdas = Array.isArray(newStateData.mdas) ? newStateData.mdas : [];
+      if (mdas.length === 0) {
+        throw new Error("No MDAs detected in this bundle. Ensure the folder contains a JSON with MDA data (mda/expenditure_mda) or share the folder so we can add a parser rule.");
       }
 
       if (INGEST_MODE === 'cloud' && INGEST_FUNCTION_ID) {
@@ -199,7 +212,6 @@ export function BudgetProvider({ children }) {
           process_logs: newStateData.process_logs || ""
         });
 
-        const mdas = Array.isArray(newStateData.mdas) ? newStateData.mdas : [];
         const sectors = Array.isArray(newStateData.sectors) ? newStateData.sectors : [];
 
         let processed = 0;
@@ -210,36 +222,62 @@ export function BudgetProvider({ children }) {
           setUploadStatus(prev => ({ ...prev, current: Math.min(progress, 98) }));
         };
 
+        const mdaErrors = [];
+        const sectorErrors = [];
+        let mdaCreated = 0;
+        let sectorCreated = 0;
+
         for (let i = 0; i < mdas.length; i += DIRECT_UPLOAD_BATCH) {
           const slice = mdas.slice(i, i + DIRECT_UPLOAD_BATCH);
-          await Promise.all(slice.map(mda => {
+          await Promise.all(slice.map(async (mda) => {
             const prov = mda.provenance || {};
-            return databases.createDocument(DB_ID, COLLECTIONS.MDAS, ID.unique(), {
-              state_id: stateId,
-              code: String(mda.code || '0'),
-              name: mda.name || 'Unknown',
-              total: mda.total || 0,
-              personnel: mda.personnel || mda.recurrent || 0,
-              overhead: mda.overhead || 0,
-              capital: mda.capital || 0,
-              sourceLine: prov.line_text || '',
-              pageNumber: prov.page || 0,
-              units: JSON.stringify(mda.units || []),
-              provenance: JSON.stringify(prov || {})
-            }).then(bumpProgress);
+            try {
+              await databases.createDocument(DB_ID, COLLECTIONS.MDAS, ID.unique(), {
+                state_id: stateId,
+                code: String(mda.code || '0'),
+                name: mda.name || 'Unknown',
+                total: mda.total || 0,
+                personnel: mda.personnel || mda.recurrent || 0,
+                overhead: mda.overhead || 0,
+                capital: mda.capital || 0,
+                sourceLine: prov.line_text || '',
+                pageNumber: prov.page || 0,
+                units: JSON.stringify(mda.units || []),
+                provenance: JSON.stringify(prov || {})
+              });
+              mdaCreated += 1;
+              bumpProgress();
+            } catch (err) {
+              mdaErrors.push({ code: mda.code, message: err.message });
+            }
           }));
         }
 
         for (let i = 0; i < sectors.length; i += DIRECT_UPLOAD_BATCH) {
           const slice = sectors.slice(i, i + DIRECT_UPLOAD_BATCH);
-          await Promise.all(slice.map(sector => {
-            return databases.createDocument(DB_ID, COLLECTIONS.SECTORS, ID.unique(), {
-              state_id: stateId,
-              code: sector.code || '0',
-              name: sector.name || 'Unknown',
-              amount: sector.amount || 0
-            }).then(bumpProgress);
+          await Promise.all(slice.map(async (sector) => {
+            try {
+              await databases.createDocument(DB_ID, COLLECTIONS.SECTORS, ID.unique(), {
+                state_id: stateId,
+                code: sector.code || '0',
+                name: sector.name || 'Unknown',
+                amount: sector.amount || 0
+              });
+              sectorCreated += 1;
+              bumpProgress();
+            } catch (err) {
+              sectorErrors.push({ code: sector.code, message: err.message });
+            }
           }));
+        }
+
+        if (mdaErrors.length > 0 || sectorErrors.length > 0) {
+          const firstMdaError = mdaErrors[0]?.message;
+          const firstSectorError = sectorErrors[0]?.message;
+          const detail = firstMdaError || firstSectorError || 'Unknown write error';
+          console.error('MDA write errors', mdaErrors.slice(0, 5));
+          console.error('Sector write errors', sectorErrors.slice(0, 5));
+          throw new Error(`Upload incomplete. Saved ${mdaCreated}/${mdas.length} MDAs and ${sectorCreated}/${sectors.length} sectors. First error: ${detail}`);
         }
 
         setUploadStatus(prev => ({ ...prev, current: 100 }));

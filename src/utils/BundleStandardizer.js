@@ -68,6 +68,118 @@ export class BundleStandardizer {
     return { sources, pages };
   }
 
+  static scoreMdaItem(item) {
+    if (!item || typeof item !== 'object') return 0;
+    const keys = Object.keys(item).map(k => k.toLowerCase());
+    const has = (key) => keys.includes(key);
+    let score = 0;
+
+    if (has('mda_code') || has('mdacode') || has('mdaid') || has('mda_id')) score += 5;
+    if (has('mda_name') || has('mdaname') || has('mda') || has('ministry') || has('department') || has('agency')) score += 4;
+    if (has('administrative_units') || has('unit_code') || has('units') || has('sub_units') || has('departments')) score += 4;
+    if (has('recurrent_amount') || has('capital_amount') || has('total_amount') || has('total_expenditure')) score += 3;
+    if (has('personnel') || has('overhead') || has('capital') || has('recurrent')) score += 2;
+    if (has('line_text') || has('page')) score += 1;
+
+    if (has('classification') && has('category') && has('amount')) score -= 3;
+    if (has('fund_code') || has('fund_description')) score -= 2;
+
+    return score;
+  }
+
+  static isMdaItem(item) {
+    return this.scoreMdaItem(item) >= 3;
+  }
+
+  static normalizeCandidate(candidate) {
+    if (Array.isArray(candidate)) return candidate;
+    if (candidate && typeof candidate === 'object') {
+      return Object.entries(candidate).map(([key, value]) => {
+        if (value && typeof value === 'object') {
+          return { __key: key, ...value };
+        }
+        return { __key: key, value };
+      });
+    }
+    return [];
+  }
+
+  static findMdaList(rawData) {
+    if (!rawData || typeof rawData !== 'object') return [];
+
+    const candidates = [];
+    const consider = (candidate) => {
+      const list = this.normalizeCandidate(candidate);
+      if (!Array.isArray(list) || list.length === 0) return;
+      const sampleItems = list.slice(0, 25);
+      const totalScore = sampleItems.reduce((sum, item) => sum + this.scoreMdaItem(item), 0);
+      const score = totalScore / sampleItems.length;
+      if (score >= 1) candidates.push({ list, score });
+    };
+
+    const directCandidates = [
+      rawData.expenditure_mda,
+      rawData.mda,
+      rawData.mdas,
+      rawData.mda_list,
+      rawData.mda_data
+    ];
+
+    directCandidates.forEach(consider);
+
+    const stack = [rawData];
+    const seen = new Set();
+    while (stack.length > 0) {
+      const current = stack.pop();
+      if (!current || typeof current !== 'object') continue;
+      if (seen.has(current)) continue;
+      seen.add(current);
+
+      if (Array.isArray(current)) {
+        consider(current);
+        current.forEach(value => {
+          if (value && typeof value === 'object') stack.push(value);
+        });
+        continue;
+      }
+
+      consider(current);
+      Object.values(current).forEach(value => {
+        if (Array.isArray(value) || (value && typeof value === 'object')) {
+          stack.push(value);
+        }
+      });
+    }
+
+    if (candidates.length === 0) return [];
+    candidates.sort((a, b) => b.score - a.score);
+    return candidates[0].list;
+  }
+
+  static pickRevenueAmount(items, keywords) {
+    if (!Array.isArray(items) || items.length === 0) return 0;
+
+    const upperKeywords = keywords.map(k => k.toUpperCase());
+    const matches = items.map(item => ({
+      code: this.str(item.code),
+      category: this.str(item.category),
+      amount: this.val(item.amount)
+    })).filter(entry => {
+      const category = entry.category.toUpperCase();
+      return upperKeywords.some(k => category.includes(k));
+    });
+
+    if (matches.length === 0) return 0;
+
+    const withCode = matches.filter(m => m.code);
+    if (withCode.length > 0) {
+      withCode.sort((a, b) => a.code.length - b.code.length);
+      return withCode[0].amount;
+    }
+
+    return matches.reduce((max, m) => (m.amount > max ? m.amount : max), 0);
+  }
+
   static generateSectors(mdas) {
     const sectorMap = {
       '0517': 'EDUCATION',
@@ -176,12 +288,22 @@ export class BundleStandardizer {
   static mergeBundle(bundle) {
     const output = bundle.outputJson || null;
     const appOutput = bundle.appOutputJson || null;
-    const outputHasMdas = Array.isArray(output?.expenditure_mda) || Array.isArray(output?.mda);
-    const appHasMdas = Array.isArray(appOutput?.expenditure_mda) || Array.isArray(appOutput?.mda);
+    const outputMdas = this.findMdaList(output);
+    const appMdas = this.findMdaList(appOutput);
     const outputFailed = output?.status === 'failed';
-    const rawData = (outputFailed && appHasMdas)
-      ? appOutput
-      : (outputHasMdas ? output : (appHasMdas ? appOutput : (output || appOutput || {})));
+
+    let rawData = output || appOutput || {};
+    if (output && appOutput) {
+      if (outputFailed && appMdas.length > 0) {
+        rawData = appOutput;
+      } else if (appMdas.length > outputMdas.length) {
+        rawData = appOutput;
+      } else {
+        rawData = output;
+      }
+    } else if (appOutput) {
+      rawData = appOutput;
+    }
     const patchData = bundle.metadataPatch || {};
     const reviewData = bundle.review || {};
     const metricsData = bundle.pageMetrics || {};
@@ -246,6 +368,8 @@ export class BundleStandardizer {
       recurrent_revenue: this.val(rawData.budget_totals?.recurrent_revenue_total),
       faac: 0,
       igr: this.val(rawData.counters?.igr_total),
+      grants: 0,
+      capital_receipts: 0,
       total_expenditure: this.val(rawData.budget_totals?.total_budget),
       recurrent_expenditure: this.val(rawData.budget_totals?.recurrent_expenditure_total),
       capital_expenditure: this.val(rawData.budget_totals?.capital_expenditure_total),
@@ -256,13 +380,42 @@ export class BundleStandardizer {
       summary.total_revenue = this.val(rawData.counters?.revenue_total) || summary.total_revenue;
     }
 
+    const revenueItems = rawData.revenue_breakdown || rawData.revenue || [];
+    if (summary.faac === 0) {
+      summary.faac = this.pickRevenueAmount(revenueItems, [
+        'FAAC',
+        'STATUTORY ALLOCATION',
+        'STATUTORY REVENUE'
+      ]);
+    }
+
+    if (summary.igr === 0) {
+      summary.igr = this.pickRevenueAmount(revenueItems, [
+        'INDEPENDENT REVENUE',
+        'IGR'
+      ]);
+    }
+
+    if (summary.grants === 0) {
+      summary.grants = this.pickRevenueAmount(revenueItems, [
+        'GRANT'
+      ]);
+    }
+
+    if (summary.capital_receipts === 0) {
+      summary.capital_receipts = this.pickRevenueAmount(revenueItems, [
+        'CAPITAL RECEIPT'
+      ]);
+    }
+
     // 2. Process MDAs & Administrative Units
-    const mdas = (rawData.expenditure_mda || rawData.mda || []).map(mda => {
-      const units = (mda.administrative_units || []).map(unit => {
-        const uAmts = this.extractUnitAmounts(unit.amounts);
+    const mdas = this.findMdaList(rawData).map(mda => {
+      const unitsList = mda.administrative_units || mda.units || mda.sub_units || mda.departments || [];
+      const units = (Array.isArray(unitsList) ? unitsList : []).map(unit => {
+        const uAmts = this.extractUnitAmounts(unit.amounts || unit.amount || unit);
         return {
-          code: this.str(unit.unit_code || unit.code),
-          name: this.str(unit.unit_name || unit.name),
+          code: this.str(unit.unit_code || unit.code || unit.id),
+          name: this.str(unit.unit_name || unit.name || unit.title),
           total: uAmts.total,
           recurrent: uAmts.recurrent,
           capital: uAmts.capital,
@@ -272,16 +425,16 @@ export class BundleStandardizer {
         };
       });
 
-      let recurrent = this.val(mda.recurrent_amount);
-      let capital = this.val(mda.capital_amount);
-      let total = this.val(mda.total_amount);
+      let recurrent = this.val(mda.recurrent_amount ?? mda.recurrent ?? mda.total_recurrent);
+      let capital = this.val(mda.capital_amount ?? mda.capital ?? mda.total_capital);
+      let total = this.val(mda.total_amount ?? mda.total_expenditure ?? mda.total ?? mda.amount);
 
-      let personnel = 0;
-      let overhead = 0;
+      let personnel = this.val(mda.personnel ?? mda.personnel_cost);
+      let overhead = this.val(mda.overhead ?? mda.overhead_cost);
 
       if (units.length > 0) {
-        personnel = units.reduce((sum, u) => sum + (u.personnel || 0), 0);
-        overhead = units.reduce((sum, u) => sum + (u.overhead || 0), 0);
+        if (personnel === 0) personnel = units.reduce((sum, u) => sum + (u.personnel || 0), 0);
+        if (overhead === 0) overhead = units.reduce((sum, u) => sum + (u.overhead || 0), 0);
       }
 
       if (total === 0 && units.length > 0) {
@@ -294,16 +447,19 @@ export class BundleStandardizer {
         personnel = recurrent;
       }
 
+      const code = this.str(mda.mda_code || mda.code || mda.__key || mda.id || mda.mdaCode || mda.mda_id);
+      const name = this.str(mda.mda_name || mda.name || mda.mdaName || mda.title || mda.ministry || mda.agency || mda.department);
+
       return {
-        code: this.str(mda.mda_code || mda.code),
-        name: this.str(mda.mda_name || mda.name),
-        total: total,
-        recurrent: recurrent,
-        capital: capital,
-        personnel: personnel,
-        overhead: overhead,
-        provenance: this.prov(mda.total_amount, mda.page, mda.line_text),
-        units: units
+        code,
+        name,
+        total,
+        recurrent,
+        capital,
+        personnel,
+        overhead,
+        provenance: this.prov(mda.total_amount || mda, mda.page, mda.line_text),
+        units
       };
     }).filter(mda => mda.name && mda.name !== "null" && mda.name !== "undefined");
 
@@ -335,7 +491,7 @@ export class BundleStandardizer {
     return {
       state: "Unknown",
       year: 2025,
-      summary: { total_revenue: 0, total_expenditure: 0, recurrent_revenue: 0, faac: 0, igr: 0, recurrent_expenditure: 0, capital_expenditure: 0, opening_balance: 0 },
+      summary: { total_revenue: 0, total_expenditure: 0, recurrent_revenue: 0, faac: 0, igr: 0, grants: 0, capital_receipts: 0, recurrent_expenditure: 0, capital_expenditure: 0, opening_balance: 0 },
       sectors: [],
       mdas: [],
       audit: { status: "pending", errors: [], reconciled: true, integrity_score: 100, extraction_date: new Date().toISOString() }

@@ -57,6 +57,31 @@ export default function UploadPage() {
 
       if (filesMap.pdf) setPdfFile(filesMap.pdf);
 
+      const existingMdaCount = (bundleData.outputJson || bundleData.appOutputJson)
+        ? Math.max(
+            BundleStandardizer.findMdaList(bundleData.outputJson).length,
+            BundleStandardizer.findMdaList(bundleData.appOutputJson).length
+          )
+        : 0;
+
+      if (existingMdaCount === 0 && filesMap.jsonCandidates?.length) {
+        let best = null;
+        for (const candidate of filesMap.jsonCandidates) {
+          try {
+            const parsed = JSON.parse(await candidate.text());
+            const count = BundleStandardizer.findMdaList(parsed).length;
+            if (count > 0 && (!best || count > best.count)) {
+              best = { parsed, count };
+            }
+          } catch (e) {
+            // ignore invalid JSON
+          }
+        }
+        if (best) {
+          bundleData.outputJson = best.parsed;
+        }
+      }
+
       const merged = BundleStandardizer.mergeBundle(bundleData);
       setStagedData(merged);
       setIsProcessing(false);
@@ -70,7 +95,25 @@ export default function UploadPage() {
     if (!files || files.length === 0) return;
     
     const fileList = Array.from(files);
-    const getFile = (name) => fileList.find(f => f.name === name || f.name.endsWith('/' + name));
+    const getRelativePath = (file) => file.webkitRelativePath || file.name || '';
+    const matchName = (file, name) => {
+      const relativePath = getRelativePath(file);
+      return file.name === name || relativePath === name || relativePath.endsWith('/' + name);
+    };
+    const getFile = (name) => fileList.find(f => matchName(f, name));
+
+    const knownJson = new Set([
+      'output.json',
+      'app_output.json',
+      'metadata_patch.json',
+      'page_metrics.json',
+      'review.json'
+    ]);
+    const jsonCandidates = fileList.filter(file => {
+      const relativePath = getRelativePath(file);
+      const fileName = relativePath.split('/').pop();
+      return fileName?.endsWith('.json') && !knownJson.has(fileName);
+    });
 
     const newBundle = {
       output: getFile("output.json"),
@@ -80,7 +123,8 @@ export default function UploadPage() {
       review: getFile("review.json"),
       logs: getFile("run.log"),
       pdf: fileList.find(f => f.type === "application/pdf" || f.name === "source.pdf" || f.name.endsWith('/source.pdf')),
-      text: getFile("text.txt")
+      text: getFile("text.txt"),
+      jsonCandidates
     };
 
     setBundleFiles(newBundle);
