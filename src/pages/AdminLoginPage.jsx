@@ -15,7 +15,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { account } from '../utils/appwrite';
+import { account, databases, ID, DB_ID, COLLECTIONS } from '../utils/appwrite';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -39,6 +39,16 @@ export default function AdminLoginPage() {
 
     try {
       await account.createEmailPasswordSession(email, passcode);
+      try {
+        await databases.createDocument(DB_ID, COLLECTIONS.AUDIT_LOGS, ID.unique(), {
+          action: 'LOGIN',
+          status: 'SUCCESS',
+          details: `Admin console login from ${email}`,
+          user: email
+        });
+      } catch (auditErr) {
+        console.warn('Audit write failed:', auditErr);
+      }
       sessionStorage.setItem('is_admin', 'true');
       navigate('/admin', { replace: true });
     } catch (err) {

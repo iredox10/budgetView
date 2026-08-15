@@ -5,6 +5,7 @@ import concurrent.futures
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from appwrite.query import Query
+from appwrite.id import ID
 
 def get_env(context, key):
     if hasattr(context, "variables") and context.variables:
@@ -42,6 +43,21 @@ def main(context):
     mda_col = get_env(context, 'VITE_APPWRITE_MDAS_COLLECTION_ID')
     sector_col = get_env(context, 'VITE_APPWRITE_SECTORS_COLLECTION_ID')
     state_col = get_env(context, 'VITE_APPWRITE_STATES_COLLECTION_ID')
+    audit_col = get_env(context, 'VITE_APPWRITE_AUDIT_COLLECTION_ID') or 'audit_logs'
+
+    def write_audit(action, status, details, **extra):
+        try:
+            doc = {
+                "action": action,
+                "status": status,
+                "details": details,
+                "user": "System",
+                "execution_id": getattr(context, "execution_id", "") or ""
+            }
+            doc.update({k: v for k, v in extra.items() if v is not None})
+            databases.create_document(db_id, audit_col, ID.unique(), doc)
+        except Exception as e:
+            context.error(f"Audit write failed: {str(e)}")
 
     def delete_batch(collection_id, document_ids):
         def delete_single(doc_id):
@@ -58,7 +74,10 @@ def main(context):
 
     try:
         # 1. Delete MDAs
+        state_doc = databases.get_document(db_id, state_col, state_id)
+        state_name = state_doc.get('name', state_id)
         context.log(f"🚀 Initializing high-speed purge for state: {state_id}")
+        write_audit("DELETE_STATE", "INFO", f"Deleting state {state_name} ({state_id})", state_name=state_name)
         total_deleted_mdas = 0
         while True:
             mdas = databases.list_documents(db_id, mda_col, [
@@ -96,6 +115,14 @@ def main(context):
         context.log(f"📝 Finalizing state metadata removal...")
         databases.delete_document(db_id, state_col, state_id)
 
+        write_audit(
+            "DELETE_STATE", "SUCCESS",
+            f"Deleted {state_name}: {total_deleted_mdas} MDAs and {total_deleted_sectors} sectors removed",
+            state_name=state_name,
+            mdas_count=total_deleted_mdas,
+            sectors_count=total_deleted_sectors
+        )
+
         return context.res.json({
             "status": "success", 
             "message": f"Purge complete. {total_deleted_mdas} MDAs removed, {total_deleted_sectors} sectors removed."
@@ -103,4 +130,5 @@ def main(context):
 
     except Exception as e:
         context.error(f"❌ Critical Purge Failure: {str(e)}")
+        write_audit("DELETE_STATE", "ERROR", f"State deletion failed for {state_id}: {str(e)}")
         return context.res.json({"error": str(e)}, 500)

@@ -3,32 +3,74 @@ import {
   Terminal, Filter, RefreshCcw, Shield, ChevronLeft,
   AlertTriangle, Info, Download
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { clsx } from 'clsx';
+import { databases, Query, DB_ID, COLLECTIONS } from '../utils/appwrite';
 
-const initialLogs = [
-  { id: 1, type: 'SUCCESS', action: 'Data Sync', details: 'Kano State 2024 budget data synchronized successfully', time: '5 mins ago', user: 'System' },
-  { id: 2, type: 'INFO', action: 'User Login', details: 'Admin console accessed from IP 192.168.1.1', time: '12 mins ago', user: 'Admin' },
-  { id: 3, type: 'WARNING', action: 'Data Validation', details: 'Minor discrepancy detected in Lagos budget calculations', time: '1 hour ago', user: 'System' },
-  { id: 4, type: 'SUCCESS', action: 'PDF Upload', details: 'Bauchi State budget PDF processed and indexed', time: '3 hours ago', user: 'System' },
-  { id: 5, type: 'ERROR', action: 'Network Error', details: 'Connection timeout during Ogun State data upload', time: '5 hours ago', user: 'System' },
-  { id: 6, type: 'SUCCESS', action: 'Backup Complete', details: 'Full system backup (3.2MB) generated successfully', time: '1 day ago', user: 'Admin' },
-  { id: 7, type: 'INFO', action: 'Database Update', details: 'Search indexes rebuilt for optimized queries', time: '2 days ago', user: 'System' },
-];
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const secs = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (secs < 60) return 'just now';
+  if (secs < 3600) return `${Math.floor(secs / 60)} min${secs >= 120 ? 's' : ''} ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)} hour${secs >= 7200 ? 's' : ''} ago`;
+  if (secs < 604800) return `${Math.floor(secs / 86400)} day${secs >= 172800 ? 's' : ''} ago`;
+  return new Date(iso).toLocaleDateString();
+}
 
 export default function SystemLogsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('ALL');
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchLogs = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await databases.listDocuments(DB_ID, COLLECTIONS.AUDIT_LOGS, [
+        Query.orderDesc('$createdAt'),
+        Query.limit(100)
+      ]);
+      setLogs(res.documents);
+    } catch (e) {
+      setError(e.message || 'Failed to load logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
 
   const filteredLogs = useMemo(() => {
-    return initialLogs.filter(log => {
-      const matchesSearch = log.details.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           log.action.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterType === 'ALL' || log.type === filterType;
+    return logs.filter(log => {
+      const details = (log.details || '') + ' ' + (log.state_name || '') + ' ' + (log.action || '');
+      const matchesSearch = details.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterType === 'ALL' || log.status === filterType;
       return matchesSearch && matchesFilter;
     });
-  }, [searchTerm, filterType]);
+  }, [logs, searchTerm, filterType]);
+
+  const exportCsv = () => {
+    const header = ['Status', 'Action', 'Details', 'State', 'Year', 'Total Expenditure', 'MDAs', 'Sectors', 'User', 'Time'];
+    const rows = filteredLogs.map(log => [
+      log.status, log.action, `"${(log.details || '').replace(/"/g, '""')}"`,
+      log.state_name || '', log.year || '', log.total_expenditure || '',
+      log.mdas_count ?? '', log.sectors_count ?? '', log.user || 'System',
+      new Date(log.$createdAt).toISOString()
+    ]);
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'budgetview-audit-log.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const getLogIcon = (type) => {
     switch (type) {
@@ -68,7 +110,7 @@ export default function SystemLogsPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900">System Logs</h1>
-              <p className="text-slate-500">Monitor system events and audit trail</p>
+              <p className="text-slate-500">Audit trail of ingestion and admin events</p>
             </div>
           </div>
         </div>
@@ -102,11 +144,24 @@ export default function SystemLogsPage() {
                 </button>
               ))}
             </div>
+            <button
+              onClick={fetchLogs}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium text-slate-700 transition-all disabled:opacity-50"
+            >
+              <RefreshCcw className={clsx("w-4 h-4", loading && "animate-spin")} />
+              Refresh
+            </button>
           </div>
         </div>
 
         {/* Logs Table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          {error && (
+            <div className="p-4 bg-rose-50 border-b border-rose-200 text-sm text-rose-700">
+              Failed to load logs: {error}
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
@@ -119,15 +174,19 @@ export default function SystemLogsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">Loading audit trail...</td>
+                  </tr>
+                ) : filteredLogs.map((log) => (
+                  <tr key={log.$id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <span className={clsx(
                         "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border",
-                        getLogColor(log.type)
+                        getLogColor(log.status)
                       )}>
-                        {getLogIcon(log.type)}
-                        {log.type}
+                        {getLogIcon(log.status)}
+                        {log.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -137,12 +196,12 @@ export default function SystemLogsPage() {
                       <p className="text-sm text-slate-600">{log.details}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-slate-500">{log.user}</span>
+                      <span className="text-sm text-slate-500">{log.user || 'System'}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 text-sm text-slate-500">
                         <Clock className="w-4 h-4" />
-                        {log.time}
+                        {timeAgo(log.$createdAt)}
                       </div>
                     </td>
                   </tr>
@@ -151,12 +210,12 @@ export default function SystemLogsPage() {
             </table>
           </div>
           
-          {filteredLogs.length === 0 && (
+          {!loading && filteredLogs.length === 0 && (
             <div className="p-12 text-center">
               <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 text-slate-400" />
               </div>
-              <p className="text-slate-500">No logs match your search criteria</p>
+              <p className="text-slate-500">{logs.length === 0 ? 'No audit events recorded yet' : 'No logs match your search criteria'}</p>
             </div>
           )}
         </div>
@@ -164,11 +223,15 @@ export default function SystemLogsPage() {
         {/* Footer Actions */}
         <div className="mt-6 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Showing {filteredLogs.length} of {initialLogs.length} log entries
+            Showing {filteredLogs.length} of {logs.length} log entries
           </p>
-          <button className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all text-sm font-medium">
+          <button
+            onClick={exportCsv}
+            disabled={filteredLogs.length === 0}
+            className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all text-sm font-medium disabled:opacity-50"
+          >
             <Download className="w-4 h-4" />
-            Export Logs
+            Export Logs (CSV)
           </button>
         </div>
       </div>

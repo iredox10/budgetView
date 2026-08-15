@@ -49,7 +49,23 @@ def main(context):
     state_col = get_env(context, 'VITE_APPWRITE_STATES_COLLECTION_ID')
     mda_col = get_env(context, 'VITE_APPWRITE_MDAS_COLLECTION_ID')
     sector_col = get_env(context, 'VITE_APPWRITE_SECTORS_COLLECTION_ID')
+    audit_col = get_env(context, 'VITE_APPWRITE_AUDIT_COLLECTION_ID') or 'audit_logs'
 
+    def write_audit(action, status, details, **extra):
+        try:
+            doc = {
+                "action": action,
+                "status": status,
+                "details": details,
+                "user": "System",
+                "execution_id": getattr(context, "execution_id", "") or ""
+            }
+            doc.update({k: v for k, v in extra.items() if v is not None})
+            databases.create_document(db_id, audit_col, ID.unique(), doc)
+        except Exception as e:
+            context.error(f"Audit write failed: {str(e)}")
+
+    state_name = ""
     try:
         # 1. Download the budget JSON file
         context.log(f"📥 Downloading budget data: {file_id}")
@@ -61,6 +77,9 @@ def main(context):
             if isinstance(raw_bytes, str):
                 raw_bytes = raw_bytes.encode("utf-8")
             budget_data = json.loads(raw_bytes.decode("utf-8"))
+
+        state_name = budget_data.get('state', 'Unknown')
+        write_audit("INGEST", "INFO", f"Ingestion started for {state_name} {budget_data.get('year')}", state_name=state_name, year=budget_data.get('year'))
 
         # 2. Create the State Document
         context.log(f"🏛️ Creating state record: {budget_data.get('state')}")
@@ -149,6 +168,17 @@ def main(context):
         context.log(f"🧹 Cleaning up temporary file...")
         storage.delete_file(bucket_id, file_id)
 
+        total_exp = summary.get('total_expenditure', 0)
+        write_audit(
+            "INGEST", "SUCCESS",
+            f"Ingested {state_name} {budget_data.get('year')}: total expenditure {total_exp:,.2f}, {len(mdas)} MDAs, {len(sectors)} sectors. 3-way reconciliation {'verified' if audit_data.get('reconciled') else 'NOT reconciled'}.",
+            state_name=state_name,
+            year=budget_data.get('year'),
+            total_expenditure=total_exp,
+            mdas_count=len(mdas),
+            sectors_count=len(sectors)
+        )
+
         return context.res.json({
             "status": "success",
             "stateId": state_id,
@@ -157,4 +187,5 @@ def main(context):
 
     except Exception as e:
         context.error(f"❌ Ingestion Failed: {str(e)}")
+        write_audit("INGEST", "ERROR", f"Ingestion failed for {state_name or 'unknown state'}: {str(e)}", state_name=state_name or None)
         return context.res.json({"error": str(e)}, 500)
