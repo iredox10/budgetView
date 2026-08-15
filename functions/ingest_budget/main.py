@@ -53,8 +53,14 @@ def main(context):
     try:
         # 1. Download the budget JSON file
         context.log(f"📥 Downloading budget data: {file_id}")
-        file_bytes = storage.get_file_download(bucket_id, file_id)
-        budget_data = json.loads(file_bytes.decode('utf-8'))
+        download = storage.get_file_download(bucket_id, file_id)
+        if isinstance(download, dict):
+            budget_data = download
+        else:
+            raw_bytes = download
+            if isinstance(raw_bytes, str):
+                raw_bytes = raw_bytes.encode("utf-8")
+            budget_data = json.loads(raw_bytes.decode("utf-8"))
 
         # 2. Create the State Document
         context.log(f"🏛️ Creating state record: {budget_data.get('state')}")

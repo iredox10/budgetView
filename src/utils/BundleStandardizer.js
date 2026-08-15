@@ -432,6 +432,8 @@ export class BundleStandardizer {
     const state = rawData.metadata?.state_name?.value || rawData.metadata?.state_name || "Unknown";
     const yearStr = rawData.metadata?.budget_year?.value || rawData.metadata?.budget_year || "2025";
     const year = parseInt(yearStr) || 2025;
+    const stateCode = rawData.metadata?.state_code?.value || rawData.metadata?.state_code || rawData.state_code || null;
+    const currency = rawData.metadata?.currency?.value || rawData.metadata?.currency || rawData.currency || "NGN";
 
     // 1. Build Summary
     const totals = rawData.budget_totals || {};
@@ -534,6 +536,8 @@ export class BundleStandardizer {
     return {
       state,
       year,
+      state_code: stateCode,
+      currency,
       summary,
       sectors,
       mdas,
