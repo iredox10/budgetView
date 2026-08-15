@@ -1,14 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { Card, Text, Title, TextInput, Button, Flex, Badge } from '@tremor/react';
-import { MessageSquare, X, Send, Bot, Loader2, Sparkles } from 'lucide-react';
+import { Card, Text, Title, Badge } from '@tremor/react';
+import { MessageSquare, X, Send, Bot, Loader2, Sparkles, FileText, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+
+const fmtNGN = (value) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(value);
 
 export default function AIChatbot({ budgetData }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState([
-    { role: 'bot', text: `Hi! I'm the Budget Assistant. Ask me anything about the ${budgetData.state} ${budgetData.year} budget!` }
+    {
+      role: 'bot',
+      text: `Hi! I'm the Budget Assistant. I answer from the extracted ${budgetData.state} ${budgetData.year} budget document, and every answer cites the source page and line.`,
+      citations: []
+    }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef(null);
@@ -19,48 +25,64 @@ export default function AIChatbot({ budgetData }) {
     }
   }, [messages, isTyping]);
 
+  const cite = (obj) => {
+    if (!obj) return [];
+    if (Array.isArray(obj)) return obj.slice(0, 3);
+    return [obj];
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
 
-    const userMessage = { role: 'user', text: query };
+    const userMessage = { role: 'user', text: query, citations: [] };
     setMessages(prev => [...prev, userMessage]);
     setQuery('');
     setIsTyping(true);
 
-    // Simulate AI logic based on current budget context
     setTimeout(() => {
       let response = "";
+      let citations = [];
       const q = query.toLowerCase();
-      
+      const s = budgetData.summary;
+
       if (q.includes('total') || q.includes('how much')) {
-        response = `The total expenditure for ${budgetData.state} in ${budgetData.year} is ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(budgetData.summary.total_expenditure)}.`;
-      } else if (q.includes('education')) {
-        const edu = budgetData.sectors.find(s => s.name.toUpperCase().includes('EDUCATION'));
-        response = edu 
-          ? `Education has been allocated ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(edu.amount)}, which is about ${((edu.amount/budgetData.summary.total_expenditure)*100).toFixed(1)}% of the total budget.`
-          : "I couldn't find a specific allocation for Education in the functional classification.";
+        response = `The total expenditure for ${budgetData.state} in ${budgetData.year} is ${fmtNGN(s.total_expenditure)} (revenue: ${fmtNGN(s.total_revenue)}${s.opening_balance ? `, including an opening balance of ${fmtNGN(s.opening_balance)}` : ''}).`;
+      } else if (q.includes('revenue') || q.includes('faac') || q.includes('allocation')) {
+        response = `Total revenue is ${fmtNGN(s.total_revenue)}: FAAC ${fmtNGN(s.faac)}, IGR ${fmtNGN(s.igr)}, aid & grants ${fmtNGN(s.grants)}, and capital receipts ${fmtNGN(s.capital_receipts)}.`;
+      } else if (q.includes('education') || q.includes('school')) {
+        const edu = budgetData.sectors.find(x => x.name.toUpperCase().includes('EDUCATION'));
+        citations = cite(edu?.provenance);
+        response = edu
+          ? `Education is allocated ${fmtNGN(edu.amount)}, about ${((edu.amount / s.total_expenditure) * 100).toFixed(1)}% of the total budget.`
+          : "I couldn't find an Education allocation in the functional classification.";
       } else if (q.includes('health')) {
-        const health = budgetData.sectors.find(s => s.name.toUpperCase().includes('HEALTH'));
-        response = health 
-          ? `Health hospital services and public health are allocated ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(health.amount)}.`
+        const health = budgetData.sectors.find(x => x.name.toUpperCase().includes('HEALTH'));
+        citations = cite(health?.provenance);
+        response = health
+          ? `Health is allocated ${fmtNGN(health.amount)}, about ${((health.amount / s.total_expenditure) * 100).toFixed(1)}% of the total budget.`
           : "Health sector data isn't explicitly listed in the top sectors.";
       } else if (q.includes('capital')) {
-        response = `The state is spending ${((budgetData.summary.capital_expenditure/budgetData.summary.total_expenditure)*100).toFixed(1)}% of its budget on Capital projects (₦${(budgetData.summary.capital_expenditure/1e9).toFixed(1)}B).`;
+        response = `Capital expenditure is ${fmtNGN(s.capital_expenditure)} — ${((s.capital_expenditure / s.total_expenditure) * 100).toFixed(1)}% of the total. Recurrent expenditure is ${fmtNGN(s.recurrent_expenditure)} (personnel: ${fmtNGN(s.personnel_cost)}).`;
+      } else if (q.includes('personnel') || q.includes('salary')) {
+        response = `Personnel cost is ${fmtNGN(s.personnel_cost)}, which is ${((s.personnel_cost / s.total_expenditure) * 100).toFixed(1)}% of the total budget.`;
+      } else if (q.includes('open') || q.includes('balance') || q.includes('deficit') || q.includes('financ')) {
+        response = s.opening_balance || s.financing_total || s.deficit_surplus
+          ? `Opening balance: ${fmtNGN(s.opening_balance || 0)}. Financing: ${fmtNGN(s.financing_total || 0)}. Deficit/surplus: ${fmtNGN(s.deficit_surplus || 0)}.`
+          : "This budget has no reported opening balance, financing, or deficit line.";
       } else {
-        // Try to find a matching MDA or unit
-        const mda = budgetData.mdas.find(m => q.includes(m.name.toLowerCase()));
+        const mda = budgetData.mdas.find(m => m.name && q.includes(m.name.toLowerCase()));
         if (mda) {
-          const prov = mda.provenance?.page ? ` (Source: Page ${mda.provenance.page})` : "";
-          response = `${mda.name} has a budget of ${new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(mda.total)}.${prov}`;
+          citations = cite(mda.provenance);
+          response = `${mda.name} has a budget of ${fmtNGN(mda.total)} (recurrent ${fmtNGN(mda.recurrent)}, capital ${fmtNGN(mda.capital)}).`;
         } else {
-          response = "I can tell you about total spending, sector allocations (Education, Health), or specific agencies. Try asking 'How much for education?'";
+          response = "I can tell you about total spending, revenue (FAAC/IGR/grants), sectors (Education, Health), capital vs recurrent, personnel cost, or a specific MDA by name.";
         }
       }
 
-      setMessages(prev => [...prev, { role: 'bot', text: response }]);
+      setMessages(prev => [...prev, { role: 'bot', text: response, citations }]);
       setIsTyping(false);
-    }, 1000);
+    }, 700);
   };
 
   return (
@@ -84,7 +106,7 @@ export default function AIChatbot({ budgetData }) {
                     <Title className="text-white text-sm font-black tracking-tight">Budget Assistant</Title>
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Active Intelligence</Text>
+                      <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Rule-based, cites source</Text>
                     </div>
                   </div>
                 </div>
@@ -96,15 +118,28 @@ export default function AIChatbot({ budgetData }) {
               {/* Chat Messages */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
                 {messages.map((msg, i) => (
-                  <div key={i} className={clsx("flex", msg.role === 'user' ? "justify-end" : "justify-start")}>
+                  <div key={i} className={clsx("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}>
                     <div className={clsx(
                       "max-w-[85%] p-4 rounded-[1.5rem]",
-                      msg.role === 'user' 
-                        ? "bg-blue-600 text-white rounded-tr-none shadow-lg shadow-blue-200" 
+                      msg.role === 'user'
+                        ? "bg-blue-600 text-white rounded-tr-none shadow-lg shadow-blue-200"
                         : "bg-white text-slate-700 rounded-tl-none border border-slate-100 shadow-sm"
                     )}>
                       <p className="text-sm font-medium leading-relaxed">{msg.text}</p>
                     </div>
+                    {msg.citations?.length > 0 && (
+                      <div className="mt-1.5 flex flex-col gap-1 max-w-[85%]">
+                        {msg.citations.map((c, j) => (
+                          <div key={j} className="flex items-start gap-1.5 bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
+                            <MapPin className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <Badge color="blue" size="xs" className="mb-0.5">Page {c.page}</Badge>
+                              <p className="text-[11px] text-slate-500 leading-snug line-clamp-2">{c.line_text}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isTyping && (
@@ -118,14 +153,14 @@ export default function AIChatbot({ budgetData }) {
 
               {/* Chat Input */}
               <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex gap-2">
-                <input 
+                <input
                   type="text"
                   placeholder="Ask about spending..."
                   className="flex-1 bg-slate-50 border-none rounded-2xl px-4 text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
-                <button 
+                <button
                   type="submit"
                   className="p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all active:scale-95"
                 >

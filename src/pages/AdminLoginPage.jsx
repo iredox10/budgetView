@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
   ShieldCheck, 
   Lock, 
+  Mail,
   ArrowRight, 
   Database, 
   Eye, 
@@ -14,11 +15,13 @@ import {
   KeyRound
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { account } from '../utils/appwrite';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('');
   const [passcode, setPasscode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
   const navigate = useNavigate();
@@ -26,20 +29,23 @@ export default function AdminLoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(false);
-    
-    // Simulate loading for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Simple static passcode for the separate admin section
-    if (passcode === 'admin123') {
+    setError(null);
+
+    if (!import.meta.env.VITE_APPWRITE_ENDPOINT) {
+      setError('Admin authentication is not configured. Set VITE_APPWRITE_ENDPOINT and VITE_APPWRITE_PROJECT_ID.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await account.createEmailPasswordSession(email, passcode);
       sessionStorage.setItem('is_admin', 'true');
       navigate('/admin', { replace: true });
-    } else {
-      setError(true);
+    } catch (err) {
+      setError(err?.message || 'Invalid credentials. Please try again.');
       setAttemptCount(prev => prev + 1);
       setIsLoading(false);
-      setTimeout(() => setError(false), 3000);
+      setTimeout(() => setError(null), 4000);
     }
   };
 
@@ -144,14 +150,31 @@ export default function AdminLoginPage() {
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Passcode
+                  Admin Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="email"
+                    placeholder="admin@example.com"
+                    autoComplete="username"
+                    autoFocus
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium outline-none transition-all focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter access code"
-                    autoFocus
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
                     className={clsx(
                       "w-full pl-12 pr-12 py-4 bg-slate-50 border rounded-xl text-slate-900 font-medium outline-none transition-all",
                       error 
@@ -179,7 +202,7 @@ export default function AdminLoginPage() {
                   <div className="mt-3 flex items-center gap-2 text-rose-600 bg-rose-50 p-3 rounded-lg">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span className="text-sm font-medium">
-                      Invalid passcode. Please try again.
+                      {error}
                     </span>
                   </div>
                 )}
@@ -222,7 +245,8 @@ export default function AdminLoginPage() {
             {/* Help Text */}
             <div className="mt-6 pt-6 border-t border-slate-100">
               <p className="text-xs text-slate-500 text-center leading-relaxed">
-                This is a secure area. Unauthorized access attempts are logged and monitored.
+                This is a secure area. Authentication is verified against the Appwrite
+                account service and unauthorized access attempts are logged.
                 Contact the system administrator if you need access.
               </p>
             </div>

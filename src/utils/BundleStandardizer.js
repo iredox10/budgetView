@@ -216,6 +216,9 @@ export class BundleStandardizer {
           name: this.str(s.name, s.description || s.code),
           amount: this.val(s.amount),
           row_count: s.row_count || 1,
+          provenance: s.provenance || (s.page || s.line_text
+            ? { page: s.page, line_text: s.line_text }
+            : undefined),
         }))
         .sort((a, b) => b.amount - a.amount);
     }
@@ -228,12 +231,22 @@ export class BundleStandardizer {
         if (code.length !== 3) return;
         const amount = this.val(row.amount);
         const key = row.code;
-        if (!bucket[key]) bucket[key] = { name: this.str(row.description, key), amount: 0, row_count: 0 };
+        const provenance = Array.isArray(row.provenance) && row.provenance.length > 0
+          ? row.provenance[0]
+          : undefined;
+        if (!bucket[key]) {
+          bucket[key] = {
+            name: this.str(row.description, key),
+            amount: 0,
+            row_count: 0,
+            provenance,
+          };
+        }
         bucket[key].amount += amount;
         bucket[key].row_count += 1;
       });
       const sectors = Object.values(bucket)
-        .map(s => ({ name: s.name, amount: s.amount, row_count: s.row_count }))
+        .map(s => ({ name: s.name, amount: s.amount, row_count: s.row_count, provenance: s.provenance }))
         .sort((a, b) => b.amount - a.amount);
       if (sectors.length > 0) return sectors;
     }

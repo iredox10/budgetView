@@ -15,21 +15,49 @@ import {
 import { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { Text, Badge } from '@tremor/react';
+import { account } from '../utils/appwrite';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
 
-  // Simple session check
+  // Session check against the Appwrite account service
   useEffect(() => {
-    const isAdmin = sessionStorage.getItem('is_admin') === 'true';
-    if (!isAdmin) {
+    let cancelled = false;
+    const verify = async () => {
+      try {
+        await account.get();
+        if (!cancelled) {
+          sessionStorage.setItem('is_admin', 'true');
+          setIsAuthed(true);
+        }
+      } catch {
+        if (!cancelled) {
+          sessionStorage.removeItem('is_admin');
+          navigate('/admin/login', { replace: true });
+        }
+      }
+    };
+    if (sessionStorage.getItem('is_admin') === 'true') {
+      verify();
+    } else {
       navigate('/admin/login', { replace: true });
     }
+    return () => { cancelled = true; };
   }, [navigate]);
 
-  const handleLogout = () => {
+  if (!isAuthed) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    try {
+      await account.deleteSession('current');
+    } catch (e) {
+      // session already expired
+    }
     sessionStorage.removeItem('is_admin');
     navigate('/', { replace: true });
   };
