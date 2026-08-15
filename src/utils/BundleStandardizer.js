@@ -180,7 +180,64 @@ export class BundleStandardizer {
     return matches.reduce((max, m) => (m.amount > max ? m.amount : max), 0);
   }
 
-  static generateSectors(mdas) {
+  /**
+   * Sums revenue rows by NCOA code prefix (11 = FAAC, 12 = IGR, 13 = grants, 14 = capital receipts).
+   * Uses the root (shortest) code per prefix so hierarchy subtotals are not double counted;
+   * per-MDA rows are excluded.
+   */
+  static revenueIdentity(rawData) {
+    const identity = { faac: 0, igr: 0, grants: 0, capital_receipts: 0 };
+    const rows = rawData?.revenue_breakdown || rawData?.revenue || [];
+    const buckets = { '11': 'faac', '12': 'igr', '13': 'grants', '14': 'capital_receipts' };
+    const best = {};
+
+    rows.forEach(row => {
+      if (row.mda_code) return;
+      const code = String(this.str(row.code)).replace(/\D/g, '');
+      const prefix = code.substring(0, 2);
+      if (!buckets[prefix]) return;
+      const amount = this.val(row.amount);
+      const existing = best[prefix];
+      if (!existing || code.length < existing.code.length) {
+        best[prefix] = { code, amount };
+      }
+    });
+
+    Object.entries(best).forEach(([prefix, entry]) => {
+      identity[buckets[prefix]] = entry.amount;
+    });
+    return identity;
+  }
+
+  static generateSectors(rawData) {
+    if (Array.isArray(rawData?.sectors) && rawData.sectors.length > 0) {
+      return rawData.sectors
+        .map(s => ({
+          name: this.str(s.name, s.description || s.code),
+          amount: this.val(s.amount),
+          row_count: s.row_count || 1,
+        }))
+        .sort((a, b) => b.amount - a.amount);
+    }
+
+    const functional = rawData?.functional_expenditure;
+    if (Array.isArray(functional) && functional.length > 0) {
+      const bucket = {};
+      functional.forEach(row => {
+        const code = String(this.str(row.code)).replace(/\D/g, '');
+        if (code.length !== 3) return;
+        const amount = this.val(row.amount);
+        const key = row.code;
+        if (!bucket[key]) bucket[key] = { name: this.str(row.description, key), amount: 0, row_count: 0 };
+        bucket[key].amount += amount;
+        bucket[key].row_count += 1;
+      });
+      const sectors = Object.values(bucket)
+        .map(s => ({ name: s.name, amount: s.amount, row_count: s.row_count }))
+        .sort((a, b) => b.amount - a.amount);
+      if (sectors.length > 0) return sectors;
+    }
+
     const sectorMap = {
       '0517': 'EDUCATION',
       '0521': 'HEALTH',
@@ -193,15 +250,16 @@ export class BundleStandardizer {
     };
 
     const results = {};
+    const mdas = this.findMdaList(rawData);
     mdas.forEach(mda => {
       const codeStr = String(mda.code || "");
       const prefix4 = codeStr.substring(0, 4);
       const prefix2 = codeStr.substring(0, 2);
-      
+
       const sectorName = sectorMap[prefix4] || sectorMap[prefix2] || 'OTHER';
-      
+
       if (!results[sectorName]) results[sectorName] = 0;
-      results[sectorName] += mda.total;
+      results[sectorName] += this.val(mda.total_amount ?? mda.total ?? mda.amount);
     });
 
     return Object.keys(results).map(name => ({
@@ -363,49 +421,34 @@ export class BundleStandardizer {
     const year = parseInt(yearStr) || 2025;
 
     // 1. Build Summary
+    const totals = rawData.budget_totals || {};
     const summary = {
-      total_revenue: this.val(rawData.budget_totals?.revenue_total),
-      recurrent_revenue: this.val(rawData.budget_totals?.recurrent_revenue_total),
-      faac: 0,
-      igr: this.val(rawData.counters?.igr_total),
-      grants: 0,
-      capital_receipts: 0,
-      total_expenditure: this.val(rawData.budget_totals?.total_budget),
-      recurrent_expenditure: this.val(rawData.budget_totals?.recurrent_expenditure_total),
-      capital_expenditure: this.val(rawData.budget_totals?.capital_expenditure_total),
-      opening_balance: 0,
+      total_revenue: this.val(totals.revenue_total) || this.val(rawData.counters?.revenue_total),
+      recurrent_revenue: this.val(totals.recurrent_revenue_total),
+      faac: this.val(totals.faac_total),
+      igr: this.val(totals.igr_total) || this.val(rawData.counters?.igr_total),
+      grants: this.val(totals.grants_total),
+      capital_receipts: this.val(totals.capital_receipts_total),
+      total_expenditure: this.val(totals.total_budget),
+      recurrent_expenditure: this.val(totals.recurrent_expenditure_total),
+      capital_expenditure: this.val(totals.capital_expenditure_total),
+      personnel_cost: this.val(totals.personnel_cost_total),
+      opening_balance: this.val(totals.opening_balance_total),
+      financing_total: this.val(totals.financing_total),
+      deficit_surplus: this.val(totals.deficit_surplus_total),
     };
 
-    if (summary.total_revenue === 0) {
-      summary.total_revenue = this.val(rawData.counters?.revenue_total) || summary.total_revenue;
-    }
+    const revenueIdentity = this.revenueIdentity(rawData);
+    if (summary.faac === 0) summary.faac = revenueIdentity.faac;
+    if (summary.igr === 0) summary.igr = revenueIdentity.igr;
+    if (summary.grants === 0) summary.grants = revenueIdentity.grants;
+    if (summary.capital_receipts === 0) summary.capital_receipts = revenueIdentity.capital_receipts;
 
-    const revenueItems = rawData.revenue_breakdown || rawData.revenue || [];
-    if (summary.faac === 0) {
-      summary.faac = this.pickRevenueAmount(revenueItems, [
-        'FAAC',
-        'STATUTORY ALLOCATION',
-        'STATUTORY REVENUE'
-      ]);
-    }
-
-    if (summary.igr === 0) {
-      summary.igr = this.pickRevenueAmount(revenueItems, [
-        'INDEPENDENT REVENUE',
-        'IGR'
-      ]);
-    }
-
-    if (summary.grants === 0) {
-      summary.grants = this.pickRevenueAmount(revenueItems, [
-        'GRANT'
-      ]);
-    }
-
-    if (summary.capital_receipts === 0) {
-      summary.capital_receipts = this.pickRevenueAmount(revenueItems, [
-        'CAPITAL RECEIPT'
-      ]);
+    if (summary.personnel_cost === 0) {
+      const economic = (rawData.expenditure_economic || rawData.expenditure || [])
+        .filter(row => !row.mda_code);
+      const root = economic.find(row => String(this.str(row.code)).replace(/\D/g, '') === '21');
+      if (root) summary.personnel_cost = this.val(root.amount);
     }
 
     // 2. Process MDAs & Administrative Units
@@ -464,7 +507,7 @@ export class BundleStandardizer {
     }).filter(mda => mda.name && mda.name !== "null" && mda.name !== "undefined");
 
     // 3. Sector Mapping
-    const sectors = this.generateSectors(mdas);
+    const sectors = this.generateSectors(rawData);
 
     // 4. Audit Status
     const audit = {
@@ -491,7 +534,7 @@ export class BundleStandardizer {
     return {
       state: "Unknown",
       year: 2025,
-      summary: { total_revenue: 0, total_expenditure: 0, recurrent_revenue: 0, faac: 0, igr: 0, grants: 0, capital_receipts: 0, recurrent_expenditure: 0, capital_expenditure: 0, opening_balance: 0 },
+      summary: { total_revenue: 0, total_expenditure: 0, recurrent_revenue: 0, faac: 0, igr: 0, grants: 0, capital_receipts: 0, recurrent_expenditure: 0, capital_expenditure: 0, personnel_cost: 0, opening_balance: 0, financing_total: 0, deficit_surplus: 0 },
       sectors: [],
       mdas: [],
       audit: { status: "pending", errors: [], reconciled: true, integrity_score: 100, extraction_date: new Date().toISOString() }

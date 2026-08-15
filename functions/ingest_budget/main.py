@@ -61,18 +61,26 @@ def main(context):
         state_id = ID.unique()
         
         audit_data = budget_data.get('audit', {})
+        summary = budget_data.get('summary', {})
         
         state_doc_data = {
             "name": budget_data.get('state'),
             "year": budget_data.get('year'),
-            "total_expenditure": budget_data.get('summary', {}).get('total_expenditure', 0),
-            "capital_expenditure": budget_data.get('summary', {}).get('capital_expenditure', 0),
-            "personnel_cost": budget_data.get('summary', {}).get('personnel_cost', 0),
-            "recurrent_revenue": budget_data.get('summary', {}).get('recurrent_revenue', 0),
-            "faac": budget_data.get('summary', {}).get('faac', 0),
-            "igr": budget_data.get('summary', {}).get('igr', 0),
-            "grants": budget_data.get('summary', {}).get('grants', 0),
-            "capital_receipts": budget_data.get('summary', {}).get('capital_receipts', 0),
+            "state_code": budget_data.get('state_code', ""),
+            "currency": budget_data.get('currency', "NGN"),
+            "total_expenditure": summary.get('total_expenditure', 0),
+            "total_revenue": summary.get('total_revenue', 0),
+            "recurrent_expenditure": summary.get('recurrent_expenditure', 0),
+            "capital_expenditure": summary.get('capital_expenditure', 0),
+            "personnel_cost": summary.get('personnel_cost', 0),
+            "recurrent_revenue": summary.get('recurrent_revenue', 0),
+            "faac": summary.get('faac', 0),
+            "igr": summary.get('igr', 0),
+            "grants": summary.get('grants', 0),
+            "capital_receipts": summary.get('capital_receipts', 0),
+            "opening_balance": summary.get('opening_balance', 0),
+            "financing_total": summary.get('financing_total', 0),
+            "deficit_surplus": summary.get('deficit_surplus', 0),
             "verified": audit_data.get('reconciled', True),
             "isOfficialError": not audit_data.get('reconciled', True),
             "errorExplanation": json.dumps(audit_data.get('errors', [])),
@@ -88,7 +96,9 @@ def main(context):
         databases.create_document(db_id, state_col, state_id, state_doc_data)
 
         # 3. Parallel MDA Ingestion
-        mdas = budget_data.get('mdas', [])
+        raw_mdas = budget_data.get('mdas', [])
+        mdas = raw_mdas.values() if isinstance(raw_mdas, dict) else raw_mdas
+        mdas = list(mdas)
         context.log(f"📊 Starting high-speed ingestion of {len(mdas)} MDAs...")
         
         def create_mda(mda):
@@ -98,8 +108,9 @@ def main(context):
                     "code": str(mda.get('code', '0')),
                     "name": mda.get('name', 'Unknown'),
                     "total": mda.get('total', 0),
-                    "personnel": mda.get('recurrent', 0),
-                    "overhead": 0,
+                    "recurrent": mda.get('recurrent', 0),
+                    "personnel": mda.get('personnel', 0),
+                    "overhead": mda.get('overhead', 0),
                     "capital": mda.get('capital', 0),
                     "sourceLine": mda.get('provenance', {}).get('line_text', ''),
                     "pageNumber": mda.get('provenance', {}).get('page', 0),

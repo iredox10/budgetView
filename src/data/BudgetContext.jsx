@@ -30,13 +30,17 @@ export function BudgetProvider({ children }) {
         const audit = doc.audit_report ? JSON.parse(doc.audit_report) : { errors: [], reconciled: doc.verified };
         const auditSummary = audit?.summary || {};
         const pickNumber = (primary, fallback) => {
-          if (typeof primary === 'number' && Number.isFinite(primary) && primary !== 0) return primary;
-          if (typeof fallback === 'number' && Number.isFinite(fallback)) return fallback;
+          if (primary === null || primary === undefined) {
+            if (typeof fallback === 'number' && Number.isFinite(fallback)) return fallback;
+            return 0;
+          }
+          if (typeof primary === 'number' && Number.isFinite(primary)) return primary;
           return 0;
         };
 
         const summary = {
           total_expenditure: pickNumber(doc.total_expenditure, auditSummary.total_expenditure),
+          recurrent_expenditure: pickNumber(doc.recurrent_expenditure, auditSummary.recurrent_expenditure),
           capital_expenditure: pickNumber(doc.capital_expenditure, auditSummary.capital_expenditure),
           personnel_cost: pickNumber(doc.personnel_cost, auditSummary.personnel_cost),
           recurrent_revenue: pickNumber(doc.recurrent_revenue, auditSummary.recurrent_revenue),
@@ -44,6 +48,9 @@ export function BudgetProvider({ children }) {
           igr: pickNumber(doc.igr, auditSummary.igr),
           grants: pickNumber(doc.grants, auditSummary.grants),
           capital_receipts: pickNumber(doc.capital_receipts, auditSummary.capital_receipts),
+          opening_balance: pickNumber(doc.opening_balance, auditSummary.opening_balance),
+          financing_total: pickNumber(doc.financing_total, auditSummary.financing_total),
+          deficit_surplus: pickNumber(doc.deficit_surplus, auditSummary.deficit_surplus),
           total_revenue: pickNumber(doc.total_revenue, auditSummary.total_revenue)
         };
 
