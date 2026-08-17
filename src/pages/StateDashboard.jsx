@@ -207,27 +207,30 @@ const AuditReportBody = ({ audit, stateName }) => (
   <>
     <div className="grid grid-cols-3 gap-4">
       <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Integrity Score</p>
-        <p className={clsx("text-3xl font-black", (audit.integrity_score || (audit.reconciled ? 100 : 0)) > 90 ? "text-emerald-600" : "text-rose-600")}>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Soundness score</p>
+        <p className="text-3xl font-black mb-1" style={{ color: (audit.integrity_score || (audit.reconciled ? 100 : 0)) > 90 ? '#059669' : '#e11d48' }}>
           {audit.integrity_score || (audit.reconciled ? 100 : 0)}/100
         </p>
+        <p className="text-[11px] text-slate-500">How reliably every figure adds up. 100 means nothing is off.</p>
       </div>
       <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Issues Found</p>
-        <p className="text-3xl font-black text-slate-900">{audit.errors?.length || 0}</p>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Issues found</p>
+        <p className="text-3xl font-black text-slate-900 mb-1">{audit.errors?.length || 0}</p>
+        <p className="text-[11px] text-slate-500">Problems the check uncovered in this document.</p>
       </div>
       <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
-        <div className="mt-1">
+        <div className="mt-1 mb-1">
           <Badge color={audit.reconciled ? "emerald" : "rose"} size="xl">
-            {audit.reconciled ? "PLATINUM" : "RECONCILING"}
+            {audit.reconciled ? "CLEARED" : "NEEDS REVIEW"}
           </Badge>
         </div>
+        <p className="text-[11px] text-slate-500">Cleared means all totals add up correctly.</p>
       </div>
     </div>
 
     <div className="space-y-4">
-      <Title className="text-lg">Detailed Discrepancies</Title>
+      <Title className="text-lg">What our check found</Title>
       {audit.errors && audit.errors.length > 0 ? (
         audit.errors.map((err, idx) => (
           <div key={idx} className="p-4 rounded-2xl border border-rose-100 bg-rose-50/30 flex gap-4">
@@ -235,7 +238,7 @@ const AuditReportBody = ({ audit, stateName }) => (
               <Scale className="w-5 h-5 text-rose-600" />
             </div>
             <div>
-              <p className="text-xs font-bold text-rose-900 uppercase tracking-tight">{err.code.replace(/_/g, ' ')}</p>
+              <p className="text-xs font-bold text-rose-900 uppercase tracking-tight">{ISSUE_LABELS[err.code] || err.code.replace(/_/g, ' ')}</p>
               <p className="text-sm text-rose-700 mt-1 font-mono leading-relaxed">{err.message}</p>
             </div>
           </div>
@@ -245,8 +248,8 @@ const AuditReportBody = ({ audit, stateName }) => (
           <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-600">
             <ShieldCheck className="w-8 h-8" />
           </div>
-          <p className="font-bold text-emerald-900">Zero Mathematical Errors</p>
-          <p className="text-sm text-emerald-600 mt-1 max-w-xs mx-auto">This document is mathematically sound. All parent totals match the sum of their constituent parts.</p>
+          <p className="font-bold text-emerald-900">No problems found</p>
+          <p className="text-sm text-emerald-600 mt-1 max-w-xs mx-auto">Every total in this document correctly adds up to the sum of its parts. The figures are internally consistent.</p>
         </div>
       )}
     </div>
@@ -269,7 +272,7 @@ const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
               <FileSearch className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-900">Audit Trail: {stateName}</h3>
+              <h3 className="text-2xl font-black text-slate-900">Document Check: {stateName}</h3>
               <p className="text-sm text-slate-500 font-medium">Automatic mathematical verification report</p>
             </div>
           </div>
@@ -285,9 +288,9 @@ const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
         <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-400" />
-            <p className="text-xs font-bold uppercase tracking-widest">Independent Audit Engine v2.0</p>
+            <p className="text-xs font-bold uppercase tracking-widest">Automatically checked — figures never altered</p>
           </div>
-          <p className="text-[10px] text-slate-400">Extracted: {new Date(audit.extraction_date).toLocaleDateString()}</p>
+          <p className="text-[10px] text-slate-400">Checked on: {new Date(audit.extraction_date).toLocaleDateString()}</p>
         </div>
       </div>
     </div>
@@ -295,7 +298,23 @@ const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
 };
 
 // Anomaly Center — surfaces document-internal inconsistencies found by the engine
+const ISSUE_LABELS = {
+  scope_inconsistent: 'A total does not match the sum of its parts',
+  hierarchy_break: 'A section total does not match the units inside it',
+  cross_table_disagreement: 'The same item appears twice with different figures',
+  dedup_conflict: 'A row appears twice with different figures',
+  missing_figure: 'A figure was not published in the document',
+  missing_functional_description: 'An item has no name printed in the document',
+  economic_reconciliation_failed: 'A total does not match the sum of its parts',
+  economic_conflicting_code: 'The same item has two different figures',
+  economic_amount_missing: 'A row has no amount printed',
+  programme_amount_missing: 'A row has no amount printed',
+  pdfinfo_failed: 'The document could not be read',
+  text_extraction_failed: 'No pages could be read from the document',
+};
+
 const AnomalySeverityBadge = ({ severity }) => {
+  const labels = { high: 'MAJOR', medium: 'MODERATE', info: 'MINOR' };
   const styles = {
     high: 'bg-rose-100 text-rose-700 border-rose-200',
     medium: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -303,7 +322,7 @@ const AnomalySeverityBadge = ({ severity }) => {
   };
   return (
     <span className={clsx("px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border", styles[severity] || styles.info)}>
-      {severity}
+      {labels[severity] || 'MINOR'}
     </span>
   );
 };
@@ -316,17 +335,17 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
   const copyReport = () => {
     const lines = (anomaly.lines || []).join('\n');
     const report = [
-      `ANOMALY REPORT — ${anomaly.code}`,
-      `Severity: ${anomaly.severity}`,
-      `Pages: ${(anomaly.pages || []).join(', ') || 'n/a'}`,
-      `Codes: ${(anomaly.codes || []).join(', ') || 'n/a'}`,
-      `Message: ${anomaly.message}`,
+      `ISSUE — ${ISSUE_LABELS[anomaly.code] || anomaly.code}`,
+      `How serious: ${({ high: 'Major', medium: 'Moderate', info: 'Minor' })[anomaly.severity] || 'Minor'}`,
+      `Pages in the document: ${(anomaly.pages || []).join(', ') || 'n/a'}`,
+      `Row codes: ${(anomaly.codes || []).join(', ') || 'n/a'}`,
+      `What we found: ${anomaly.message}`,
       ...(hasAmounts ? [
-        `Table total: ${anomaly.expected}`,
-        `Sum of parts: ${anomaly.actual}`,
+        `Total shown in the document: ${anomaly.expected}`,
+        `Sum of the rows underneath: ${anomaly.actual}`,
         `Difference: ${delta}`
       ] : []),
-      ...(lines ? [`Verbatim source line(s):`, lines] : [])
+      ...(lines ? ['Exact lines from the document:', lines] : [])
     ].join('\n');
     navigator.clipboard?.writeText(report);
     setCopied(true);
@@ -341,7 +360,7 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
             <AlertTriangle className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs font-black text-amber-900 uppercase tracking-tight">{anomaly.code.replace(/_/g, ' ')}</p>
+            <p className="text-xs font-black text-amber-900 uppercase tracking-tight">{ISSUE_LABELS[anomaly.code] || anomaly.code.replace(/_/g, ' ')}</p>
             <AnomalySeverityBadge severity={anomaly.severity} />
           </div>
         </div>
@@ -351,7 +370,7 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-50 transition-colors"
           >
             <FileJson className="w-3 h-3" />
-            {copied ? 'COPIED' : 'COPY REPORT'}
+            {copied ? 'COPIED' : 'COPY THIS ISSUE'}
           </button>
           {anomaly.pages && anomaly.pages.length > 0 && (
             <button
@@ -359,7 +378,7 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-50 transition-colors"
             >
               <Eye className="w-3 h-3" />
-              VIEW IN PDF (PAGE {anomaly.pages[0]})
+              SEE IT IN THE PDF (PAGE {anomaly.pages[0]})
             </button>
           )}
         </div>
@@ -368,28 +387,31 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
       {hasAmounts && (
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="px-2 py-1 bg-white/70 rounded-lg border border-amber-100 font-mono text-amber-900">
-            Table total: {formatCurrency(anomaly.expected)}
+            Total shown in the document: {formatCurrency(anomaly.expected)}
           </span>
           <span className="px-2 py-1 bg-white/70 rounded-lg border border-amber-100 font-mono text-amber-900">
-            Sum of parts: {formatCurrency(anomaly.actual)}
+            Sum of the rows underneath: {formatCurrency(anomaly.actual)}
           </span>
           <span className="px-2 py-1 bg-rose-50 rounded-lg border border-rose-200 font-mono font-black text-rose-700">
-            Δ = {formatCurrency(delta)}
+            Difference: {formatCurrency(delta)}
           </span>
         </div>
       )}
       {anomaly.codes && anomaly.codes.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {anomaly.codes.map(code => (
-            <span key={code} className="px-2 py-0.5 bg-white rounded-md text-[10px] font-mono text-slate-500 border border-slate-100">
-              {code}
-            </span>
-          ))}
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Related rows (their codes in the document)</p>
+          <div className="flex flex-wrap gap-1.5">
+            {anomaly.codes.map(code => (
+              <span key={code} className="px-2 py-0.5 bg-white rounded-md text-[10px] font-mono text-slate-500 border border-slate-100">
+                {code}
+              </span>
+            ))}
+          </div>
         </div>
       )}
       {anomaly.lines && anomaly.lines.length > 0 && (
         <div className="rounded-xl bg-white/80 border border-amber-100 p-3">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Verbatim from the document — verify it yourself</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Exact lines from the document — check for yourself</p>
           <div className="space-y-1.5 max-h-32 overflow-y-auto">
             {anomaly.lines.map((line, idx) => (
               <p key={idx} className="font-mono text-[11px] text-slate-600 leading-snug whitespace-pre-wrap break-all">{line}</p>
@@ -412,14 +434,14 @@ const AnomalyCenter = ({ anomalies, onViewPage }) => {
           <AlertTriangle className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-xl font-black text-slate-900">Anomaly Center</h3>
-          <p className="text-sm text-slate-500">Inconsistencies found inside the official document itself — reported verbatim, nothing corrected silently.</p>
+          <h3 className="text-xl font-black text-slate-900">Issues found in the document</h3>
+          <p className="text-sm text-slate-500">Our automatic check compares every total with the sum of its parts. Nothing is hidden or corrected — what you see below is exactly what the official document says.</p>
         </div>
       </div>
       <div className="flex gap-3">
-        <span className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-black border border-rose-100">{bySeverity.high || 0} HIGH</span>
-        <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-black border border-amber-100">{bySeverity.medium || 0} MEDIUM</span>
-        <span className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 text-xs font-black border border-sky-100">{bySeverity.info || 0} INFO</span>
+        <span className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-black border border-rose-100">{bySeverity.high || 0} MAJOR</span>
+        <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-black border border-amber-100">{bySeverity.medium || 0} MODERATE</span>
+        <span className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 text-xs font-black border border-sky-100">{bySeverity.info || 0} MINOR</span>
       </div>
       {anomalies.map((anomaly, idx) => (
         <AnomalyCard key={idx} anomaly={anomaly} onViewPage={onViewPage} />
@@ -466,12 +488,12 @@ const UnitRow = ({ unit, depth, onSelect, formatCompact }) => {
           {hasChildren && (
             sumOk ? (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-md border border-emerald-100">
-                <CheckCircle2 className="w-3 h-3" /> Σ VERIFIED
+                <CheckCircle2 className="w-3 h-3" /> ADDS UP
               </span>
             ) : (
               sumMismatch && (
                 <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-black rounded-md border border-amber-100" title={`Total ${unit.total} vs children sum ${childrenTotal}`}>
-                  <AlertTriangle className="w-3 h-3" /> Σ Δ {formatCompact(Math.abs(unit.total - childrenTotal))}
+                  <AlertTriangle className="w-3 h-3" /> DOESN'T ADD UP (₦{formatCompact(Math.abs(unit.total - childrenTotal))} OFF)
                 </span>
               )
             )
@@ -539,7 +561,7 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [], anomalies = [] }) =
                 )}
                 {mdaAnomaly && (
                   <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded border border-amber-200" title={mdaAnomaly.message}>
-                    ANOMALY
+                    HAS AN ISSUE
                   </span>
                 )}
                 {mda.provenance?.page && (
@@ -695,7 +717,7 @@ export default function StateDashboard() {
   const viewAnomalyPage = (anomaly) => {
     setActiveTab('overview');
     setSelectedMDA({
-      name: `${anomaly.code.replace(/_/g, ' ')} — Page ${anomaly.pages[0]}`,
+      name: `${ISSUE_LABELS[anomaly.code] || anomaly.code.replace(/_/g, ' ')} — Page ${anomaly.pages[0]}`,
       pageNumber: anomaly.pages[0],
       provenance: { line_text: anomaly.message }
     });
@@ -861,7 +883,7 @@ export default function StateDashboard() {
             { id: 'overview', label: 'Overview', icon: PieChart },
             { id: 'mdas', label: 'MDA Breakdown', icon: Building2 },
             { id: 'search', label: 'Universal Search', icon: Search },
-            { id: 'audit', label: 'Audit Trail', icon: ShieldCheck },
+            { id: 'audit', label: 'Document Check', icon: ShieldCheck },
             { id: 'pedigree', label: 'Data Pedigree', icon: History }
           ].map((tab) => (
             <button
@@ -929,16 +951,16 @@ export default function StateDashboard() {
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-amber-900">
-                        {anomalies.length} Document Anomal{anomalies.length === 1 ? 'y' : 'ies'} Detected
+                        {anomalies.length} issue{anomalies.length === 1 ? '' : 's'} found in this document
                       </h3>
                       <p className="text-sm text-amber-700">
-                        The official document is internally inconsistent in {anomalies.length} place{anomalies.length === 1 ? '' : 's'}. Figures are shown exactly as published — nothing was corrected silently.
+                        In {anomalies.length} place{anomalies.length === 1 ? '' : 's'}, a figure in the official document does not add up. We show the figures exactly as published — nothing was changed.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <AnomalySeverityBadge severity="high" />
-                    <span className="text-sm font-bold text-amber-700 whitespace-nowrap">Open Center →</span>
+                    <span className="text-sm font-bold text-amber-700 whitespace-nowrap">See the issues →</span>
                   </div>
                 </div>
               )}
@@ -1260,8 +1282,8 @@ export default function StateDashboard() {
               <div className="p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-xl font-black text-slate-900">Audit Trail: {data.state}</h3>
-                    <p className="text-sm text-slate-500 font-medium">Automatic mathematical verification report</p>
+                    <h3 className="text-xl font-black text-slate-900">Document Check: {data.state}</h3>
+                    <p className="text-sm text-slate-500 font-medium">Our automatic check of how well every figure adds up</p>
                   </div>
                   <AnomalySeverityBadge severity={anomalies.length > 0 ? 'high' : 'info'} />
                 </div>
@@ -1345,7 +1367,7 @@ export default function StateDashboard() {
                   onClick={() => setIsAuditModalOpen(true)}
                   className="px-8 py-4 bg-white border border-slate-200 text-slate-900 font-black rounded-2xl hover:bg-slate-50 transition-all"
                 >
-                  AUDIT TRAIL
+                  DOCUMENT CHECK
                 </button>
               </div>
             </div>
