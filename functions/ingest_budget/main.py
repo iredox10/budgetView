@@ -87,25 +87,28 @@ def main(context):
         
         audit_data = budget_data.get('audit', {})
         summary = budget_data.get('summary', {})
-        
+
+        def summary_value(key):
+            return summary.get(key)
+
         state_doc_data = {
             "name": budget_data.get('state'),
             "year": budget_data.get('year'),
             "state_code": budget_data.get('state_code', ""),
             "currency": budget_data.get('currency', "NGN"),
-            "total_expenditure": summary.get('total_expenditure', 0),
-            "total_revenue": summary.get('total_revenue', 0),
-            "recurrent_expenditure": summary.get('recurrent_expenditure', 0),
-            "capital_expenditure": summary.get('capital_expenditure', 0),
-            "personnel_cost": summary.get('personnel_cost', 0),
-            "recurrent_revenue": summary.get('recurrent_revenue', 0),
-            "faac": summary.get('faac', 0),
-            "igr": summary.get('igr', 0),
-            "grants": summary.get('grants', 0),
-            "capital_receipts": summary.get('capital_receipts', 0),
-            "opening_balance": summary.get('opening_balance', 0),
-            "financing_total": summary.get('financing_total', 0),
-            "deficit_surplus": summary.get('deficit_surplus', 0),
+            "total_expenditure": summary_value('total_expenditure'),
+            "total_revenue": summary_value('total_revenue'),
+            "recurrent_expenditure": summary_value('recurrent_expenditure'),
+            "capital_expenditure": summary_value('capital_expenditure'),
+            "personnel_cost": summary_value('personnel_cost'),
+            "recurrent_revenue": summary_value('recurrent_revenue'),
+            "faac": summary_value('faac'),
+            "igr": summary_value('igr'),
+            "grants": summary_value('grants'),
+            "capital_receipts": summary_value('capital_receipts'),
+            "opening_balance": summary_value('opening_balance'),
+            "financing_total": summary_value('financing_total'),
+            "deficit_surplus": summary_value('deficit_surplus'),
             "verified": audit_data.get('reconciled', True),
             "isOfficialError": not audit_data.get('reconciled', True),
             "errorExplanation": json.dumps(audit_data.get('errors', [])),
@@ -114,6 +117,8 @@ def main(context):
             "pdf_file_id": pdf_file_id,
             "text_file_id": text_file_id,
             "audit_report": json.dumps(audit_data),
+            "anomalies": json.dumps(audit_data.get('anomalies', [])),
+            "has_anomalies": bool(audit_data.get('has_anomalies', False)),
             "document_metrics": json.dumps(budget_data.get('document_metrics', {})),
             "process_logs": budget_data.get('process_logs', "")
         }
@@ -133,10 +138,10 @@ def main(context):
                     "code": str(mda.get('code', '0')),
                     "name": mda.get('name', 'Unknown'),
                     "total": mda.get('total', 0),
-                    "recurrent": mda.get('recurrent', 0),
-                    "personnel": mda.get('personnel', 0),
-                    "overhead": mda.get('overhead', 0),
-                    "capital": mda.get('capital', 0),
+                    "recurrent": mda.get('recurrent'),
+                    "personnel": mda.get('personnel'),
+                    "overhead": mda.get('overhead'),
+                    "capital": mda.get('capital'),
                     "sourceLine": mda.get('provenance', {}).get('line_text', ''),
                     "pageNumber": mda.get('provenance', {}).get('page', 0),
                     "units": json.dumps(mda.get('units', [])),

@@ -32,10 +32,10 @@ export function BudgetProvider({ children }) {
         const pickNumber = (primary, fallback) => {
           if (primary === null || primary === undefined) {
             if (typeof fallback === 'number' && Number.isFinite(fallback)) return fallback;
-            return 0;
+            return null;
           }
           if (typeof primary === 'number' && Number.isFinite(primary)) return primary;
-          return 0;
+          return null;
         };
 
         const summary = {
@@ -54,10 +54,6 @@ export function BudgetProvider({ children }) {
           total_revenue: pickNumber(doc.total_revenue, auditSummary.total_revenue)
         };
 
-        if (summary.total_revenue === 0) {
-          summary.total_revenue = summary.faac + summary.igr + summary.grants + summary.capital_receipts;
-        }
-
         return {
           id: doc.$id,
           name: doc.name,
@@ -73,6 +69,8 @@ export function BudgetProvider({ children }) {
             pdf_file_id: doc.pdf_file_id,
             text_file_id: doc.text_file_id,
             audit,
+            anomalies: doc.anomalies ? JSON.parse(doc.anomalies) : (audit.anomalies || []),
+            has_anomalies: Boolean(doc.has_anomalies) || Boolean(audit.has_anomalies) || Boolean((audit.anomalies || []).length),
             document_metrics: doc.document_metrics ? JSON.parse(doc.document_metrics) : {},
             process_logs: doc.process_logs || "",
             summary,
@@ -199,14 +197,21 @@ export function BudgetProvider({ children }) {
         await databases.createDocument(DB_ID, COLLECTIONS.STATES, stateId, {
           name: newStateData.state,
           year: parseInt(newStateData.year),
-          total_expenditure: summary.total_expenditure || 0,
-          capital_expenditure: summary.capital_expenditure || 0,
-          personnel_cost: summary.personnel_cost || 0,
-          recurrent_revenue: summary.recurrent_revenue || 0,
-          faac: summary.faac || 0,
-          igr: summary.igr || 0,
-          grants: summary.grants || 0,
-          capital_receipts: summary.capital_receipts || 0,
+          state_code: newStateData.state_code || "",
+          currency: newStateData.currency || "NGN",
+          total_expenditure: summary.total_expenditure ?? 0,
+          total_revenue: summary.total_revenue ?? null,
+          recurrent_expenditure: summary.recurrent_expenditure ?? null,
+          capital_expenditure: summary.capital_expenditure ?? 0,
+          personnel_cost: summary.personnel_cost ?? 0,
+          recurrent_revenue: summary.recurrent_revenue ?? 0,
+          faac: summary.faac ?? null,
+          igr: summary.igr ?? null,
+          grants: summary.grants ?? null,
+          capital_receipts: summary.capital_receipts ?? null,
+          opening_balance: summary.opening_balance ?? null,
+          financing_total: summary.financing_total ?? null,
+          deficit_surplus: summary.deficit_surplus ?? null,
           verified: audit.reconciled !== false,
           isOfficialError: audit.reconciled === false,
           errorExplanation: (newStateData.errorExplanation || (audit.errors ? JSON.stringify(audit.errors) : '')).slice(0, 1900),
@@ -215,6 +220,8 @@ export function BudgetProvider({ children }) {
           pdf_file_id: pdfFileId,
           text_file_id: textFileId,
           audit_report: JSON.stringify(auditReport),
+          anomalies: JSON.stringify(audit.anomalies || []),
+          has_anomalies: Boolean(audit.has_anomalies || (audit.anomalies && audit.anomalies.length > 0)),
           document_metrics: JSON.stringify(newStateData.document_metrics || {}),
           process_logs: newStateData.process_logs || ""
         });
@@ -243,10 +250,11 @@ export function BudgetProvider({ children }) {
                 state_id: stateId,
                 code: String(mda.code || '0'),
                 name: mda.name || 'Unknown',
-                total: mda.total || 0,
-                personnel: mda.personnel || mda.recurrent || 0,
-                overhead: mda.overhead || 0,
-                capital: mda.capital || 0,
+                total: mda.total ?? 0,
+                recurrent: mda.recurrent ?? null,
+                personnel: mda.personnel ?? null,
+                overhead: mda.overhead ?? null,
+                capital: mda.capital ?? null,
                 sourceLine: prov.line_text || '',
                 pageNumber: prov.page || 0,
                 units: JSON.stringify(mda.units || []),
