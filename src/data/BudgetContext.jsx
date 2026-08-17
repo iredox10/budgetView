@@ -18,72 +18,94 @@ export function BudgetProvider({ children }) {
   }, []);
 
   const fetchStates = async () => {
+    const retry = async (fn, tries = 4) => {
+      for (let i = 0; i < tries; i++) {
+        try {
+          return await fn();
+        } catch (e) {
+          if (i === tries - 1) throw e;
+          await new Promise(resolve => setTimeout(resolve, 2500 * (i + 1)));
+        }
+      }
+    };
+
+    const asJSON = (v) => {
+      if (v === null || v === undefined || v === '') return null;
+      if (typeof v === 'object') return v;
+      try { return JSON.parse(v); } catch { return null; }
+    };
+
     try {
-      const response = await databases.listDocuments(DB_ID, COLLECTIONS.STATES);
-      const statesWithData = await Promise.all(response.documents.map(async (doc) => {
-        const [mdaRes, sectorRes] = await Promise.all([
-          databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [Query.equal('state_id', doc.$id), Query.limit(5000)]),
-          databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', doc.$id)])
-        ]);
-        
-        // Reconstruct the nested structure expected by the UI
-        const audit = doc.audit_report ? JSON.parse(doc.audit_report) : { errors: [], reconciled: doc.verified };
-        const auditSummary = audit?.summary || {};
-        const pickNumber = (primary, fallback) => {
-          if (primary === null || primary === undefined) {
-            if (typeof fallback === 'number' && Number.isFinite(fallback)) return fallback;
+      const response = await retry(() => databases.listDocuments(DB_ID, COLLECTIONS.STATES));
+      const statesWithData = (await Promise.all(response.documents.map(async (doc) => {
+        try {
+          const [mdaRes, sectorRes] = await Promise.all([
+            retry(() => databases.listDocuments(DB_ID, COLLECTIONS.MDAS, [Query.equal('state_id', doc.$id), Query.limit(5000)])),
+            retry(() => databases.listDocuments(DB_ID, COLLECTIONS.SECTORS, [Query.equal('state_id', doc.$id)]))
+          ]);
+
+          // Reconstruct the nested structure expected by the UI
+          const audit = asJSON(doc.audit_report) || { errors: [], reconciled: doc.verified };
+          const auditSummary = audit?.summary || {};
+          const pickNumber = (primary, fallback) => {
+            if (primary === null || primary === undefined) {
+              if (typeof fallback === 'number' && Number.isFinite(fallback)) return fallback;
+              return null;
+            }
+            if (typeof primary === 'number' && Number.isFinite(primary)) return primary;
             return null;
-          }
-          if (typeof primary === 'number' && Number.isFinite(primary)) return primary;
-          return null;
-        };
+          };
 
-        const summary = {
-          total_expenditure: pickNumber(doc.total_expenditure, auditSummary.total_expenditure),
-          recurrent_expenditure: pickNumber(doc.recurrent_expenditure, auditSummary.recurrent_expenditure),
-          capital_expenditure: pickNumber(doc.capital_expenditure, auditSummary.capital_expenditure),
-          personnel_cost: pickNumber(doc.personnel_cost, auditSummary.personnel_cost),
-          recurrent_revenue: pickNumber(doc.recurrent_revenue, auditSummary.recurrent_revenue),
-          faac: pickNumber(doc.faac, auditSummary.faac),
-          igr: pickNumber(doc.igr, auditSummary.igr),
-          grants: pickNumber(doc.grants, auditSummary.grants),
-          capital_receipts: pickNumber(doc.capital_receipts, auditSummary.capital_receipts),
-          opening_balance: pickNumber(doc.opening_balance, auditSummary.opening_balance),
-          financing_total: pickNumber(doc.financing_total, auditSummary.financing_total),
-          deficit_surplus: pickNumber(doc.deficit_surplus, auditSummary.deficit_surplus),
-          total_revenue: pickNumber(doc.total_revenue, auditSummary.total_revenue)
-        };
+          const summary = {
+            total_expenditure: pickNumber(doc.total_expenditure, auditSummary.total_expenditure),
+            recurrent_expenditure: pickNumber(doc.recurrent_expenditure, auditSummary.recurrent_expenditure),
+            capital_expenditure: pickNumber(doc.capital_expenditure, auditSummary.capital_expenditure),
+            personnel_cost: pickNumber(doc.personnel_cost, auditSummary.personnel_cost),
+            recurrent_revenue: pickNumber(doc.recurrent_revenue, auditSummary.recurrent_revenue),
+            faac: pickNumber(doc.faac, auditSummary.faac),
+            igr: pickNumber(doc.igr, auditSummary.igr),
+            grants: pickNumber(doc.grants, auditSummary.grants),
+            capital_receipts: pickNumber(doc.capital_receipts, auditSummary.capital_receipts),
+            opening_balance: pickNumber(doc.opening_balance, auditSummary.opening_balance),
+            financing_total: pickNumber(doc.financing_total, auditSummary.financing_total),
+            deficit_surplus: pickNumber(doc.deficit_surplus, auditSummary.deficit_surplus),
+            total_revenue: pickNumber(doc.total_revenue, auditSummary.total_revenue)
+          };
 
-        return {
-          id: doc.$id,
-          name: doc.name,
-          year: doc.year,
-          data: {
-            state: doc.name,
+          return {
+            id: doc.$id,
+            name: doc.name,
             year: doc.year,
-            verified: doc.verified,
-            isOfficialError: doc.isOfficialError,
-            errorExplanation: doc.errorExplanation,
-            summarySources: doc.summarySources ? JSON.parse(doc.summarySources) : {},
-            summaryPages: doc.summaryPages ? JSON.parse(doc.summaryPages) : {},
-            pdf_file_id: doc.pdf_file_id,
-            text_file_id: doc.text_file_id,
-            audit,
-            anomalies: doc.anomalies ? JSON.parse(doc.anomalies) : (audit.anomalies || []),
-            has_anomalies: Boolean(doc.has_anomalies) || Boolean(audit.has_anomalies) || Boolean((audit.anomalies || []).length),
-            document_metrics: doc.document_metrics ? JSON.parse(doc.document_metrics) : {},
-            process_logs: doc.process_logs || "",
-            summary,
-            mdas: mdaRes.documents.map(m => ({
-              ...m,
-              units: m.units ? JSON.parse(m.units) : [],
-              provenance: m.provenance ? JSON.parse(m.provenance) : {}
-            })),
-            sectors: sectorRes.documents
-          }
-        };
-      }));
-      
+            data: {
+              state: doc.name,
+              year: doc.year,
+              verified: doc.verified,
+              isOfficialError: doc.isOfficialError,
+              errorExplanation: doc.errorExplanation,
+              summarySources: asJSON(doc.summarySources) || {},
+              summaryPages: asJSON(doc.summaryPages) || {},
+              pdf_file_id: doc.pdf_file_id,
+              text_file_id: doc.text_file_id,
+              audit,
+              anomalies: asJSON(doc.anomalies) || (audit.anomalies || []),
+              has_anomalies: Boolean(doc.has_anomalies) || Boolean(audit.has_anomalies) || Boolean((audit.anomalies || []).length),
+              document_metrics: asJSON(doc.document_metrics) || {},
+              process_logs: doc.process_logs || "",
+              summary,
+              mdas: mdaRes.documents.map(m => ({
+                ...m,
+                units: asJSON(m.units) || [],
+                provenance: asJSON(m.provenance) || {}
+              })),
+              sectors: sectorRes.documents
+            }
+          };
+        } catch (e) {
+          console.error(`State ${doc.$id} failed to load`, e);
+          return null;
+        }
+      }))).filter(Boolean);
+
       setStates(statesWithData);
       setIsInitialized(true);
     } catch (e) {
