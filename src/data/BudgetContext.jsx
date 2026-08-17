@@ -158,6 +158,26 @@ export function BudgetProvider({ children }) {
         throw new Error("No MDAs detected in this bundle. Ensure the folder contains a JSON with MDA data (mda/expenditure_mda) or share the folder so we can add a parser rule.");
       }
 
+      // Naming gate: placeholder sector/unit names mean the parser could not
+      // recover a description from the document — surface it, don't ingest.
+      const badSectors = (newStateData.sectors || []).filter(s =>
+        !s.name || !String(s.name).trim() ||
+        ['unknown', 'other', 'unnamed'].includes(String(s.name).trim().toLowerCase()) ||
+        String(s.name).includes('(unnamed)')
+      );
+      if (badSectors.length > 0) {
+        throw new Error(`Sector naming failed for ${badSectors.length} sector(s) (e.g. code ${badSectors[0].code}). The PDF wraps these names in a layout the parser could not recover — fix the extractor, don't ingest placeholders.`);
+      }
+      const badUnits = [];
+      const walkUnits = (units, mda) => units.forEach(u => {
+        if (!u.name || !String(u.name).trim()) badUnits.push(`${mda.code}/${u.code}`);
+        walkUnits(u.children || [], mda);
+      });
+      mdas.forEach(m => walkUnits(m.units || [], m));
+      if (badUnits.length > 0) {
+        throw new Error(`Unit naming failed for ${badUnits.length} unit(s) (e.g. ${badUnits[0]}). Same rule: fix the extractor before ingesting.`);
+      }
+
       if (INGEST_MODE === 'cloud' && INGEST_FUNCTION_ID) {
         // Cloud ingestion (fallback)
         const blob = new Blob([JSON.stringify(newStateData)], { type: 'application/json' });
