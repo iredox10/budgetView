@@ -203,6 +203,56 @@ const SimpleDonutChart = ({ data, colors }) => {
 };
 
 // Audit Trail Modal Component
+const AuditReportBody = ({ audit, stateName }) => (
+  <>
+    <div className="grid grid-cols-3 gap-4">
+      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Integrity Score</p>
+        <p className={clsx("text-3xl font-black", (audit.integrity_score || (audit.reconciled ? 100 : 0)) > 90 ? "text-emerald-600" : "text-rose-600")}>
+          {audit.integrity_score || (audit.reconciled ? 100 : 0)}/100
+        </p>
+      </div>
+      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Issues Found</p>
+        <p className="text-3xl font-black text-slate-900">{audit.errors?.length || 0}</p>
+      </div>
+      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
+        <div className="mt-1">
+          <Badge color={audit.reconciled ? "emerald" : "rose"} size="xl">
+            {audit.reconciled ? "PLATINUM" : "RECONCILING"}
+          </Badge>
+        </div>
+      </div>
+    </div>
+
+    <div className="space-y-4">
+      <Title className="text-lg">Detailed Discrepancies</Title>
+      {audit.errors && audit.errors.length > 0 ? (
+        audit.errors.map((err, idx) => (
+          <div key={idx} className="p-4 rounded-2xl border border-rose-100 bg-rose-50/30 flex gap-4">
+            <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center shrink-0">
+              <Scale className="w-5 h-5 text-rose-600" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-rose-900 uppercase tracking-tight">{err.code.replace(/_/g, ' ')}</p>
+              <p className="text-sm text-rose-700 mt-1 font-mono leading-relaxed">{err.message}</p>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="p-12 text-center bg-emerald-50/30 rounded-[2rem] border-2 border-dashed border-emerald-100">
+          <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-600">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+          <p className="font-bold text-emerald-900">Zero Mathematical Errors</p>
+          <p className="text-sm text-emerald-600 mt-1 max-w-xs mx-auto">This document is mathematically sound. All parent totals match the sum of their constituent parts.</p>
+        </div>
+      )}
+    </div>
+  </>
+);
+
 const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
   if (!isOpen || !audit) return null;
 
@@ -229,51 +279,7 @@ const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-8">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Integrity Score</p>
-              <p className={clsx("text-3xl font-black", audit.integrity_score > 90 ? "text-emerald-600" : "text-rose-600")}>
-                {audit.integrity_score || (audit.reconciled ? 100 : 0)}/100
-              </p>
-            </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Issues Found</p>
-              <p className="text-3xl font-black text-slate-900">{audit.errors?.length || 0}</p>
-            </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
-              <div className="mt-1">
-                <Badge color={audit.reconciled ? "emerald" : "rose"} size="xl">
-                  {audit.reconciled ? "PLATINUM" : "RECONCILING"}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Title className="text-lg">Detailed Discrepancies</Title>
-            {audit.errors && audit.errors.length > 0 ? (
-              audit.errors.map((err, idx) => (
-                <div key={idx} className="p-4 rounded-2xl border border-rose-100 bg-rose-50/30 flex gap-4">
-                  <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center shrink-0">
-                    <Scale className="w-5 h-5 text-rose-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-rose-900 uppercase tracking-tight">{err.code.replace(/_/g, ' ')}</p>
-                    <p className="text-sm text-rose-700 mt-1 font-mono leading-relaxed">{err.message}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="p-12 text-center bg-emerald-50/30 rounded-[2rem] border-2 border-dashed border-emerald-100">
-                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-600">
-                  <ShieldCheck className="w-8 h-8" />
-                </div>
-                <p className="font-bold text-emerald-900">Zero Mathematical Errors</p>
-                <p className="text-sm text-emerald-600 mt-1 max-w-xs mx-auto">This document is mathematically sound. All parent totals match the sum of their constituent parts.</p>
-              </div>
-            )}
-          </div>
+          <AuditReportBody audit={audit} stateName={stateName} />
         </div>
 
         <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
@@ -304,6 +310,29 @@ const AnomalySeverityBadge = ({ severity }) => {
 
 const AnomalyCard = ({ anomaly, onViewPage }) => {
   const hasAmounts = anomaly.expected !== null && anomaly.expected !== undefined;
+  const delta = hasAmounts ? Math.abs(anomaly.expected - anomaly.actual) : null;
+  const [copied, setCopied] = useState(false);
+
+  const copyReport = () => {
+    const lines = (anomaly.lines || []).join('\n');
+    const report = [
+      `ANOMALY REPORT — ${anomaly.code}`,
+      `Severity: ${anomaly.severity}`,
+      `Pages: ${(anomaly.pages || []).join(', ') || 'n/a'}`,
+      `Codes: ${(anomaly.codes || []).join(', ') || 'n/a'}`,
+      `Message: ${anomaly.message}`,
+      ...(hasAmounts ? [
+        `Table total: ${anomaly.expected}`,
+        `Sum of parts: ${anomaly.actual}`,
+        `Difference: ${delta}`
+      ] : []),
+      ...(lines ? [`Verbatim source line(s):`, lines] : [])
+    ].join('\n');
+    navigator.clipboard?.writeText(report);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/40 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
@@ -316,24 +345,36 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
             <AnomalySeverityBadge severity={anomaly.severity} />
           </div>
         </div>
-        {anomaly.pages && anomaly.pages.length > 0 && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => onViewPage(anomaly)}
+            onClick={copyReport}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-50 transition-colors"
           >
-            <Eye className="w-3 h-3" />
-            VIEW IN PDF (PAGE {anomaly.pages[0]})
+            <FileJson className="w-3 h-3" />
+            {copied ? 'COPIED' : 'COPY REPORT'}
           </button>
-        )}
+          {anomaly.pages && anomaly.pages.length > 0 && (
+            <button
+              onClick={() => onViewPage(anomaly)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-50 transition-colors"
+            >
+              <Eye className="w-3 h-3" />
+              VIEW IN PDF (PAGE {anomaly.pages[0]})
+            </button>
+          )}
+        </div>
       </div>
       <p className="text-sm text-amber-800 font-medium leading-relaxed">{anomaly.message}</p>
       {hasAmounts && (
-        <div className="flex flex-wrap gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="px-2 py-1 bg-white/70 rounded-lg border border-amber-100 font-mono text-amber-900">
             Table total: {formatCurrency(anomaly.expected)}
           </span>
           <span className="px-2 py-1 bg-white/70 rounded-lg border border-amber-100 font-mono text-amber-900">
             Sum of parts: {formatCurrency(anomaly.actual)}
+          </span>
+          <span className="px-2 py-1 bg-rose-50 rounded-lg border border-rose-200 font-mono font-black text-rose-700">
+            Δ = {formatCurrency(delta)}
           </span>
         </div>
       )}
@@ -344,6 +385,16 @@ const AnomalyCard = ({ anomaly, onViewPage }) => {
               {code}
             </span>
           ))}
+        </div>
+      )}
+      {anomaly.lines && anomaly.lines.length > 0 && (
+        <div className="rounded-xl bg-white/80 border border-amber-100 p-3">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Verbatim from the document — verify it yourself</p>
+          <div className="space-y-1.5 max-h-32 overflow-y-auto">
+            {anomaly.lines.map((line, idx) => (
+              <p key={idx} className="font-mono text-[11px] text-slate-600 leading-snug whitespace-pre-wrap break-all">{line}</p>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -1206,13 +1257,17 @@ export default function StateDashboard() {
 
           {activeTab === 'audit' && (
             <div className="space-y-8">
+              <div className="p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900">Audit Trail: {data.state}</h3>
+                    <p className="text-sm text-slate-500 font-medium">Automatic mathematical verification report</p>
+                  </div>
+                  <AnomalySeverityBadge severity={anomalies.length > 0 ? 'high' : 'info'} />
+                </div>
+                <AuditReportBody audit={data.audit} stateName={data.state} />
+              </div>
               <AnomalyCenter anomalies={anomalies} onViewPage={viewAnomalyPage} />
-              <AuditTrailModal 
-                audit={data.audit} 
-                stateName={data.state} 
-                isOpen={true} 
-                onClose={() => setActiveTab('overview')} 
-              />
             </div>
           )}
 
