@@ -4,7 +4,10 @@ import { MessageSquare, X, Send, Bot, Loader2, Sparkles, FileText, MapPin } from
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
-const fmtNGN = (value) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(value);
+const fmtNGN = (value) => {
+  if (value === null || value === undefined) return 'not published in the document';
+  return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(value);
+};
 
 export default function AIChatbot({ budgetData }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,11 +68,17 @@ export default function AIChatbot({ budgetData }) {
       } else if (q.includes('capital')) {
         response = `Capital expenditure is ${fmtNGN(s.capital_expenditure)} — ${((s.capital_expenditure / s.total_expenditure) * 100).toFixed(1)}% of the total. Recurrent expenditure is ${fmtNGN(s.recurrent_expenditure)} (personnel: ${fmtNGN(s.personnel_cost)}).`;
       } else if (q.includes('personnel') || q.includes('salary')) {
-        response = `Personnel cost is ${fmtNGN(s.personnel_cost)}, which is ${((s.personnel_cost / s.total_expenditure) * 100).toFixed(1)}% of the total budget.`;
+        response = s.personnel_cost !== null && s.personnel_cost !== undefined
+          ? `Personnel cost is ${fmtNGN(s.personnel_cost)}, which is ${((s.personnel_cost / s.total_expenditure) * 100).toFixed(1)}% of the total budget.`
+          : `Personnel cost is ${fmtNGN(s.personnel_cost)} — the ${budgetData.year} ${budgetData.state} budget does not publish a separate personnel row on the summary page.`;
       } else if (q.includes('open') || q.includes('balance') || q.includes('deficit') || q.includes('financ')) {
-        response = s.opening_balance || s.financing_total || s.deficit_surplus
-          ? `Opening balance: ${fmtNGN(s.opening_balance || 0)}. Financing: ${fmtNGN(s.financing_total || 0)}. Deficit/surplus: ${fmtNGN(s.deficit_surplus || 0)}.`
-          : "This budget has no reported opening balance, financing, or deficit line.";
+        const parts = [];
+        if (s.opening_balance !== null && s.opening_balance !== undefined) parts.push(`Opening balance: ${fmtNGN(s.opening_balance)}`);
+        if (s.financing_total !== null && s.financing_total !== undefined) parts.push(`Financing: ${fmtNGN(s.financing_total)}`);
+        if (s.deficit_surplus !== null && s.deficit_surplus !== undefined) parts.push(`Deficit/surplus: ${fmtNGN(s.deficit_surplus)}`);
+        response = parts.length > 0
+          ? parts.join('. ') + '.'
+          : `The ${budgetData.year} ${budgetData.state} budget does not report opening balance, financing, or deficit lines on the summary page.`;
       } else {
         const mda = budgetData.mdas.find(m => m.name && q.includes(m.name.toLowerCase()));
         if (mda) {

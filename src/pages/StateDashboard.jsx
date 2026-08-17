@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useBudget } from '../data/BudgetContext';
 import { 
   AlertCircle, TrendingUp, Users, Database, CheckCircle2, X, ArrowRight, 
-  AlertTriangle, Coins, TrendingDown, Users2, Search, Download, 
+  AlertTriangle, Coins, TrendingDown, Search, Download, 
   FileText, PieChart, Building2, ChevronRight, Landmark, Share2,
   Target, Wallet, Receipt, ShieldCheck, Scale, FileSearch, Sparkles,
   History, Eye, FileJson, Loader2
@@ -16,7 +16,8 @@ import { Badge, Title, Text, Card } from '@tremor/react';
 import { storage, BUCKET_ID } from '../utils/appwrite';
 
 const formatCurrency = (val) => {
-  if (!val || val === 0) return '₦0.00';
+  if (val === null || val === undefined) return '—';
+  if (val === 0) return '₦0.00';
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
@@ -26,7 +27,8 @@ const formatCurrency = (val) => {
 };
 
 const formatCompact = (val) => {
-  if (!val || val === 0) return '₦0';
+  if (val === null || val === undefined) return '—';
+  if (val === 0) return '₦0';
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
@@ -35,28 +37,21 @@ const formatCompact = (val) => {
   }).format(val);
 };
 
-// Heuristic population estimate for per-capita calculations
-const getEstimatedPopulation = (state) => {
-  const populations = {
-    'Kano': 15000000,
-    'Lagos': 17000000,
-    'Kaduna': 10000000,
-    'Rivers': 8000000
-  };
-  return populations[state] || 5000000;
-};
-
 // Animated counter component
 const AnimatedValue = ({ value, formatter = formatCurrency, className = '' }) => {
   const [displayValue, setDisplayValue] = useState(0);
-  
+
   useEffect(() => {
+    if (value === null || value === undefined) {
+      setDisplayValue(null);
+      return;
+    }
     const duration = 1500;
     const steps = 40;
     const increment = value / steps;
     let current = 0;
     let step = 0;
-    
+
     const timer = setInterval(() => {
       step++;
       current += increment;
@@ -67,10 +62,10 @@ const AnimatedValue = ({ value, formatter = formatCurrency, className = '' }) =>
         setDisplayValue(current);
       }
     }, duration / steps);
-    
+
     return () => clearInterval(timer);
   }, [value]);
-  
+
   return <span className={className}>{formatter(displayValue)}</span>;
 };
 
@@ -293,13 +288,176 @@ const AuditTrailModal = ({ audit, isOpen, onClose, stateName }) => {
   );
 };
 
+// Anomaly Center — surfaces document-internal inconsistencies found by the engine
+const AnomalySeverityBadge = ({ severity }) => {
+  const styles = {
+    high: 'bg-rose-100 text-rose-700 border-rose-200',
+    medium: 'bg-amber-100 text-amber-700 border-amber-200',
+    info: 'bg-sky-100 text-sky-700 border-sky-200'
+  };
+  return (
+    <span className={clsx("px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border", styles[severity] || styles.info)}>
+      {severity}
+    </span>
+  );
+};
+
+const AnomalyCard = ({ anomaly, onViewPage }) => {
+  const hasAmounts = anomaly.expected !== null && anomaly.expected !== undefined;
+  return (
+    <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/40 flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-xs font-black text-amber-900 uppercase tracking-tight">{anomaly.code.replace(/_/g, ' ')}</p>
+            <AnomalySeverityBadge severity={anomaly.severity} />
+          </div>
+        </div>
+        {anomaly.pages && anomaly.pages.length > 0 && (
+          <button
+            onClick={() => onViewPage(anomaly)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-50 transition-colors"
+          >
+            <Eye className="w-3 h-3" />
+            VIEW IN PDF (PAGE {anomaly.pages[0]})
+          </button>
+        )}
+      </div>
+      <p className="text-sm text-amber-800 font-medium leading-relaxed">{anomaly.message}</p>
+      {hasAmounts && (
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="px-2 py-1 bg-white/70 rounded-lg border border-amber-100 font-mono text-amber-900">
+            Table total: {formatCurrency(anomaly.expected)}
+          </span>
+          <span className="px-2 py-1 bg-white/70 rounded-lg border border-amber-100 font-mono text-amber-900">
+            Sum of parts: {formatCurrency(anomaly.actual)}
+          </span>
+        </div>
+      )}
+      {anomaly.codes && anomaly.codes.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {anomaly.codes.map(code => (
+            <span key={code} className="px-2 py-0.5 bg-white rounded-md text-[10px] font-mono text-slate-500 border border-slate-100">
+              {code}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AnomalyCenter = ({ anomalies, onViewPage }) => {
+  if (!anomalies || anomalies.length === 0) return null;
+  const bySeverity = { high: 0, medium: 0, info: 0 };
+  anomalies.forEach(a => { bySeverity[a.severity || 'info'] = (bySeverity[a.severity || 'info'] || 0) + 1; });
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600">
+          <AlertTriangle className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="text-xl font-black text-slate-900">Anomaly Center</h3>
+          <p className="text-sm text-slate-500">Inconsistencies found inside the official document itself — reported verbatim, nothing corrected silently.</p>
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <span className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-black border border-rose-100">{bySeverity.high || 0} HIGH</span>
+        <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-black border border-amber-100">{bySeverity.medium || 0} MEDIUM</span>
+        <span className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 text-xs font-black border border-sky-100">{bySeverity.info || 0} INFO</span>
+      </div>
+      {anomalies.map((anomaly, idx) => (
+        <AnomalyCard key={idx} anomaly={anomaly} onViewPage={onViewPage} />
+      ))}
+    </div>
+  );
+};
+
 // MDA Row with expansion for sub-units
-const MDARow = ({ mda, onSelect, formatCompact, errors = [] }) => {
+const UnitRow = ({ unit, depth, onSelect, formatCompact }) => {
+  const [isExpanded, setIsExpanded] = useState(depth === 0);
+  const children = unit.children || [];
+  const hasChildren = children.length > 0;
+  const childrenTotal = children.reduce((sum, c) => sum + (c.total || 0), 0);
+  const hasSum = unit.total !== null && unit.total !== undefined;
+  const sumOk = hasSum && hasChildren && Math.abs(unit.total - childrenTotal) <= 1;
+  const sumMismatch = hasSum && hasChildren && !sumOk;
+
+  return (
+    <div className={clsx(depth > 0 && "ml-8 border-l-2 border-slate-100 pl-4")}>
+      <div className={clsx(
+        "flex items-center justify-between group/unit py-2",
+        depth === 0 ? "rounded-xl px-3 hover:bg-slate-50" : "hover:bg-slate-50/60"
+      )}>
+        <div className="flex items-center gap-2 min-w-0">
+          {hasChildren ? (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1 hover:bg-slate-200 rounded-lg transition-colors shrink-0"
+            >
+              <ChevronRight className={clsx("w-3.5 h-3.5 text-slate-400 transition-transform", isExpanded && "rotate-90")} />
+            </button>
+          ) : (
+            <span className="w-[22px] shrink-0" />
+          )}
+          <div className="min-w-0">
+            <p className={clsx("truncate", depth === 0 ? "text-sm font-semibold text-slate-800" : "text-sm font-medium text-slate-600")}>
+              {unit.name || <span className="text-slate-400 italic">Unnamed unit</span>}
+            </p>
+            <p className="text-[10px] text-slate-400 font-mono">{unit.code}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {hasChildren && (
+            sumOk ? (
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-md border border-emerald-100">
+                <CheckCircle2 className="w-3 h-3" /> Σ VERIFIED
+              </span>
+            ) : (
+              sumMismatch && (
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-black rounded-md border border-amber-100" title={`Total ${unit.total} vs children sum ${childrenTotal}`}>
+                  <AlertTriangle className="w-3 h-3" /> Σ Δ {formatCompact(Math.abs(unit.total - childrenTotal))}
+                </span>
+              )
+            )
+          )}
+          <span className="text-xs font-bold text-slate-700">{formatCompact(unit.total)}</span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect({ ...unit, pageNumber: unit.provenance?.page });
+            }}
+            className="opacity-0 group-hover/unit:opacity-100 text-[10px] font-bold text-blue-600 hover:underline"
+          >
+            VIEW SOURCE
+          </button>
+        </div>
+      </div>
+      {hasChildren && isExpanded && (
+        <div className="space-y-1 mt-1 mb-2">
+          {children.map((child, idx) => (
+            <UnitRow key={child.code || idx} unit={child} depth={depth + 1} onSelect={onSelect} formatCompact={formatCompact} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const MDARow = ({ mda, onSelect, formatCompact, errors = [], anomalies = [] }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasUnits = mda.units && mda.units.length > 0;
-  
+
   // Find errors for this specific MDA
   const mdaError = errors.find(e => e.message?.includes(mda.code));
+  const mdaAnomaly = anomalies.find(a =>
+    (a.codes || []).includes(mda.code) ||
+    a.message?.toLowerCase().includes(String(mda.name || '').toLowerCase())
+  );
 
   return (
     <>
@@ -328,6 +486,11 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [] }) => {
                     <AlertTriangle className="w-3 h-3" />
                   </div>
                 )}
+                {mdaAnomaly && (
+                  <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded border border-amber-200" title={mdaAnomaly.message}>
+                    ANOMALY
+                  </span>
+                )}
                 {mda.provenance?.page && (
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded border border-emerald-100">
                     VERIFIED
@@ -354,26 +517,14 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [] }) => {
         <tr className="bg-slate-50/30">
           <td colSpan="5" className="px-12 py-4">
             <div className="space-y-3 border-l-2 border-slate-200 pl-6">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Administrative Units</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Administrative Units</p>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {(() => { let n = 0; const walk = (list) => list.forEach(u => { n++; walk(u.children || []); }); walk(mda.units); return n; })()} units · tree from official document
+                </span>
+              </div>
               {mda.units.map((unit, idx) => (
-                <div key={idx} className="flex items-center justify-between group/unit">
-                  <div>
-                    <p className="text-sm font-medium text-slate-700">{unit.name}</p>
-                    <p className="text-[10px] text-slate-400 font-mono">{unit.code}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-slate-600">{formatCompact(unit.total)}</span>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelect({ ...unit, pageNumber: unit.provenance?.page });
-                      }}
-                      className="opacity-0 group-hover/unit:opacity-100 text-[10px] font-bold text-blue-600 hover:underline"
-                    >
-                      VIEW SOURCE
-                    </button>
-                  </div>
-                </div>
+                <UnitRow key={unit.code || idx} unit={unit} depth={0} onSelect={onSelect} formatCompact={formatCompact} />
               ))}
             </div>
           </td>
@@ -471,15 +622,16 @@ export default function StateDashboard() {
 
   const exportToCSV = () => {
     if (!data) return;
-    const headers = ["Code", "MDA Name", "Personnel", "Overhead", "Capital", "Total"];
-    const rows = data.mdas.map(m => [
-      `"${m.code}"`,
-      `"${m.name}"`,
-      m.personnel,
-      m.overhead,
-      m.capital,
-      m.total
-    ]);
+    const headers = ["Code", "Name", "Type", "Personnel", "Overhead", "Capital", "Total"];
+    const rows = [];
+    data.mdas.forEach(m => {
+      rows.push([`"${m.code}"`, `"${m.name}"`, "MDA", m.personnel, m.overhead, m.capital, m.total]);
+      const walk = (units, depth) => units.forEach(u => {
+        rows.push([`"${u.code}"`, `"${u.name}"`, depth === 0 ? "Department" : "Unit", u.personnel, u.overhead, u.capital, u.total]);
+        walk(u.children || [], depth + 1);
+      });
+      walk(m.units || [], 0);
+    });
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -489,17 +641,16 @@ export default function StateDashboard() {
     link.click();
   };
 
-  const validation = useMemo(() => {
-    if (!data) return null;
-    const anomalyMDAs = data.mdas.filter(m => {
-      const sum = m.personnel + m.overhead + m.capital;
-      return Math.abs(sum - m.total) > 100 && sum > 0;
+  const viewAnomalyPage = (anomaly) => {
+    setActiveTab('overview');
+    setSelectedMDA({
+      name: `${anomaly.code.replace(/_/g, ' ')} — Page ${anomaly.pages[0]}`,
+      pageNumber: anomaly.pages[0],
+      provenance: { line_text: anomaly.message }
     });
-    return {
-      anomalies: anomalyMDAs.length,
-      anomalyList: anomalyMDAs
-    };
-  }, [data]);
+  };
+
+  const anomalies = data?.anomalies || [];
 
   if (!isInitialized) {
     return (
@@ -536,9 +687,6 @@ export default function StateDashboard() {
   const capitalRatio = summary.total_expenditure > 0 
     ? (summary.capital_expenditure / summary.total_expenditure) * 100 
     : 0;
-  
-  const pop = getEstimatedPopulation(data.state);
-  const perCapita = summary.total_expenditure / pop;
 
   const revenueData = [
     { name: 'FAAC', value: summary.faac || 0, color: '#10b981' },
@@ -720,6 +868,30 @@ export default function StateDashboard() {
                 </div>
               )}
 
+              {/* Document Anomalies Banner */}
+              {anomalies.length > 0 && (
+                <div className="mb-8 rounded-2xl p-6 border border-amber-200 bg-amber-50 flex items-center justify-between transition-all hover:shadow-lg cursor-pointer"
+                  onClick={() => setActiveTab('audit')}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-100">
+                      <AlertTriangle className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-amber-900">
+                        {anomalies.length} Document Anomal{anomalies.length === 1 ? 'y' : 'ies'} Detected
+                      </h3>
+                      <p className="text-sm text-amber-700">
+                        The official document is internally inconsistent in {anomalies.length} place{anomalies.length === 1 ? '' : 's'}. Figures are shown exactly as published — nothing was corrected silently.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <AnomalySeverityBadge severity="high" />
+                    <span className="text-sm font-bold text-amber-700 whitespace-nowrap">Open Center →</span>
+                  </div>
+                </div>
+              )}
+
               {/* Key Metrics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard
@@ -745,17 +917,10 @@ export default function StateDashboard() {
                   id="metric-igr"
                   title="Internal Revenue"
                   value={summary.igr}
-                  subtitle={`${((summary.igr / (summary.recurrent_revenue || 1)) * 100).toFixed(1)}% of revenue base`}
+                  subtitle={`${((summary.igr || 0) / (summary.recurrent_revenue || 1)) * 100 === 0 ? 'n/a' : ((summary.igr / (summary.recurrent_revenue || 1)) * 100).toFixed(1) + '% of revenue base'}`}
                   icon={Coins}
                   color="amber"
                   onClick={() => handleSummaryClick('igr', 'Internal Revenue (IGR)')}
-                />
-                <MetricCard
-                  title="Per Capita"
-                  value={perCapita}
-                  subtitle="Budget per citizen"
-                  icon={Users2}
-                  color="indigo"
                 />
               </div>
 
@@ -960,6 +1125,7 @@ export default function StateDashboard() {
                         onSelect={setSelectedMDA} 
                         formatCompact={formatCompact} 
                         errors={data.audit?.errors}
+                        anomalies={anomalies}
                       />
                     ))}
                   </tbody>
@@ -1039,7 +1205,8 @@ export default function StateDashboard() {
           )}
 
           {activeTab === 'audit' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
+              <AnomalyCenter anomalies={anomalies} onViewPage={viewAnomalyPage} />
               <AuditTrailModal 
                 audit={data.audit} 
                 stateName={data.state} 
