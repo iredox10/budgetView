@@ -1,14 +1,31 @@
 /**
  * BundleStandardizer Utility (Client-side)
  * Processes raw extraction folders into high-integrity "State Intelligence Bundles"
+ *
+ * Truth rules (Phase 2):
+ * - No silent fallbacks: absent figures stay null (UI renders "—"); the standardizer
+ *   never invents values (no units-sum totals, no personnel=recurrent, no count-based
+ *   source pick, no hardcoded sector maps, no revenue re-derivation).
+ * - Amounts come precomputed from the engine (personnel/overhead/recurrent/capital/total
+ *   extracted directly from the PDF); label re-mapping is only a legacy-input path.
+ * - Anomalies from the engine audit pass through unchanged.
  */
 
 export class BundleStandardizer {
   static val(obj) {
-    if (obj === null || obj === undefined) return 0;
-    if (typeof obj === 'object' && 'value' in obj) return obj.value || 0;
+    if (obj === null || obj === undefined) return null;
+    if (typeof obj === 'object' && 'value' in obj) {
+      return obj.value === null || obj.value === undefined ? null : obj.value;
+    }
     if (typeof obj === 'object' && 'amount' in obj) return this.val(obj.amount);
-    return typeof obj === 'number' ? obj : parseFloat(String(obj).replace(/,/g, '')) || 0;
+    if (typeof obj === 'number') return obj;
+    const parsed = parseFloat(String(obj).replace(/,/g, ''));
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  static valOrZero(obj) {
+    const value = this.val(obj);
+    return value === null ? 0 : value;
   }
 
   static str(value, fallback = '') {
@@ -28,22 +45,34 @@ export class BundleStandardizer {
     return { page: fallbackPage || null, line_text: fallbackLine || null };
   }
 
+  /**
+   * Legacy path only: engine outputs carry precomputed amounts on the unit
+   * (recurrent/capital/total/personnel/overhead). This label mapping is used
+   * solely when those fields are absent (old extraction folders).
+   */
   static extractUnitAmounts(amounts) {
-    const res = { recurrent: 0, capital: 0, total: 0, personnel: 0, overhead: 0 };
+    const res = { recurrent: null, capital: null, total: null, personnel: null, overhead: null };
     if (Array.isArray(amounts)) {
       amounts.forEach(item => {
         const amount = this.val(item.amount);
         if (item.label === 'recurrent') res.recurrent = amount;
         if (item.label === 'development' || item.label === 'capital') res.capital = amount;
         if (item.label === 'other' || item.label === 'total') res.total = amount;
+        if (item.label === 'personnel') res.personnel = amount;
+        if (item.label === 'overhead') res.overhead = amount;
       });
-      if (res.total === 0) res.total = res.recurrent + res.capital;
-    } else if (typeof amounts === 'object') {
+      if (res.total === null && res.recurrent !== null && res.capital !== null) {
+        res.total = res.recurrent + res.capital;
+      }
+    } else if (typeof amounts === 'object' && amounts !== null) {
       res.personnel = this.val(amounts.personnel);
       res.overhead = this.val(amounts.overhead);
-      res.recurrent = this.val(amounts.recurrent ?? amounts.total_recurrent) || (res.personnel + res.overhead);
+      res.recurrent = this.val(amounts.recurrent ?? amounts.total_recurrent);
       res.capital = this.val(amounts.development ?? amounts.capital);
-      res.total = this.val(amounts.other ?? amounts.total ?? amounts.total_expenditure) || (res.recurrent + res.capital);
+      res.total = this.val(amounts.other ?? amounts.total ?? amounts.total_expenditure);
+      if (res.total === null && res.recurrent !== null && res.capital !== null) {
+        res.total = res.recurrent + res.capital;
+      }
     }
     return res;
   }
@@ -156,57 +185,28 @@ export class BundleStandardizer {
     return candidates[0].list;
   }
 
-  static pickRevenueAmount(items, keywords) {
-    if (!Array.isArray(items) || items.length === 0) return 0;
-
-    const upperKeywords = keywords.map(k => k.toUpperCase());
-    const matches = items.map(item => ({
-      code: this.str(item.code),
-      category: this.str(item.category),
-      amount: this.val(item.amount)
-    })).filter(entry => {
-      const category = entry.category.toUpperCase();
-      return upperKeywords.some(k => category.includes(k));
-    });
-
-    if (matches.length === 0) return 0;
-
-    const withCode = matches.filter(m => m.code);
-    if (withCode.length > 0) {
-      withCode.sort((a, b) => a.code.length - b.code.length);
-      return withCode[0].amount;
-    }
-
-    return matches.reduce((max, m) => (m.amount > max ? m.amount : max), 0);
-  }
-
   /**
-   * Sums revenue rows by NCOA code prefix (11 = FAAC, 12 = IGR, 13 = grants, 14 = capital receipts).
-   * Uses the root (shortest) code per prefix so hierarchy subtotals are not double counted;
-   * per-MDA rows are excluded.
+   * Builds the administrative-unit tree from engine-provided levels.
+   * Level-3 units nest under their level-2 parent (matched by parent_code,
+   * then original_parent_code); unplaceable units stay at mda level.
+   * Grouping is display-only: every unit keeps its own extracted amounts.
    */
-  static revenueIdentity(rawData) {
-    const identity = { faac: 0, igr: 0, grants: 0, capital_receipts: 0 };
-    const rows = rawData?.revenue_breakdown || rawData?.revenue || [];
-    const buckets = { '11': 'faac', '12': 'igr', '13': 'grants', '14': 'capital_receipts' };
-    const best = {};
-
-    rows.forEach(row => {
-      if (row.mda_code) return;
-      const code = String(this.str(row.code)).replace(/\D/g, '');
-      const prefix = code.substring(0, 2);
-      if (!buckets[prefix]) return;
-      const amount = this.val(row.amount);
-      const existing = best[prefix];
-      if (!existing || code.length < existing.code.length) {
-        best[prefix] = { code, amount };
+  static buildUnitTree(units) {
+    const nodes = units.map(unit => ({ ...unit, children: [] }));
+    const byCode = new Map();
+    nodes.forEach(node => {
+      if (node.code) byCode.set(node.code, node);
+    });
+    const placed = new Set();
+    nodes.forEach(node => {
+      if (node.level !== 3) return;
+      const parent = byCode.get(node.parent_code) || byCode.get(node.original_parent_code);
+      if (parent && parent !== node) {
+        parent.children.push(node);
+        placed.add(node);
       }
     });
-
-    Object.entries(best).forEach(([prefix, entry]) => {
-      identity[buckets[prefix]] = entry.amount;
-    });
-    return identity;
+    return nodes.filter(node => !placed.has(node));
   }
 
   static generateSectors(rawData) {
@@ -220,7 +220,7 @@ export class BundleStandardizer {
             ? { page: s.page, line_text: s.line_text }
             : undefined),
         }))
-        .sort((a, b) => b.amount - a.amount);
+        .sort((a, b) => this.valOrZero(b.amount) - this.valOrZero(a.amount));
     }
 
     const functional = rawData?.functional_expenditure;
@@ -242,48 +242,20 @@ export class BundleStandardizer {
             provenance,
           };
         }
-        bucket[key].amount += amount;
+        if (amount !== null) bucket[key].amount += amount;
         bucket[key].row_count += 1;
       });
-      const sectors = Object.values(bucket)
+      return Object.values(bucket)
         .map(s => ({ name: s.name, amount: s.amount, row_count: s.row_count, provenance: s.provenance }))
         .sort((a, b) => b.amount - a.amount);
-      if (sectors.length > 0) return sectors;
     }
 
-    const sectorMap = {
-      '0517': 'EDUCATION',
-      '0521': 'HEALTH',
-      '0215': 'AGRICULTURE',
-      '0234': 'INFRASTRUCTURE',
-      '03': 'LAW & JUSTICE',
-      '01': 'ADMINISTRATION',
-      '02': 'ECONOMIC',
-      '05': 'SOCIAL',
-    };
-
-    const results = {};
-    const mdas = this.findMdaList(rawData);
-    mdas.forEach(mda => {
-      const codeStr = String(mda.code || "");
-      const prefix4 = codeStr.substring(0, 4);
-      const prefix2 = codeStr.substring(0, 2);
-
-      const sectorName = sectorMap[prefix4] || sectorMap[prefix2] || 'OTHER';
-
-      if (!results[sectorName]) results[sectorName] = 0;
-      results[sectorName] += this.val(mda.total_amount ?? mda.total ?? mda.amount);
-    });
-
-    return Object.keys(results).map(name => ({
-      name,
-      amount: results[name]
-    })).sort((a, b) => b.amount - a.amount);
+    return [];
   }
 
   static calculateIntegrityScore(errors = []) {
     if (!errors || errors.length === 0) return 100;
-    
+
     let penalty = 0;
     errors.forEach(err => {
       switch(err.code) {
@@ -359,26 +331,18 @@ export class BundleStandardizer {
   static mergeBundle(bundle) {
     const output = bundle.outputJson || null;
     const appOutput = bundle.appOutputJson || null;
-    const outputMdas = this.findMdaList(output);
-    const appMdas = this.findMdaList(appOutput);
     const outputFailed = output?.status === 'failed';
 
-    let rawData = output || appOutput || {};
-    if (output && appOutput) {
-      if (outputFailed && appMdas.length > 0) {
-        rawData = appOutput;
-      } else if (appMdas.length > outputMdas.length) {
-        rawData = appOutput;
-      } else {
-        rawData = output;
-      }
-    } else if (appOutput) {
-      rawData = appOutput;
-    }
+    // Engine output.json is the authoritative source. appOutput is used only
+    // when the engine failed or produced no output — never chosen by heuristics.
+    let rawData = output;
+    if (!rawData || (outputFailed && appOutput)) rawData = appOutput;
+    if (!rawData) rawData = {};
+
     const patchData = bundle.metadataPatch || {};
     const reviewData = bundle.review || {};
     const metricsData = bundle.pageMetrics || {};
-    
+
     // 1. Standardize using the primary data source
     const base = this.standardize(rawData);
 
@@ -390,16 +354,20 @@ export class BundleStandardizer {
     if (patchData.year) base.year = parseInt(patchData.year);
 
     // 3. Attach Rich Metadata
-    const errors = reviewData.messages 
-      ? Object.entries(reviewData.messages).flatMap(([code, msgs]) => msgs.map(m => ({ code, message: m }))) 
+    const errors = reviewData.messages
+      ? Object.entries(reviewData.messages).flatMap(([code, msgs]) => msgs.map(m => ({ code, message: m })))
       : (rawData.errors || []);
+
+    const anomalies = reviewData.anomalies || rawData.anomalies || [];
 
     base.audit = {
       ...base.audit,
       errors: errors,
       tasks: this.parseActionableTasks(errors),
       reconciled: (reviewData.error_count || errors.length) === 0,
-      integrity_score: this.calculateIntegrityScore(errors)
+      integrity_score: this.calculateIntegrityScore(errors),
+      anomalies: anomalies,
+      has_anomalies: anomalies.length > 0
     };
 
     base.document_metrics = metricsData;
@@ -411,13 +379,6 @@ export class BundleStandardizer {
     if (Object.keys(evidence.sources).length > 0) {
       base.summarySources = { ...evidence.sources, ...(base.summarySources || {}) };
       base.summaryPages = { ...evidence.pages, ...(base.summaryPages || {}) };
-    }
-
-    // 4. Ensure totals are valid (Heuristic fallback if summary is empty)
-    if (base.summary.total_expenditure === 0 && base.mdas.length > 0) {
-      base.summary.total_expenditure = base.mdas.reduce((sum, m) => sum + m.total, 0);
-      base.summary.capital_expenditure = base.mdas.reduce((sum, m) => sum + m.capital, 0);
-      base.summary.personnel_cost = base.mdas.reduce((sum, m) => sum + (m.personnel || m.recurrent || 0), 0);
     }
 
     return base;
@@ -435,13 +396,13 @@ export class BundleStandardizer {
     const stateCode = rawData.metadata?.state_code?.value || rawData.metadata?.state_code || rawData.state_code || null;
     const currency = rawData.metadata?.currency?.value || rawData.metadata?.currency || rawData.currency || "NGN";
 
-    // 1. Build Summary
+    // 1. Build Summary — absent figures stay null (no re-derivation, no fallbacks)
     const totals = rawData.budget_totals || {};
     const summary = {
-      total_revenue: this.val(totals.revenue_total) || this.val(rawData.counters?.revenue_total),
+      total_revenue: this.val(totals.revenue_total),
       recurrent_revenue: this.val(totals.recurrent_revenue_total),
       faac: this.val(totals.faac_total),
-      igr: this.val(totals.igr_total) || this.val(rawData.counters?.igr_total),
+      igr: this.val(totals.igr_total),
       grants: this.val(totals.grants_total),
       capital_receipts: this.val(totals.capital_receipts_total),
       total_expenditure: this.val(totals.total_budget),
@@ -453,57 +414,26 @@ export class BundleStandardizer {
       deficit_surplus: this.val(totals.deficit_surplus_total),
     };
 
-    const revenueIdentity = this.revenueIdentity(rawData);
-    if (summary.faac === 0) summary.faac = revenueIdentity.faac;
-    if (summary.igr === 0) summary.igr = revenueIdentity.igr;
-    if (summary.grants === 0) summary.grants = revenueIdentity.grants;
-    if (summary.capital_receipts === 0) summary.capital_receipts = revenueIdentity.capital_receipts;
-
-    if (summary.personnel_cost === 0) {
-      const economic = (rawData.expenditure_economic || rawData.expenditure || [])
-        .filter(row => !row.mda_code);
-      const root = economic.find(row => String(this.str(row.code)).replace(/\D/g, '') === '21');
-      if (root) summary.personnel_cost = this.val(root.amount);
-    }
-
     // 2. Process MDAs & Administrative Units
     const mdas = this.findMdaList(rawData).map(mda => {
       const unitsList = mda.administrative_units || mda.units || mda.sub_units || mda.departments || [];
-      const units = (Array.isArray(unitsList) ? unitsList : []).map(unit => {
+      const rawUnits = Array.isArray(unitsList) ? unitsList : [];
+      const units = rawUnits.map(unit => {
         const uAmts = this.extractUnitAmounts(unit.amounts || unit.amount || unit);
         return {
           code: this.str(unit.unit_code || unit.code || unit.id),
           name: this.str(unit.unit_name || unit.name || unit.title),
-          total: uAmts.total,
-          recurrent: uAmts.recurrent,
-          capital: uAmts.capital,
-          personnel: uAmts.personnel,
-          overhead: uAmts.overhead,
+          total: unit.total ?? uAmts.total,
+          recurrent: unit.recurrent ?? uAmts.recurrent,
+          capital: unit.capital ?? uAmts.capital,
+          personnel: unit.personnel ?? uAmts.personnel,
+          overhead: unit.overhead ?? uAmts.overhead,
+          level: unit.level ?? null,
+          parent_code: this.str(unit.parent_code ?? null) || this.str(unit.original_parent_code ?? null) || null,
+          original_parent_code: this.str(unit.original_parent_code ?? null) || null,
           provenance: { page: unit.page, line_text: unit.line_text }
         };
       });
-
-      let recurrent = this.val(mda.recurrent_amount ?? mda.recurrent ?? mda.total_recurrent);
-      let capital = this.val(mda.capital_amount ?? mda.capital ?? mda.total_capital);
-      let total = this.val(mda.total_amount ?? mda.total_expenditure ?? mda.total ?? mda.amount);
-
-      let personnel = this.val(mda.personnel ?? mda.personnel_cost);
-      let overhead = this.val(mda.overhead ?? mda.overhead_cost);
-
-      if (units.length > 0) {
-        if (personnel === 0) personnel = units.reduce((sum, u) => sum + (u.personnel || 0), 0);
-        if (overhead === 0) overhead = units.reduce((sum, u) => sum + (u.overhead || 0), 0);
-      }
-
-      if (total === 0 && units.length > 0) {
-        recurrent = units.reduce((sum, u) => sum + u.recurrent, 0);
-        capital = units.reduce((sum, u) => sum + u.capital, 0);
-        total = units.reduce((sum, u) => sum + u.total, 0);
-      }
-
-      if (personnel === 0 && overhead === 0 && recurrent > 0) {
-        personnel = recurrent;
-      }
 
       const code = this.str(mda.mda_code || mda.code || mda.__key || mda.id || mda.mdaCode || mda.mda_id);
       const name = this.str(mda.mda_name || mda.name || mda.mdaName || mda.title || mda.ministry || mda.agency || mda.department);
@@ -511,13 +441,13 @@ export class BundleStandardizer {
       return {
         code,
         name,
-        total,
-        recurrent,
-        capital,
-        personnel,
-        overhead,
+        total: this.val(mda.total_amount ?? mda.total_expenditure ?? mda.total ?? mda.amount),
+        recurrent: this.val(mda.recurrent_amount ?? mda.recurrent ?? mda.total_recurrent),
+        capital: this.val(mda.capital_amount ?? mda.capital ?? mda.total_capital),
+        personnel: this.val(mda.personnel_amount ?? mda.personnel ?? mda.personnel_cost),
+        overhead: this.val(mda.overhead_amount ?? mda.overhead ?? mda.overhead_cost),
         provenance: this.prov(mda.total_amount || mda, mda.page, mda.line_text),
-        units
+        units: this.buildUnitTree(units)
       };
     }).filter(mda => mda.name && mda.name !== "null" && mda.name !== "undefined");
 
@@ -530,6 +460,8 @@ export class BundleStandardizer {
       errors: rawData.errors || [],
       reconciled: (rawData.errors || []).length === 0,
       integrity_score: this.calculateIntegrityScore(rawData.errors || []),
+      anomalies: rawData.anomalies || [],
+      has_anomalies: (rawData.anomalies || []).length > 0,
       extraction_date: rawData.metadata?.extraction_timestamp || new Date().toISOString()
     };
 
@@ -551,10 +483,10 @@ export class BundleStandardizer {
     return {
       state: "Unknown",
       year: 2025,
-      summary: { total_revenue: 0, total_expenditure: 0, recurrent_revenue: 0, faac: 0, igr: 0, grants: 0, capital_receipts: 0, recurrent_expenditure: 0, capital_expenditure: 0, personnel_cost: 0, opening_balance: 0, financing_total: 0, deficit_surplus: 0 },
+      summary: { total_revenue: null, total_expenditure: null, recurrent_revenue: null, faac: null, igr: null, grants: null, capital_receipts: null, recurrent_expenditure: null, capital_expenditure: null, personnel_cost: null, opening_balance: null, financing_total: null, deficit_surplus: null },
       sectors: [],
       mdas: [],
-      audit: { status: "pending", errors: [], reconciled: true, integrity_score: 100, extraction_date: new Date().toISOString() }
+      audit: { status: "pending", errors: [], reconciled: false, integrity_score: 0, anomalies: [], has_anomalies: false, extraction_date: new Date().toISOString() }
     };
   }
 }
