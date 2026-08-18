@@ -843,9 +843,9 @@ export default function StateDashboard() {
             </div>
 
             <div className="h-[500px] rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 relative">
-              {verificationMode === 'pdf' && data.pdf_file_id && (
+              {verificationMode === 'pdf' && (
                 <SourceInspector 
-                  pdfFileId={data.pdf_file_id} 
+                  pdfFileId={data.pdf_file_id || null} 
                   pageNumber={summaryEvidence?.pageNumber || selectedMDA?.pageNumber || selectedMDA?.provenance?.page || 1} 
                 />
               )}
