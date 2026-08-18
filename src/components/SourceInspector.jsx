@@ -11,7 +11,11 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
   const renderTaskRef = useRef(null);
 
   useEffect(() => {
-    if (!pdfFileId) return;
+    if (!pdfFileId) {
+      setError("No source PDF has been uploaded for this state yet.");
+      setLoading(false);
+      return;
+    }
     loadPDF();
   }, [pdfFileId, pageNumber]);
 
@@ -61,13 +65,15 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
           <Badge color="blue" size="xs">PAGE {pageNumber}</Badge>
           <Text className="text-[10px] font-bold uppercase text-slate-400">Original Document Snippet</Text>
         </div>
-        <button 
-          onClick={() => window.open(storage.getFileView(BUCKET_ID, pdfFileId), '_blank')}
-          className="text-blue-600 hover:text-blue-700 transition-colors p-1"
-          title="Open full PDF"
-        >
-          <Maximize2 className="w-4 h-4" />
-        </button>
+        {pdfFileId && (
+          <button 
+            onClick={() => window.open(storage.getFileView(BUCKET_ID, pdfFileId), '_blank')}
+            className="text-blue-600 hover:text-blue-700 transition-colors p-1"
+            title="Open full PDF"
+          >
+            <Maximize2 className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       <div className="relative bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 min-h-[400px] flex items-center justify-center shadow-inner">
