@@ -27,7 +27,24 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
         throw new Error("PDF engine not initialized. Please refresh.");
       }
       const fileUrl = storage.getFileView(BUCKET_ID, pdfFileId);
-      const loadingTask = window.pdfjsLib.getDocument(fileUrl);
+
+      // The storage endpoint can be slow/flaky — retry the download a few times.
+      let response = null;
+      for (let attempt = 1; attempt <= 4; attempt++) {
+        try {
+          response = await fetch(fileUrl, { headers: { Range: 'bytes=0-' } });
+          if (response.ok) break;
+        } catch (e) {
+          if (attempt === 4) throw e;
+        }
+        await new Promise(r => setTimeout(r, attempt * 2000));
+      }
+      if (!response || !response.ok) {
+        throw new Error(`download failed (${response?.status || 'no response'})`);
+      }
+      const pdfBytes = await response.arrayBuffer();
+
+      const loadingTask = window.pdfjsLib.getDocument({ data: pdfBytes });
       const pdf = await loadingTask.promise;
       setNumPages(pdf.numPages);
       
@@ -85,9 +102,12 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
         )}
 
         {error ? (
-          <div className="p-8 text-center space-y-2">
+          <div className="p-8 text-center space-y-3">
             <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
             <Text className="text-xs font-medium text-slate-500">{error}</Text>
+            {pdfFileId && (
+              <Button size="xs" color="red" onClick={loadPDF}>TRY AGAIN</Button>
+            )}
           </div>
         ) : (
           <canvas ref={canvasRef} className="max-w-full h-auto shadow-2xl" />
