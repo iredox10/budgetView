@@ -86,6 +86,8 @@ export function BudgetProvider({ children }) {
               summaryPages: asJSON(doc.summaryPages) || {},
               pdf_file_id: doc.pdf_file_id,
               text_file_id: doc.text_file_id,
+              revenue_file_id: doc.revenue_file_id,
+              projects_file_id: doc.projects_file_id,
               audit,
               anomalies: asJSON(doc.anomalies) || (audit.anomalies || []),
               has_anomalies: Boolean(doc.has_anomalies) || Boolean(audit.has_anomalies) || Boolean((audit.anomalies || []).length),

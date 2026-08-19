@@ -607,6 +607,261 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [], anomalies = [] }) =
   );
 };
 
+const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenueRows, projectsRows, isLoading, formatCurrency, formatCompact }) => {
+  const [treeQuery, setTreeQuery] = useState('');
+
+  const mda = selectedMinistry;
+  if (!mda) return null;
+
+  // Revenue rows key on the full 12-digit code (ministry rollup = code itself,
+  // department rollups share the first 6 digits). Project rows carry full
+  // department-level mda_codes, so they are grouped by the 4-char sector+org
+  // prefix (NCOA admin segment: Sector(2) + Org(2) + zeros for a ministry).
+  const prefix6 = String(mda.code || '').slice(0, 6);
+  const orgPrefix = String(mda.code || '').slice(0, 4);
+  const totalBudget = data?.summary?.total_expenditure;
+  const totalRevenue = data?.summary?.total_revenue;
+
+  const revenue = useMemo(() => {
+    if (!revenueRows) return null;
+    const exact = revenueRows.find(r => r.mda_code === mda.code);
+    if (exact) return exact;
+    return revenueRows.find(r => r.mda_code.startsWith(prefix6) && r.mda_code !== mda.code && String(r.mda_code).endsWith('000000'));
+  }, [revenueRows, mda, prefix6]);
+
+  const projects = useMemo(() => {
+    if (!projectsRows) return [];
+    return projectsRows
+      .filter(p => p.mda_code.startsWith(orgPrefix))
+      .sort((a, b) => (b.amount || 0) - (a.amount || 0));
+  }, [projectsRows, orgPrefix]);
+
+  const projectsTotal = projects.reduce((s, p) => s + (p.amount || 0), 0);
+  const pct = (part, whole) => (whole ? (100 * part) / whole : 0);
+  const total = mda.total || 0;
+
+  const share = totalBudget ? pct(total, totalBudget) : null;
+  const revenueShare = totalRevenue && revenue ? pct(revenue.total_revenue || 0, totalRevenue) : null;
+
+  const summaryLines = [
+    `${mda.name} is allocated ${formatCurrency(total)} in the ${data?.year || ''} ${data?.state || ''} budget — ${share !== null ? share.toFixed(2) + '%' : '—'} of the state total of ${formatCurrency(totalBudget)}.`,
+    `Personnel costs account for ${formatCurrency(mda.personnel)} (${pct(mda.personnel || 0, total).toFixed(1)}%), overhead ${formatCurrency(mda.overhead)} (${pct(mda.overhead || 0, total).toFixed(1)}%), and capital expenditure ${formatCurrency(mda.capital)} (${pct(mda.capital || 0, total).toFixed(1)}%).`,
+  ];
+  if (revenue) {
+    summaryLines.push(
+      `Expected revenue: ${formatCurrency(revenue.total_revenue)} — FAAC ${formatCurrency(revenue.faac)}, IGR ${formatCurrency(revenue.igr)}, aids and grants ${formatCurrency(revenue.aids_grants)}, capital receipts ${formatCurrency(revenue.capital_receipts)}${revenueShare !== null ? ' (' + revenueShare.toFixed(2) + '% of state revenue)' : ''}.`
+    );
+  } else {
+    summaryLines.push('No separate revenue line is published for this ministry in the revenue-by-MDA table.');
+  }
+  if (projects.length) {
+    summaryLines.push(`${projects.length} capital project${projects.length === 1 ? '' : 's'} totalling ${formatCurrency(projectsTotal)} are listed, led by ${projects[0].project_name || 'an unnamed project'} at ${formatCurrency(projects[0].amount)}.`);
+  } else {
+    summaryLines.push('No capital projects are listed under this ministry in the programme pages.');
+  }
+
+  const unitCount = (list) => list.reduce((s, u) => s + 1 + (u.children ? unitCount(u.children) : 0), 0);
+  const overseesCount = mda.units ? unitCount(mda.units) : 0;
+
+  const filterTree = (list, q) => {
+    if (!q) return list;
+    return list.map(u => {
+      const kids = filterTree(u.children || [], q);
+      const self = String(u.name || '').toLowerCase().includes(q.toLowerCase()) || String(u.code || '').includes(q);
+      return { ...u, children: self ? (u.children || []) : kids };
+    }).filter(u => u.children.length || String(u.name || '').toLowerCase().includes(q.toLowerCase()) || String(u.code || '').includes(q));
+  };
+  const filteredTree = filterTree(mda.units || [], treeQuery);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="p-8 border-b border-slate-100 bg-slate-50/30">
+          <h3 className="text-xl font-bold text-slate-900">Ministry Profile</h3>
+          <p className="text-sm text-slate-500">Select a ministry to see its funding, revenue, agencies, and capital projects</p>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+            {ministries.map((m) => (
+              <button
+                key={m.code}
+                onClick={() => onSelect(m)}
+                className={clsx(
+                  "text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all",
+                  selectedMinistry?.code === m.code
+                    ? "bg-slate-900 text-white border-slate-900 shadow-lg"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-slate-400"
+                )}
+              >
+                <span className="block truncate">{m.name}</span>
+                <span className={clsx("block text-[11px] font-mono mt-0.5", selectedMinistry?.code === m.code ? "text-slate-300" : "text-slate-400")}>
+                  {formatCompact(m.total)} · {m.code}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider font-mono">{mda.code}</p>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">{mda.name}</h3>
+            <p className="text-sm text-slate-500 mt-1">
+              Oversees {overseesCount} agenc{overseesCount === 1 ? 'y' : 'ies'}/{overseesCount === 1 ? 'department' : 'departments'} · {formatCurrency(total)} total allocation
+            </p>
+          </div>
+          <span className="text-xs font-black px-3 py-1.5 rounded-full bg-slate-900 text-white shrink-0">
+            {share !== null ? share.toFixed(2) : '—'}% of budget
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+          <MetricCard title="Personnel" value={mda.personnel} subtitle={`${pct(mda.personnel || 0, total).toFixed(1)}% of ministry`} icon={Users} color="blue" />
+          <MetricCard title="Overhead" value={mda.overhead} subtitle={`${pct(mda.overhead || 0, total).toFixed(1)}% of ministry`} icon={Coins} color="indigo" />
+          <MetricCard title="Recurrent" value={mda.recurrent} subtitle="personnel + overhead" icon={Receipt} color="amber" />
+          <MetricCard title="Capital" value={mda.capital} subtitle="projects & assets" icon={Wallet} color="emerald" />
+          <MetricCard title="Total" value={total} subtitle={`of ${formatCurrency(totalBudget)} state budget`} icon={TrendingUp} color="rose" />
+        </div>
+
+        <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Budget Summary
+          </p>
+          <div className="space-y-2">
+            {summaryLines.map((line, i) => (
+              <p key={i} className="text-sm text-slate-700 leading-relaxed">{line}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="p-8 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/30">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">Oversees</h3>
+            <p className="text-sm text-slate-500">Departments and agencies under this ministry</p>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Filter agencies..."
+              value={treeQuery}
+              onChange={(e) => setTreeQuery(e.target.value)}
+              className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all w-full sm:w-64"
+            />
+          </div>
+        </div>
+        <div className="p-6">
+          {filteredTree.length === 0 ? (
+            <p className="text-sm text-slate-400 italic py-6 text-center">No agencies listed under this ministry in the document.</p>
+          ) : (
+            <div className="space-y-1">
+              {filteredTree.map((unit, idx) => (
+                <UnitRow key={unit.code || idx} unit={unit} depth={0} onSelect={() => {}} formatCompact={formatCompact} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="p-8 border-b border-slate-100 bg-slate-50/30">
+          <h3 className="text-xl font-bold text-slate-900">Revenue</h3>
+          <p className="text-sm text-slate-500">Revenue by MDA as published in the document</p>
+        </div>
+        {isLoading && !revenueRows ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+          </div>
+        ) : revenue ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Source</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">FAAC</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">IGR</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Total Recurrent</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aids & Grants</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Capital Receipts</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Total Revenue</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                <tr>
+                  <td className="px-8 py-4 text-sm font-semibold text-slate-800">{revenue.mda_name}</td>
+                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.faac)}</td>
+                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.igr)}</td>
+                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.total_recurrent)}</td>
+                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.aids_grants)}</td>
+                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.capital_receipts)}</td>
+                  <td className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(revenue.total_revenue)}</td>
+                </tr>
+                {revenue.mda_code !== mda.code && (
+                  <tr>
+                    <td className="px-8 py-3 text-[11px] text-slate-400 italic" colSpan={7}>
+                      Shown from the matching revenue line {revenue.mda_code} — no exact line is published for {mda.code}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 italic py-10 text-center">No revenue line is published for this ministry.</p>
+        )}
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="p-8 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/30">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">Capital Projects</h3>
+            <p className="text-sm text-slate-500">{projects.length} projects · {formatCurrency(projectsTotal)} total (2026 approved)</p>
+          </div>
+        </div>
+        {isLoading && !projectsRows ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+          </div>
+        ) : projects.length === 0 ? (
+          <p className="text-sm text-slate-400 italic py-10 text-center">No capital projects are listed under this ministry.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Project</th>
+                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Economic</th>
+                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Location</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">2026 Approved</th>
+                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Page</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {projects.map((p, i) => (
+                  <tr key={p.programme_code + '-' + i} className="hover:bg-slate-50/50">
+                    <td className="px-8 py-4 text-sm font-semibold text-slate-800 max-w-md">
+                      <span className="block truncate" title={p.project_name}>{p.project_name}</span>
+                      <span className="block text-[11px] text-slate-400 font-mono mt-0.5">{p.programme_code}</span>
+                    </td>
+                    <td className="px-8 py-4 text-sm text-slate-600">{p.economic_description || '—'}</td>
+                    <td className="px-8 py-4 text-sm text-slate-600">{p.location_description || '—'}</td>
+                    <td className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(p.amount)}</td>
+                    <td className="px-8 py-4 text-right text-xs font-mono text-slate-400">{p.page}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function StateDashboard() {
   const { stateId } = useParams();
   const { states, isInitialized } = useBudget();
@@ -620,6 +875,47 @@ export default function StateDashboard() {
   const [fullText, setFullText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [verificationMode, setVerificationMode] = useState('pdf'); // 'pdf', 'raw', 'process'
+  const [selectedMinistry, setSelectedMinistry] = useState(null);
+  const [revenueRows, setRevenueRows] = useState(null);
+  const [projectsRows, setProjectsRows] = useState(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+
+  // Lazy-fetch revenue-by-MDA and programme projects for the Ministry Profile tab
+  useEffect(() => {
+    if (activeTab !== 'ministries' || !data) return;
+    const retryFetch = async (fileId) => {
+      const url = storage.getFileDownload(BUCKET_ID, fileId);
+      for (let i = 0; i < 4; i++) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.json();
+        } catch (err) {
+          if (i === 3) throw err;
+          await new Promise(resolve => setTimeout(resolve, 2500 * (i + 1)));
+        }
+      }
+    };
+    const fetchJson = async (fileId, setter) => {
+      if (!fileId) return;
+      try {
+        setter(await retryFetch(fileId));
+      } catch (err) {
+        console.error('Ministry profile file fetch failed', err);
+      }
+    };
+    setIsProfileLoading(true);
+    Promise.all([
+      fetchJson(data.revenue_file_id, setRevenueRows),
+      fetchJson(data.projects_file_id, setProjectsRows)
+    ]).finally(() => setIsProfileLoading(false));
+  }, [activeTab, data]);
+
+  const ministries = useMemo(() => (data?.mdas || []).filter(m => String(m.code || '').endsWith('000000')), [data]);
+
+  useEffect(() => {
+    if (!selectedMinistry && ministries.length) setSelectedMinistry(ministries[0]);
+  }, [ministries, selectedMinistry]);
 
   useEffect(() => {
     if (isInitialized) {
@@ -882,6 +1178,7 @@ export default function StateDashboard() {
           {[
             { id: 'overview', label: 'Overview', icon: PieChart },
             { id: 'mdas', label: 'MDA Breakdown', icon: Building2 },
+            { id: 'ministries', label: 'Ministry Profile', icon: Landmark },
             { id: 'search', label: 'Universal Search', icon: Search },
             { id: 'audit', label: 'Document Check', icon: ShieldCheck },
             { id: 'pedigree', label: 'Data Pedigree', icon: History }
@@ -1205,6 +1502,20 @@ export default function StateDashboard() {
                 </table>
               </div>
             </div>
+          )}
+
+          {activeTab === 'ministries' && (
+            <MinistryProfile
+              data={data}
+              ministries={ministries}
+              selectedMinistry={selectedMinistry}
+              onSelect={setSelectedMinistry}
+              revenueRows={revenueRows}
+              projectsRows={projectsRows}
+              isLoading={isProfileLoading}
+              formatCurrency={formatCurrency}
+              formatCompact={formatCompact}
+            />
           )}
 
           {activeTab === 'search' && (
