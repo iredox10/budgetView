@@ -2,9 +2,11 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { databases, functions, storage, DB_ID, COLLECTIONS, ID, DELETE_FUNCTION_ID, INGEST_FUNCTION_ID, BUCKET_ID } from '../utils/appwrite';
 import { Permission, Role } from 'appwrite';
 import { Query } from 'appwrite';
+import { cacheGet, cacheSet } from './cache';
 
 const INGEST_MODE = import.meta.env.VITE_INGEST_MODE || 'direct';
 const DIRECT_UPLOAD_BATCH = Number(import.meta.env.VITE_DIRECT_UPLOAD_BATCH || 100);
+const STATES_CACHE_KEY = 'states:v1';
 
 const BudgetContext = createContext();
 
@@ -14,8 +16,17 @@ export function BudgetProvider({ children }) {
   const [uploadProgress, setUploadStatus] = useState({ active: false, current: 0, total: 0 });
 
   useEffect(() => {
+    loadCachedStates();
     fetchStates();
   }, []);
+
+  const loadCachedStates = async () => {
+    const cached = await cacheGet(STATES_CACHE_KEY);
+    if (cached && Array.isArray(cached.payload) && cached.payload.length > 0) {
+      setStates(cached.payload);
+      setIsInitialized(true);
+    }
+  };
 
   const fetchStates = async () => {
     const retry = async (fn, tries = 4) => {
@@ -24,7 +35,7 @@ export function BudgetProvider({ children }) {
           return await fn();
         } catch (e) {
           if (i === tries - 1) throw e;
-          await new Promise(resolve => setTimeout(resolve, 2500 * (i + 1)));
+          await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
         }
       }
     };
@@ -109,6 +120,7 @@ export function BudgetProvider({ children }) {
       }))).filter(Boolean);
 
       setStates(statesWithData);
+      await cacheSet(STATES_CACHE_KEY, { savedAt: Date.now(), payload: statesWithData });
       setIsInitialized(true);
     } catch (e) {
       console.error("Appwrite fetch failed", e);

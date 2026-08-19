@@ -1,12 +1,12 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useMemo, Fragment, useRef } from 'react';
 import { useBudget } from '../data/BudgetContext';
 import { 
   AlertCircle, TrendingUp, Users, Database, CheckCircle2, X, ArrowRight, 
   AlertTriangle, Coins, TrendingDown, Search, Download, 
   FileText, PieChart, Building2, ChevronRight, Landmark, Share2,
   Target, Wallet, Receipt, ShieldCheck, Scale, FileSearch, Sparkles,
-  History, Eye, FileJson, Loader2
+  History, Eye, FileJson, Loader2, ChevronLeft, Leaf, Wheat
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AIChatbot from '../components/AIChatbot';
@@ -14,6 +14,7 @@ import ShareButton from '../components/ShareButton';
 import SourceInspector from '../components/SourceInspector';
 import { Badge, Title, Text, Card } from '@tremor/react';
 import { storage, BUCKET_ID } from '../utils/appwrite';
+import { cacheGet, cacheSet } from '../data/cache';
 
 const formatCurrency = (val) => {
   if (val === null || val === undefined) return '—';
@@ -451,25 +452,32 @@ const AnomalyCenter = ({ anomalies, onViewPage }) => {
 };
 
 // MDA Row with expansion for sub-units
-const UnitRow = ({ unit, depth, onSelect, formatCompact }) => {
-  const [isExpanded, setIsExpanded] = useState(depth === 0);
+const UnitRow = ({ unit, depth, onSelect, formatCompact, selectedCode, defaultExpanded }) => {
+  const [isExpanded, setIsExpanded] = useState(Boolean(defaultExpanded) || depth === 0);
   const children = unit.children || [];
   const hasChildren = children.length > 0;
   const childrenTotal = children.reduce((sum, c) => sum + (c.total || 0), 0);
   const hasSum = unit.total !== null && unit.total !== undefined;
   const sumOk = hasSum && hasChildren && Math.abs(unit.total - childrenTotal) <= 1;
   const sumMismatch = hasSum && hasChildren && !sumOk;
+  const isSelected = selectedCode != null && String(selectedCode) === String(unit.code);
 
   return (
     <div className={clsx(depth > 0 && "ml-8 border-l-2 border-slate-100 pl-4")}>
       <div className={clsx(
-        "flex items-center justify-between group/unit py-2",
-        depth === 0 ? "rounded-xl px-3 hover:bg-slate-50" : "hover:bg-slate-50/60"
-      )}>
+        "flex items-center justify-between group/unit py-2 rounded-xl cursor-pointer",
+        depth === 0 ? "px-3 hover:bg-slate-50" : "hover:bg-slate-50/60",
+        isSelected && "bg-blue-50 ring-1 ring-blue-100"
+      )}
+        onClick={() => onSelect && onSelect({ ...unit, pageNumber: unit.provenance?.page })}
+      >
         <div className="flex items-center gap-2 min-w-0">
           {hasChildren ? (
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
               className="p-1 hover:bg-slate-200 rounded-lg transition-colors shrink-0"
             >
               <ChevronRight className={clsx("w-3.5 h-3.5 text-slate-400 transition-transform", isExpanded && "rotate-90")} />
@@ -478,7 +486,7 @@ const UnitRow = ({ unit, depth, onSelect, formatCompact }) => {
             <span className="w-[22px] shrink-0" />
           )}
           <div className="min-w-0">
-            <p className={clsx("truncate", depth === 0 ? "text-sm font-semibold text-slate-800" : "text-sm font-medium text-slate-600")}>
+            <p className={clsx("truncate", depth === 0 ? "text-sm font-semibold text-slate-800" : "text-sm font-medium text-slate-600", isSelected && "text-blue-700")}>
               {unit.name || <span className="text-slate-400 italic">Unnamed unit</span>}
             </p>
             <p className="text-[10px] text-slate-400 font-mono">{unit.code}</p>
@@ -502,7 +510,7 @@ const UnitRow = ({ unit, depth, onSelect, formatCompact }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onSelect({ ...unit, pageNumber: unit.provenance?.page });
+              onSelect && onSelect({ ...unit, pageNumber: unit.provenance?.page });
             }}
             className="opacity-0 group-hover/unit:opacity-100 text-[10px] font-bold text-blue-600 hover:underline"
           >
@@ -513,7 +521,7 @@ const UnitRow = ({ unit, depth, onSelect, formatCompact }) => {
       {hasChildren && isExpanded && (
         <div className="space-y-1 mt-1 mb-2">
           {children.map((child, idx) => (
-            <UnitRow key={child.code || idx} unit={child} depth={depth + 1} onSelect={onSelect} formatCompact={formatCompact} />
+            <UnitRow key={child.code || idx} unit={child} depth={depth + 1} onSelect={onSelect} formatCompact={formatCompact} selectedCode={selectedCode} defaultExpanded={defaultExpanded} />
           ))}
         </div>
       )}
@@ -607,41 +615,176 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [], anomalies = [] }) =
   );
 };
 
-const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenueRows, projectsRows, isLoading, formatCurrency, formatCompact }) => {
+const COFOG_SECTORS = {
+  '701': 'GENERAL PUBLIC SERVICES',
+  '703': 'PUBLIC ORDER AND SAFETY',
+  '704': 'ECONOMIC AFFAIRS',
+  '705': 'ENVIRONMENTAL PROTECTION',
+  '706': 'HOUSING AND COMMUNITY AMMENITIES',
+  '707': 'HEALTH',
+  '708': 'RECREATION, CULTURE AND RELIGION',
+  '709': 'EDUCATION',
+  '710': 'SOCIAL PROTECTION'
+};
+const AMOUNT_COLUMNS = [
+  ['2024_full_year_actuals', '2024 Actuals'],
+  ['2025_revised_budget', '2025 Revised'],
+  ['2025_performance', '2025 Performance'],
+  ['2026_approved_budget', '2026 Approved']
+];
+const TAG_COLUMNS = [
+  ['climate', 'Climate', (a) => (a?.['2026_climate_change_mitigation'] || 0) + (a?.['2026_climate_change_adaptation'] || 0)],
+  ['nutrition', 'Food/Nutrition', (a) => (a?.['2026_food_nutrition_tagging'] || 0)],
+  ['social', 'Social Protection', (a) => (a?.['2026_social_protection'] || 0)]
+];
+
+const groupProjects = (list) => {
+  const groups = new Map();
+  for (const p of list) {
+    const key = String(p.mda_name || '').trim() || 'Unattributed';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  return Array.from(groups.entries())
+    .map(([name, rows]) => ({
+      name,
+      rows,
+      total: rows.reduce((s, r) => s + (r.amount || 0), 0)
+    }))
+    .sort((a, b) => b.total - a.total);
+};
+
+const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenSector, revenueRows, projectsRows, isLoading, formatCurrency, formatCompact }) => {
   const [treeQuery, setTreeQuery] = useState('');
+  const [gridQuery, setGridQuery] = useState('');
+  const [projectQuery, setProjectQuery] = useState('');
+  const [showTrend, setShowTrend] = useState(false);
+  const [showAllProjects, setShowAllProjects] = useState(false);
+  const [treeSignal, setTreeSignal] = useState(null);
+  const profileRef = useRef(null);
+  const prevCode = useRef(null);
 
   const mda = selectedMinistry;
-  if (!mda) return null;
 
   // Revenue rows key on the full 12-digit code (ministry rollup = code itself,
   // department rollups share the first 6 digits). Project rows carry full
   // department-level mda_codes, so they are grouped by the 4-char sector+org
   // prefix (NCOA admin segment: Sector(2) + Org(2) + zeros for a ministry).
-  const prefix6 = String(mda.code || '').slice(0, 6);
-  const orgPrefix = String(mda.code || '').slice(0, 4);
+  const prefix6 = String((mda && mda.code) || '').slice(0, 6);
+  const orgPrefix = String((mda && mda.code) || '').slice(0, 4);
+  const isTopLevel = String((mda && mda.code) || '').endsWith('000000');
+  const parentMinistry = ministries.find(m => String(m.code || '').slice(0, 4) === String((mda && mda.code) || '').slice(0, 4));
   const totalBudget = data?.summary?.total_expenditure;
   const totalRevenue = data?.summary?.total_revenue;
 
   const revenue = useMemo(() => {
-    if (!revenueRows) return null;
+    if (!revenueRows || !mda) return null;
     const exact = revenueRows.find(r => r.mda_code === mda.code);
     if (exact) return exact;
     return revenueRows.find(r => r.mda_code.startsWith(prefix6) && r.mda_code !== mda.code && String(r.mda_code).endsWith('000000'));
   }, [revenueRows, mda, prefix6]);
 
   const projects = useMemo(() => {
-    if (!projectsRows) return [];
+    if (!projectsRows || !mda) return [];
     return projectsRows
-      .filter(p => p.mda_code.startsWith(orgPrefix))
+      .filter(p => (isTopLevel
+        ? String(p.mda_code || '').startsWith(orgPrefix)
+        : String(p.mda_code || '') === String(mda.code || '')))
       .sort((a, b) => (b.amount || 0) - (a.amount || 0));
-  }, [projectsRows, orgPrefix]);
+  }, [projectsRows, orgPrefix, mda, isTopLevel]);
+
+  const projectGroups = useMemo(() => groupProjects(projects), [projects]);
+
+  const filteredProjects = useMemo(() => {
+    const q = projectQuery.trim().toLowerCase();
+    if (!q) return projects;
+    return projects.filter(p =>
+      String(p.project_name || '').toLowerCase().includes(q) ||
+      String(p.mda_name || '').toLowerCase().includes(q) ||
+      String(p.location_description || '').toLowerCase().includes(q) ||
+      String(p.economic_description || '').toLowerCase().includes(q) ||
+      String(p.programme_code || '').includes(q)
+    );
+  }, [projects, projectQuery]);
+
+  const filteredGroups = useMemo(() => groupProjects(filteredProjects), [filteredProjects]);
+
+  const PER_GROUP_LIMIT = 10;
+  const visibleGroups = useMemo(() => {
+    if (showAllProjects || filteredGroups.length === 0) return filteredGroups;
+    return filteredGroups.map(g => ({
+      ...g,
+      rows: g.rows.slice(0, PER_GROUP_LIMIT),
+      hidden: Math.max(0, g.rows.length - PER_GROUP_LIMIT),
+    }));
+  }, [filteredGroups, showAllProjects]);
+
+  const gridQ = gridQuery.trim().toLowerCase();
+  const filteredMinistries = useMemo(() => {
+    const q = gridQ;
+    const list = q
+      ? ministries.filter(m => String(m.name || '').toLowerCase().includes(q) || String(m.code || '').includes(q))
+      : ministries;
+    return [...list].sort((a, b) => (b.total || 0) - (a.total || 0));
+  }, [ministries, gridQ]);
+
+  const sector = useMemo(() => {
+    const counts = {};
+    for (const p of projects) {
+      const f = String(p.function_code || '').slice(0, 3);
+      if (COFOG_SECTORS[f]) counts[f] = (counts[f] || 0) + 1;
+    }
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (!top) return null;
+    const name = COFOG_SECTORS[top[0]];
+    const match = (data?.sectors || []).find(s => String(s.name).toUpperCase() === name);
+    return { code: top[0], name, amount: match ? match.amount : null };
+  }, [projects, data]);
+
+  const tagSums = useMemo(() => {
+    const out = { climate: 0, nutrition: 0, social: 0 };
+    for (const p of projects) {
+      out.climate += TAG_COLUMNS[0][2](p.amounts);
+      out.nutrition += TAG_COLUMNS[1][2](p.amounts);
+      out.social += TAG_COLUMNS[2][2](p.amounts);
+    }
+    return out;
+  }, [projects]);
+
+  const yoy = useMemo(() => {
+    let a24 = 0, a25 = 0, a26 = 0;
+    for (const p of projects) {
+      a24 += p.amounts?.['2024_full_year_actuals'] || 0;
+      a25 += p.amounts?.['2025_revised_budget'] || 0;
+      a26 += p.amounts?.['2026_approved_budget'] || 0;
+    }
+    return { a24, a25, a26 };
+  }, [projects]);
+
+  useEffect(() => {
+    if (!mda) return;
+    if (prevCode.current !== null && prevCode.current !== String(mda.code)) {
+      profileRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+    prevCode.current = String(mda.code);
+  }, [mda]);
+
+  if (!mda) return null;
 
   const projectsTotal = projects.reduce((s, p) => s + (p.amount || 0), 0);
+  const projectsAgencyCount = projectGroups.length;
   const pct = (part, whole) => (whole ? (100 * part) / whole : 0);
   const total = mda.total || 0;
 
   const share = totalBudget ? pct(total, totalBudget) : null;
   const revenueShare = totalRevenue && revenue ? pct(revenue.total_revenue || 0, totalRevenue) : null;
+
+  const splitParts = [
+    { label: 'Personnel', value: mda.personnel || 0, color: 'bg-blue-500' },
+    { label: 'Overhead', value: mda.overhead || 0, color: 'bg-indigo-400' },
+    { label: 'Capital', value: mda.capital || 0, color: 'bg-emerald-500' }
+  ];
+  const splitTotal = splitParts.reduce((s, x) => s + x.value, 0);
 
   const summaryLines = [
     `${mda.name} is allocated ${formatCurrency(total)} in the ${data?.year || ''} ${data?.state || ''} budget — ${share !== null ? share.toFixed(2) + '%' : '—'} of the state total of ${formatCurrency(totalBudget)}.`,
@@ -655,7 +798,10 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
     summaryLines.push('No separate revenue line is published for this ministry in the revenue-by-MDA table.');
   }
   if (projects.length) {
-    summaryLines.push(`${projects.length} capital project${projects.length === 1 ? '' : 's'} totalling ${formatCurrency(projectsTotal)} are listed, led by ${projects[0].project_name || 'an unnamed project'} at ${formatCurrency(projects[0].amount)}.`);
+    summaryLines.push(`${projects.length} capital project${projects.length === 1 ? '' : 's'} totalling ${formatCurrency(projectsTotal)} are listed${projectsAgencyCount > 1 ? ` across ${projectsAgencyCount} agenc${projectsAgencyCount === 1 ? 'y' : 'ies'}` : ''}, led by ${projects[0].project_name || 'an unnamed project'} at ${formatCurrency(projects[0].amount)}.`);
+    if (yoy.a24 || yoy.a25 || yoy.a26) {
+      summaryLines.push(`Capital projects under this scope moved from ${formatCurrency(yoy.a24)} (2024 actuals) to ${formatCurrency(yoy.a25)} (2025 revised) and ${formatCurrency(yoy.a26)} (2026 approved).`);
+    }
   } else {
     summaryLines.push('No capital projects are listed under this ministry in the programme pages.');
   }
@@ -673,16 +819,43 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
   };
   const filteredTree = filterTree(mda.units || [], treeQuery);
 
+  const exportProjectsCSV = () => {
+    if (!filteredProjects.length) return;
+    const headers = ['Agency', 'Project', 'Programme Code', 'Economic', 'Function', 'Location', 'Page', ...AMOUNT_COLUMNS.map(([, l]) => l), ...TAG_COLUMNS.map(([, l]) => l)];
+    const rows = filteredProjects.map(p => [
+      p.mda_name || '', p.project_name || '', p.programme_code || '', p.economic_description || '', p.function_description || '', p.location_description || '', p.page,
+      ...AMOUNT_COLUMNS.map(([k]) => (p.amounts ? (p.amounts[k] ?? '') : '')),
+      ...TAG_COLUMNS.map(([k]) => TAG_COLUMNS.find(t => t[0] === k)[2](p.amounts))
+    ]);
+    const csvContent = [headers, ...rows].map(e => e.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${data?.state || 'state'}_${data?.year || ''}_${mda.name || 'ministry'}_projects.csv`.replace(/[^a-z0-9._-]+/gi, '_'));
+    link.click();
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={profileRef}>
       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="p-8 border-b border-slate-100 bg-slate-50/30">
           <h3 className="text-xl font-bold text-slate-900">Ministry Profile</h3>
           <p className="text-sm text-slate-500">Select a ministry to see its funding, revenue, agencies, and capital projects</p>
         </div>
         <div className="p-6">
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search ministries... (sorted by allocation)"
+              value={gridQuery}
+              onChange={(e) => setGridQuery(e.target.value)}
+              className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all w-full"
+            />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-            {ministries.map((m) => (
+            {filteredMinistries.map((m) => (
               <button
                 key={m.code}
                 onClick={() => onSelect(m)}
@@ -706,15 +879,38 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
       <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
+            {!isTopLevel && (
+              <button
+                onClick={() => parentMinistry && onSelect(parentMinistry)}
+                className="mb-2 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" /> Back to {parentMinistry ? parentMinistry.name : 'Ministry'}
+              </button>
+            )}
             <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider font-mono">{mda.code}</p>
             <h3 className="text-2xl font-black text-slate-900 tracking-tight">{mda.name}</h3>
             <p className="text-sm text-slate-500 mt-1">
-              Oversees {overseesCount} agenc{overseesCount === 1 ? 'y' : 'ies'}/{overseesCount === 1 ? 'department' : 'departments'} · {formatCurrency(total)} total allocation
+              {isTopLevel
+                ? `Oversees ${overseesCount} agenc${overseesCount === 1 ? 'y' : 'ies'}/${overseesCount === 1 ? 'department' : 'departments'} · ${formatCurrency(total)} total allocation`
+                : `${formatCurrency(total)} total allocation · part of ${parentMinistry ? parentMinistry.name : 'a ministry'}`}
             </p>
           </div>
-          <span className="text-xs font-black px-3 py-1.5 rounded-full bg-slate-900 text-white shrink-0">
-            {share !== null ? share.toFixed(2) : '—'}% of budget
-          </span>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-slate-900 text-white">
+              {share !== null ? share.toFixed(2) : '—'}% of budget
+            </span>
+            {sector && (
+              <button
+                onClick={onOpenSector}
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors"
+                title={sector.amount != null ? `Sector total ${formatCurrency(sector.amount)}` : 'View sector analysis'}
+              >
+                <PieChart className="w-3.5 h-3.5 text-slate-400" />
+                {sector.name}
+                {sector.amount != null && <span className="font-mono text-slate-500">{formatCompact(sector.amount)}</span>}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
@@ -724,6 +920,30 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
           <MetricCard title="Capital" value={mda.capital} subtitle="projects & assets" icon={Wallet} color="emerald" />
           <MetricCard title="Total" value={total} subtitle={`of ${formatCurrency(totalBudget)} state budget`} icon={TrendingUp} color="rose" />
         </div>
+
+        {splitTotal > 0 && (
+          <div className="mb-6">
+            <div className="flex h-2.5 rounded-full overflow-hidden bg-slate-100">
+              {splitParts.map((part) => (
+                <div
+                  key={part.label}
+                  className={part.color}
+                  style={{ width: `${(part.value / splitTotal) * 100}%` }}
+                  title={`${part.label}: ${formatCurrency(part.value)}`}
+                />
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+              {splitParts.map((part) => (
+                <span key={part.label} className="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-medium">
+                  <span className={`w-2.5 h-2.5 rounded-full ${part.color}`} />
+                  {part.label} · <span className="font-bold">{formatCurrency(part.value)}</span>
+                  <span className="text-slate-400">({pct(part.value, splitTotal).toFixed(1)}%)</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5">
           <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -738,29 +958,43 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-8 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/30">
+        <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/30">
           <div>
             <h3 className="text-xl font-bold text-slate-900">Oversees</h3>
             <p className="text-sm text-slate-500">Departments and agencies under this ministry</p>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Filter agencies..."
-              value={treeQuery}
-              onChange={(e) => setTreeQuery(e.target.value)}
-              className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all w-full sm:w-64"
-            />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTreeSignal({ type: 'expand', n: (treeSignal?.n || 0) + 1 })}
+              className="px-3 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              Expand all
+            </button>
+            <button
+              onClick={() => setTreeSignal({ type: 'collapse', n: (treeSignal?.n || 0) + 1 })}
+              className="px-3 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              Collapse all
+            </button>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Filter agencies..."
+                value={treeQuery}
+                onChange={(e) => setTreeQuery(e.target.value)}
+                className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all w-full sm:w-64"
+              />
+            </div>
           </div>
         </div>
         <div className="p-6">
           {filteredTree.length === 0 ? (
             <p className="text-sm text-slate-400 italic py-6 text-center">No agencies listed under this ministry in the document.</p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1" key={treeSignal ? treeSignal.n : 0}>
               {filteredTree.map((unit, idx) => (
-                <UnitRow key={unit.code || idx} unit={unit} depth={0} onSelect={() => {}} formatCompact={formatCompact} />
+                <UnitRow key={unit.code || idx} unit={unit} depth={0} onSelect={onSelect} formatCompact={formatCompact} selectedCode={mda.code} defaultExpanded={treeSignal?.type === 'expand'} />
               ))}
             </div>
           )}
@@ -816,10 +1050,66 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-8 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/30">
+        <div className="p-8 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-slate-50/30">
           <div>
             <h3 className="text-xl font-bold text-slate-900">Capital Projects</h3>
-            <p className="text-sm text-slate-500">{projects.length} projects · {formatCurrency(projectsTotal)} total (2026 approved)</p>
+            <p className="text-sm text-slate-500">
+              {isTopLevel
+                ? `All agencies under ${mda.name} · ${projectsAgencyCount} agenc${projectsAgencyCount === 1 ? 'y' : 'ies'} · ${projects.length} projects · ${formatCurrency(projectsTotal)} total (2026 approved)`
+                : `${mda.name} · ${projects.length} project${projects.length === 1 ? '' : 's'} · ${formatCurrency(projectsTotal)} total (2026 approved)`}
+            </p>
+            {!showTrend && (tagSums.climate > 0 || tagSums.nutrition > 0 || tagSums.social > 0) && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {tagSums.climate > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-100">
+                    <Leaf className="w-3.5 h-3.5" /> Climate {formatCompact(tagSums.climate)}
+                  </span>
+                )}
+                {tagSums.nutrition > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-full border border-amber-100">
+                    <Wheat className="w-3.5 h-3.5" /> Food/Nutrition {formatCompact(tagSums.nutrition)}
+                  </span>
+                )}
+                {tagSums.social > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-[11px] font-bold rounded-full border border-blue-100">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Social Protection {formatCompact(tagSums.social)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative flex-1 sm:flex-none">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={projectQuery}
+                onChange={(e) => { setProjectQuery(e.target.value); setShowAllProjects(false); }}
+                className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all w-full sm:w-56"
+              />
+            </div>
+            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
+              <button
+                onClick={() => setShowTrend(false)}
+                className={clsx("px-3 py-1.5 text-xs font-bold rounded-lg transition-colors", !showTrend ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100")}
+              >
+                2026 Approved
+              </button>
+              <button
+                onClick={() => setShowTrend(true)}
+                className={clsx("px-3 py-1.5 text-xs font-bold rounded-lg transition-colors", showTrend ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100")}
+              >
+                Trend
+              </button>
+            </div>
+            <button
+              onClick={exportProjectsCSV}
+              disabled={!filteredProjects.length}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" /> CSV
+            </button>
           </div>
         </div>
         {isLoading && !projectsRows ? (
@@ -828,44 +1118,102 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, revenue
           </div>
         ) : projects.length === 0 ? (
           <p className="text-sm text-slate-400 italic py-10 text-center">No capital projects are listed under this ministry.</p>
+        ) : filteredProjects.length === 0 ? (
+          <p className="text-sm text-slate-400 italic py-10 text-center">No projects match "{projectQuery}".</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Project</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Economic</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Location</th>
-                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">2026 Approved</th>
-                  <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Page</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {projects.map((p, i) => (
-                  <tr key={p.programme_code + '-' + i} className="hover:bg-slate-50/50">
-                    <td className="px-8 py-4 text-sm font-semibold text-slate-800 max-w-md">
-                      <span className="block truncate" title={p.project_name}>{p.project_name}</span>
-                      <span className="block text-[11px] text-slate-400 font-mono mt-0.5">{p.programme_code}</span>
-                    </td>
-                    <td className="px-8 py-4 text-sm text-slate-600">{p.economic_description || '—'}</td>
-                    <td className="px-8 py-4 text-sm text-slate-600">{p.location_description || '—'}</td>
-                    <td className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(p.amount)}</td>
-                    <td className="px-8 py-4 text-right text-xs font-mono text-slate-400">{p.page}</td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Agency / Institution</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Project</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Economic</th>
+                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Location</th>
+                    {showTrend
+                      ? AMOUNT_COLUMNS.map(([, label]) => (
+                          <th key={label} className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</th>
+                        ))
+                      : (
+                          <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">2026 Approved</th>
+                        )}
+                    <th className="px-8 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Page</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {visibleGroups.map((group) => (
+                    <Fragment key={group.name}>
+                      <tr className="bg-slate-900">
+                        <td colSpan={showTrend ? 9 : 6} className="px-8 py-3">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                              <p className="text-sm font-bold text-white truncate">{group.name}</p>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className="text-[11px] font-mono text-slate-300">
+                                {group.rows.length}{group.hidden > 0 ? ` +${group.hidden} more` : ''} project{group.rows.length === 1 ? '' : 's'}
+                              </span>
+                              <span className="text-sm font-bold text-emerald-300">{formatCurrency(group.total)}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      {group.rows.map((p, i) => (
+                        <tr key={p.programme_code + '-' + group.name + '-' + i} className="hover:bg-slate-50/50">
+                          <td className="px-8 py-4 text-sm font-semibold text-slate-600">{p.mda_name || '—'}</td>
+                          <td className="px-8 py-4 text-sm font-semibold text-slate-800 max-w-md">
+                            <span className="block truncate" title={p.project_name}>{p.project_name}</span>
+                            <span className="block text-[11px] text-slate-400 font-mono mt-0.5">{p.programme_code}</span>
+                          </td>
+                          <td className="px-8 py-4 text-sm text-slate-600">{p.economic_description || '—'}</td>
+                          <td className="px-8 py-4 text-sm text-slate-600">{p.location_description || '—'}</td>
+                          {showTrend
+                            ? AMOUNT_COLUMNS.map(([k]) => (
+                                <td key={k} className="px-6 py-4 text-right text-sm text-slate-600">{p.amounts ? formatCurrency(p.amounts[k]) : '—'}</td>
+                              ))
+                            : (
+                                <td className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(p.amount)}</td>
+                              )}
+                          <td className="px-8 py-4 text-right text-xs font-mono text-slate-400">{p.page}</td>
+                        </tr>
+                      ))}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {!showAllProjects && visibleGroups.some(g => g.hidden > 0) && (
+              <div className="p-4 border-t border-slate-100 text-center">
+                <button
+                  onClick={() => setShowAllProjects(true)}
+                  className="px-4 py-2 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors"
+                >
+                  Show all {filteredProjects.length} projects
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 };
 
+const findUnit = (root, code) => {
+  for (const u of root.units || []) {
+    if (String(u.code) === code) return u;
+    const found = findUnit(u, code);
+    if (found) return found;
+  }
+  return null;
+};
+
 export default function StateDashboard() {
   const { stateId } = useParams();
   const { states, isInitialized } = useBudget();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMDA, setSelectedMDA] = useState(null);
@@ -884,38 +1232,81 @@ export default function StateDashboard() {
   useEffect(() => {
     if (activeTab !== 'ministries' || !data) return;
     const retryFetch = async (fileId) => {
-      const url = storage.getFileDownload(BUCKET_ID, fileId);
       for (let i = 0; i < 4; i++) {
         try {
+          const url = storage.getFileDownload(BUCKET_ID, fileId);
           const res = await fetch(url);
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return await res.json();
         } catch (err) {
           if (i === 3) throw err;
-          await new Promise(resolve => setTimeout(resolve, 2500 * (i + 1)));
+          await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
         }
       }
     };
-    const fetchJson = async (fileId, setter) => {
+    const fetchJson = async (fileId, kind, setter) => {
       if (!fileId) return;
+      const cacheKey = `file:${stateId}:${kind}:${fileId}`;
+      const cached = await cacheGet(cacheKey);
+      if (cached && cached.payload) {
+        setter(cached.payload);
+        return;
+      }
       try {
-        setter(await retryFetch(fileId));
+        // Same-origin static copy first (fast, no Appwrite round-trip), then storage fallback.
+        const staticRes = await fetch(`/data/${stateId}.${kind}.json`);
+        const rows = staticRes.ok ? await staticRes.json() : await retryFetch(fileId);
+        setter(rows);
+        await cacheSet(cacheKey, { savedAt: Date.now(), payload: rows });
       } catch (err) {
         console.error('Ministry profile file fetch failed', err);
       }
     };
     setIsProfileLoading(true);
     Promise.all([
-      fetchJson(data.revenue_file_id, setRevenueRows),
-      fetchJson(data.projects_file_id, setProjectsRows)
+      fetchJson(data.revenue_file_id, 'revenue', setRevenueRows),
+      fetchJson(data.projects_file_id, 'projects', setProjectsRows)
     ]).finally(() => setIsProfileLoading(false));
-  }, [activeTab, data]);
+  }, [activeTab, data, stateId]);
 
   const ministries = useMemo(() => (data?.mdas || []).filter(m => String(m.code || '').endsWith('000000')), [data]);
 
+  const selectTarget = (target) => {
+    if (!target) return;
+    setSelectedMinistry(target);
+    const isTop = String(target.code || '').endsWith('000000');
+    const next = { m: target.code };
+    if (!isTop) {
+      const parent = ministries.find(m => String(m.code || '').slice(0, 4) === String(target.code || '').slice(0, 4));
+      if (parent) next.m = parent.code;
+      next.u = target.code;
+    }
+    setSearchParams(next, { replace: true });
+  };
+
   useEffect(() => {
-    if (!selectedMinistry && ministries.length) setSelectedMinistry(ministries[0]);
-  }, [ministries, selectedMinistry]);
+    if (!data || !ministries.length) return;
+    const mCode = searchParams.get('m');
+    const uCode = searchParams.get('u');
+    if (mCode) {
+      const ministry = ministries.find(m => String(m.code) === mCode);
+      if (ministry) {
+        if (uCode) {
+          const unit = findUnit(ministry, uCode);
+          if (unit && String(selectedMinistry?.code) !== uCode) {
+            setSelectedMinistry({ ...unit, pageNumber: unit.provenance?.page });
+          }
+          return;
+        }
+        if (String(selectedMinistry?.code) !== mCode) setSelectedMinistry(ministry);
+        return;
+      }
+    }
+    if (!selectedMinistry) {
+      const largest = [...ministries].sort((a, b) => (b.total || 0) - (a.total || 0))[0];
+      setSelectedMinistry(largest);
+    }
+  }, [data, ministries, searchParams, selectedMinistry]);
 
   useEffect(() => {
     if (isInitialized) {
@@ -1509,7 +1900,8 @@ export default function StateDashboard() {
               data={data}
               ministries={ministries}
               selectedMinistry={selectedMinistry}
-              onSelect={setSelectedMinistry}
+              onSelect={selectTarget}
+              onOpenSector={() => navigate(`/state/${stateId}/sectors`)}
               revenueRows={revenueRows}
               projectsRows={projectsRows}
               isLoading={isProfileLoading}
