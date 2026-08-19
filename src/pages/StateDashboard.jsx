@@ -1319,41 +1319,29 @@ export default function StateDashboard() {
     }
   }, [stateId, states, isInitialized]);
 
-  // Fetch full text for universal search
+  // Fetch full text for universal search (static copy first, storage fallback)
   useEffect(() => {
-    if ((activeTab === 'search' || verificationMode === 'raw') && data?.text_file_id && !fullText) {
-      setIsSearching(true);
-      const url = storage.getFileDownload(BUCKET_ID, data.text_file_id);
-      fetch(url)
-        .then(res => res.text())
-        .then(text => {
-          setFullText(text);
-          setIsSearching(false);
-        })
-        .catch(err => {
-          console.error("Text fetch failed", err);
-          setIsSearching(false);
-        });
-    }
-  }, [activeTab, verificationMode, data?.text_file_id, fullText]);
-
-  useEffect(() => {
-    if (activeTab !== 'search') return;
-    if (!data?.text_file_id) return;
+    if (activeTab !== 'search' && verificationMode !== 'raw') return;
     if (fullText) return;
+    if (!stateId && !data?.text_file_id) return;
     setIsSearching(true);
-    const url = storage.getFileView(BUCKET_ID, data.text_file_id);
-    fetch(url)
-      .then(res => res.text())
-      .then(text => {
-        setFullText(text);
-        setIsSearching(false);
-      })
-      .catch(err => {
-        console.error("Text view fetch failed", err);
-        setIsSearching(false);
-      });
-  }, [activeTab, data?.text_file_id, fullText]);
+    const candidates = [];
+    if (stateId) candidates.push(`/data/${stateId}.txt`);
+    if (data?.text_file_id) candidates.push(storage.getFileView(BUCKET_ID, data.text_file_id));
+    (async () => {
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) continue;
+          const text = await res.text();
+          if (text) setFullText(text);
+          return;
+        } catch (e) {
+          // try next candidate
+        }
+      }
+    })().catch(() => {}).finally(() => setIsSearching(false));
+  }, [activeTab, verificationMode, data?.text_file_id, stateId, fullText]);
 
   const summaryPages = useMemo(() => {
     if (!data?.summaryPages) return {};
@@ -1532,7 +1520,8 @@ export default function StateDashboard() {
             <div className="h-[500px] rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 relative">
               {verificationMode === 'pdf' && (
                 <SourceInspector 
-                  pdfFileId={data.pdf_file_id || null} 
+                  pdfFileId={data.pdf_file_id || null}
+                  stateId={stateId}
                   pageNumber={summaryEvidence?.pageNumber || selectedMDA?.pageNumber || selectedMDA?.provenance?.page || 1} 
                 />
               )}

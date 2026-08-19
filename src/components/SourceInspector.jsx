@@ -3,7 +3,7 @@ import { storage, BUCKET_ID } from '../utils/appwrite';
 import { Loader2, AlertCircle, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { Title, Text, Badge, Button } from '@tremor/react';
 
-export default function SourceInspector({ pdfFileId, pageNumber }) {
+export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,13 +11,13 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
   const renderTaskRef = useRef(null);
 
   useEffect(() => {
-    if (!pdfFileId) {
+    if (!pdfFileId && !stateId) {
       setError("No source PDF has been uploaded for this state yet.");
       setLoading(false);
       return;
     }
     loadPDF();
-  }, [pdfFileId, pageNumber]);
+  }, [pdfFileId, pageNumber, stateId]);
 
   const loadPDF = async () => {
     setLoading(true);
@@ -26,18 +26,29 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
       if (!window.pdfjsLib) {
         throw new Error("PDF engine not initialized. Please refresh.");
       }
-      const fileUrl = storage.getFileView(BUCKET_ID, pdfFileId);
 
-      // The storage endpoint can be slow/flaky — retry the download a few times.
+      // Prefer the statically-served copy (same-origin, fast); fall back to
+      // Appwrite storage for states without a static file.
+      const candidates = [];
+      if (stateId) candidates.push(`/data/${stateId}.pdf`);
+      if (pdfFileId) candidates.push(storage.getFileView(BUCKET_ID, pdfFileId));
+
+      // Static copies are a single fast probe; storage gets the retry loop.
       let response = null;
-      for (let attempt = 1; attempt <= 4; attempt++) {
-        try {
-          response = await fetch(fileUrl, { headers: { Range: 'bytes=0-' } });
-          if (response.ok) break;
-        } catch (e) {
-          if (attempt === 4) throw e;
+      for (const url of candidates) {
+        const isStatic = url.startsWith('/data/');
+        const attempts = isStatic ? 1 : 4;
+        for (let attempt = 1; attempt <= attempts; attempt++) {
+          try {
+            response = await fetch(url, isStatic ? {} : { headers: { Range: 'bytes=0-' } });
+            if (response.ok) break;
+          } catch (e) {
+            // keep trying
+          }
+          response = null;
+          if (attempt < attempts) await new Promise(r => setTimeout(r, attempt * 2000));
         }
-        await new Promise(r => setTimeout(r, attempt * 2000));
+        if (response?.ok) break;
       }
       if (!response || !response.ok) {
         throw new Error(`download failed (${response?.status || 'no response'})`);
@@ -82,9 +93,9 @@ export default function SourceInspector({ pdfFileId, pageNumber }) {
           <Badge color="blue" size="xs">PAGE {pageNumber}</Badge>
           <Text className="text-[10px] font-bold uppercase text-slate-400">Original Document Snippet</Text>
         </div>
-        {pdfFileId && (
+        {(pdfFileId || stateId) && (
           <button 
-            onClick={() => window.open(storage.getFileView(BUCKET_ID, pdfFileId), '_blank')}
+            onClick={() => window.open(stateId ? `/data/${stateId}.pdf` : storage.getFileView(BUCKET_ID, pdfFileId), '_blank')}
             className="text-blue-600 hover:text-blue-700 transition-colors p-1"
             title="Open full PDF"
           >
