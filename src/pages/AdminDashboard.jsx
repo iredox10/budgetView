@@ -315,7 +315,7 @@ export default function AdminDashboard() {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="tbl-responsive">
               <thead className="bg-slate-50/50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">State</th>
@@ -329,29 +329,29 @@ export default function AdminDashboard() {
               <tbody className="divide-y divide-slate-100">
                 {filteredStates.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td data-label="State" className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
                           <FileText className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
                           <p className="font-semibold text-slate-900">{s.name}</p>
-                          <p className="text-xs text-slate-500 font-mono">{s.id}</p>
+                          <p className="text-xs text-slate-500 font-mono break-all">{s.id}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td data-label="Year" className="px-6 py-4 text-center">
                       <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg">
                         {s.year}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Total Budget" className="px-6 py-4 text-right">
                       <p className="font-semibold text-slate-900">{formatCompact(s.data?.summary?.total_expenditure || 0)}</p>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td data-label="MDAs" className="px-6 py-4 text-center">
                       <p className="text-sm text-slate-600">{s.data?.mdas?.length || 0}</p>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td data-label="Status" className="px-6 py-4 text-center">
                       {s.data?.verified ? (
                         <span className="flex items-center justify-center gap-1 text-emerald-600 text-sm font-semibold">
                           <CheckCircle2 className="w-4 h-4" />
@@ -364,7 +364,7 @@ export default function AdminDashboard() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Actions" className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => navigate(`/state/${s.id}`)}

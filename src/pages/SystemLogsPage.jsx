@@ -163,7 +163,7 @@ export default function SystemLogsPage() {
             </div>
           )}
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="tbl-responsive">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
@@ -180,7 +180,7 @@ export default function SystemLogsPage() {
                   </tr>
                 ) : filteredLogs.map((log) => (
                   <tr key={log.$id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td data-label="Status" className="px-6 py-4">
                       <span className={clsx(
                         "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border",
                         getLogColor(log.status)
@@ -189,16 +189,16 @@ export default function SystemLogsPage() {
                         {log.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td data-label="Action" className="px-6 py-4">
                       <p className="font-semibold text-slate-900">{log.action}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-slate-600">{log.details}</p>
+                    <td data-label="Details" className="px-6 py-4">
+                      <p className="text-sm text-slate-600 break-words">{log.details}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td data-label="User" className="px-6 py-4">
                       <span className="text-sm text-slate-500">{log.user || 'System'}</span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Time" className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 text-sm text-slate-500">
                         <Clock className="w-4 h-4" />
                         {timeAgo(log.$createdAt)}

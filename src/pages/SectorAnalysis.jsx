@@ -456,61 +456,63 @@ export default function SectorAnalysis() {
           ) : (
             /* List View */
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-slate-50/80 border-b border-slate-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Rank</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Sector</th>
-                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Allocation</th>
-                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">% of Budget</th>
-                    <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Visual</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {sortedSectors.map((sector, index) => {
-                    const colors = getSectorColor(index);
-                    const percentage = ((sector.amount / (stats.totalBudget || 1)) * 100).toFixed(1);
-                    
-                    return (
-                      <tr key={sector.code} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className={clsx(
-                            "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold",
-                            colors.bg, colors.text
-                          )}>
-                            {index + 1}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", colors.bg)}>
-                              {renderSectorIcon(sector.name, clsx("w-5 h-5", colors.icon))}
+              <div className="overflow-x-auto">
+                <table className="tbl-responsive">
+                  <thead className="bg-slate-50/80 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Rank</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Sector</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Allocation</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">% of Budget</th>
+                      <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Visual</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {sortedSectors.map((sector, index) => {
+                      const colors = getSectorColor(index);
+                      const percentage = ((sector.amount / (stats.totalBudget || 1)) * 100).toFixed(1);
+                      
+                      return (
+                        <tr key={sector.code} className="hover:bg-slate-50/50 transition-colors">
+                          <td data-label="Rank" className="px-6 py-4">
+                            <span className={clsx(
+                              "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold",
+                              colors.bg, colors.text
+                            )}>
+                              {index + 1}
+                            </span>
+                          </td>
+                          <td data-label="Sector" className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", colors.bg)}>
+                                {renderSectorIcon(sector.name, clsx("w-5 h-5", colors.icon))}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-slate-900">{sector.name}</p>
+                                <p className="text-xs text-slate-500 font-mono">{sector.code}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold text-slate-900">{sector.name}</p>
-                              <p className="text-xs text-slate-500 font-mono">{sector.code}</p>
+                          </td>
+                          <td data-label="Allocation" className="px-6 py-4 text-right">
+                            <p className="font-bold text-slate-900">{formatCurrency(sector.amount)}</p>
+                          </td>
+                          <td data-label="% of Budget" className="px-6 py-4 text-right">
+                            <span className={clsx("text-sm font-bold", colors.text)}>{percentage}%</span>
+                          </td>
+                          <td data-label="Visual" className="px-6 py-4">
+                            <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
+                              <div 
+                                className={clsx("h-full rounded-full", colors.progress)}
+                                style={{ width: `${percentage}%` }}
+                              />
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <p className="font-bold text-slate-900">{formatCurrency(sector.amount)}</p>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className={clsx("text-sm font-bold", colors.text)}>{percentage}%</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
-                            <div 
-                              className={clsx("h-full rounded-full", colors.progress)}
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

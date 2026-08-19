@@ -471,7 +471,7 @@ export default function MDADirectory() {
         {/* Data Table */}
         <div id="mda-directory" className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="tbl-responsive">
               <thead className="bg-slate-50/80 border-b border-slate-200">
                 <tr>
                   {[
@@ -510,7 +510,7 @@ export default function MDADirectory() {
                     onClick={() => setSelectedMDA(mda)}
                     className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-4">
+                    <td data-label="Agency" className="px-6 py-4">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
                           <Building2 className="w-5 h-5 text-emerald-600" />
@@ -523,31 +523,31 @@ export default function MDADirectory() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Personnel" className="px-6 py-4 text-right">
                       <p className="text-sm font-medium text-slate-700">{formatCompact(mda.personnel)}</p>
                       <p className="text-xs text-slate-400 mt-0.5">
                         {((mda.personnel / (mda.total || 1)) * 100).toFixed(0)}%
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Overhead" className="px-6 py-4 text-right">
                       <p className="text-sm font-medium text-slate-700">{formatCompact(mda.overhead)}</p>
                       <p className="text-xs text-slate-400 mt-0.5">
                         {((mda.overhead / (mda.total || 1)) * 100).toFixed(0)}%
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Capital" className="px-6 py-4 text-right">
                       <p className="text-sm font-medium text-slate-700">{formatCompact(mda.capital)}</p>
                       <p className="text-xs text-slate-400 mt-0.5">
                         {((mda.capital / (mda.total || 1)) * 100).toFixed(0)}%
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td data-label="Total" className="px-6 py-4 text-right">
                       <p className="text-sm font-bold text-slate-900">{formatCompact(mda.total)}</p>
                       <p className="text-xs text-slate-400 mt-0.5">
                         {((mda.total / (stats.totalBudget || 1)) * 100).toFixed(2)}% of budget
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td data-label="Visual" className="px-6 py-4 text-center">
                       <BudgetBar 
                         value={mda.total} 
                         max={stats.topMDA?.total || 1}

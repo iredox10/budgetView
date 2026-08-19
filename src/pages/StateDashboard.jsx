@@ -546,7 +546,7 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [], anomalies = [] }) =
         className="hover:bg-slate-50/50 transition-colors cursor-pointer group"
         onClick={() => onSelect(mda)}
       >
-        <td className="px-6 py-4">
+        <td data-label="Agency" className="px-6 py-4">
           <div className="flex items-center gap-3">
             {hasUnits && (
               <button 
@@ -582,10 +582,10 @@ const MDARow = ({ mda, onSelect, formatCompact, errors = [], anomalies = [] }) =
             </div>
           </div>
         </td>
-        <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.personnel)}</td>
-        <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.overhead)}</td>
-        <td className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.capital)}</td>
-        <td className="px-6 py-4 text-right">
+        <td data-label="Personnel" className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.personnel)}</td>
+        <td data-label="Overhead" className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.overhead)}</td>
+        <td data-label="Capital" className="px-6 py-4 text-right text-sm text-slate-600">{formatCompact(mda.capital)}</td>
+        <td data-label="Total" className="px-6 py-4 text-right">
           <span className={clsx(
             "px-3 py-1 text-sm font-bold rounded-lg",
             mdaError ? "bg-rose-50 text-rose-700 border border-rose-100" : "bg-blue-50 text-blue-700"
@@ -1012,7 +1012,7 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
           </div>
         ) : revenue ? (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="tbl-responsive">
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Source</th>
@@ -1026,13 +1026,13 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
               </thead>
               <tbody className="divide-y divide-slate-100">
                 <tr>
-                  <td className="px-8 py-4 text-sm font-semibold text-slate-800">{revenue.mda_name}</td>
-                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.faac)}</td>
-                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.igr)}</td>
-                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.total_recurrent)}</td>
-                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.aids_grants)}</td>
-                  <td className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.capital_receipts)}</td>
-                  <td className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(revenue.total_revenue)}</td>
+                  <td data-label="Source" className="px-8 py-4 text-sm font-semibold text-slate-800">{revenue.mda_name}</td>
+                  <td data-label="FAAC" className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.faac)}</td>
+                  <td data-label="IGR" className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.igr)}</td>
+                  <td data-label="Total Recurrent" className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.total_recurrent)}</td>
+                  <td data-label="Aids & Grants" className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.aids_grants)}</td>
+                  <td data-label="Capital Receipts" className="px-8 py-4 text-right text-sm text-slate-600">{formatCurrency(revenue.capital_receipts)}</td>
+                  <td data-label="Total Revenue" className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(revenue.total_revenue)}</td>
                 </tr>
                 {revenue.mda_code !== mda.code && (
                   <tr>
@@ -1123,7 +1123,7 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="tbl-responsive">
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Agency / Institution</th>
@@ -1145,10 +1145,10 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
                     <Fragment key={group.name}>
                       <tr className="bg-slate-900">
                         <td colSpan={showTrend ? 9 : 6} className="px-8 py-3">
-                          <div className="flex items-center justify-between gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                             <div className="flex items-center gap-2 min-w-0">
                               <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
-                              <p className="text-sm font-bold text-white truncate">{group.name}</p>
+                              <p className="text-sm font-bold text-white break-words">{group.name}</p>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
                               <span className="text-[11px] font-mono text-slate-300">
@@ -1161,21 +1161,21 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
                       </tr>
                       {group.rows.map((p, i) => (
                         <tr key={p.programme_code + '-' + group.name + '-' + i} className="hover:bg-slate-50/50">
-                          <td className="px-8 py-4 text-sm font-semibold text-slate-600">{p.mda_name || '—'}</td>
-                          <td className="px-8 py-4 text-sm font-semibold text-slate-800 max-w-md">
-                            <span className="block truncate" title={p.project_name}>{p.project_name}</span>
+                          <td data-label="Agency" className="px-8 py-4 text-sm font-semibold text-slate-600">{p.mda_name || '—'}</td>
+                          <td data-label="Project" className="px-8 py-4 text-sm font-semibold text-slate-800 max-w-md">
+                            <span className="block break-words" title={p.project_name}>{p.project_name}</span>
                             <span className="block text-[11px] text-slate-400 font-mono mt-0.5">{p.programme_code}</span>
                           </td>
-                          <td className="px-8 py-4 text-sm text-slate-600">{p.economic_description || '—'}</td>
-                          <td className="px-8 py-4 text-sm text-slate-600">{p.location_description || '—'}</td>
+                          <td data-label="Economic" className="px-8 py-4 text-sm text-slate-600">{p.economic_description || '—'}</td>
+                          <td data-label="Location" className="px-8 py-4 text-sm text-slate-600">{p.location_description || '—'}</td>
                           {showTrend
-                            ? AMOUNT_COLUMNS.map(([k]) => (
-                                <td key={k} className="px-6 py-4 text-right text-sm text-slate-600">{p.amounts ? formatCurrency(p.amounts[k]) : '—'}</td>
+                            ? AMOUNT_COLUMNS.map(([k, label]) => (
+                                <td key={k} data-label={label} className="px-6 py-4 text-right text-sm text-slate-600">{p.amounts ? formatCurrency(p.amounts[k]) : '—'}</td>
                               ))
                             : (
-                                <td className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(p.amount)}</td>
+                                <td data-label="2026 Approved" className="px-8 py-4 text-right text-sm font-bold text-slate-900">{formatCurrency(p.amount)}</td>
                               )}
-                          <td className="px-8 py-4 text-right text-xs font-mono text-slate-400">{p.page}</td>
+                          <td data-label="Page" className="px-8 py-4 text-right text-xs font-mono text-slate-400">{p.page}</td>
                         </tr>
                       ))}
                     </Fragment>
@@ -1868,7 +1868,7 @@ export default function StateDashboard() {
               </div>
               
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="tbl-responsive">
                   <thead className="bg-slate-50">
                     <tr>
                       <th className="px-8 py-5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Agency</th>

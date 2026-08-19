@@ -12,3 +12,56 @@
 body {
   @apply bg-slate-50 text-slate-900;
 }
+
+@layer components {
+  .tbl-responsive {
+    @apply w-full;
+  }
+
+  @media (max-width: 640px) {
+    .tbl-responsive thead {
+      display: none;
+    }
+    .tbl-responsive tbody {
+      display: block;
+    }
+    .tbl-responsive tbody tr {
+      display: block;
+      background: white;
+      border: 1px solid rgb(226 232 240);
+      border-radius: 0.75rem;
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .tbl-responsive tbody tr[class*="bg-slate-900"] {
+      background: rgb(15 23 42);
+      border-color: rgb(15 23 42);
+    }
+    .tbl-responsive td {
+      display: block;
+      text-align: left;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed rgb(241 245 249);
+    }
+    .tbl-responsive tbody tr:last-child td:last-child,
+    .tbl-responsive td:last-child {
+      border-bottom: none;
+    }
+    .tbl-responsive td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.625rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgb(148 163 184);
+      margin-bottom: 0.15rem;
+    }
+    .tbl-responsive tbody tr[class*="bg-slate-900"] td::before {
+      color: rgb(100 116 139);
+    }
+    .tbl-responsive tbody tr[class*="bg-slate-900"] td {
+      border-bottom-color: rgb(30 41 59);
+    }
+  }
+}

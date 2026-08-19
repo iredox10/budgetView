@@ -574,7 +574,7 @@ export default function ComparePage() {
                   </div>
                   
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="tbl-responsive">
                       <thead className="bg-slate-50/50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Sector</th>
@@ -585,14 +585,14 @@ export default function ComparePage() {
                       <tbody className="divide-y divide-slate-100">
                         {sectorComparison.slice(0, 10).map((sector, index) => (
                           <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="px-6 py-3">
+                            <td data-label="Sector" className="px-6 py-3">
                               <p className="font-medium text-slate-900">{sector.label}</p>
                               <p className="text-xs text-slate-500">{sector.code}</p>
                             </td>
-                            <td className="px-6 py-3 text-right">
+                            <td data-label={dataA.state} className="px-6 py-3 text-right">
                               <p className="font-semibold text-emerald-600">{formatCompact(sector.valueA)}</p>
                             </td>
-                            <td className="px-6 py-3 text-right">
+                            <td data-label={dataB.state} className="px-6 py-3 text-right">
                               <p className="font-semibold text-blue-600">{formatCompact(sector.valueB)}</p>
                             </td>
                           </tr>
@@ -694,7 +694,7 @@ export default function ComparePage() {
                     <h3 className="font-bold text-slate-900">Issue Type Comparison</h3>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="tbl-responsive">
                       <thead className="bg-slate-50/50">
                         <tr>
                           <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Metric</th>
@@ -709,11 +709,11 @@ export default function ComparePage() {
                           { label: "Global Balance Errors", countA: dataA.audit?.errors?.filter(e => e.code.includes('mismatch')).length || 0, countB: dataB.audit?.errors?.filter(e => e.code.includes('mismatch')).length || 0 },
                         ].map((row, i) => (
                           <tr key={i}>
-                            <td className="px-6 py-4 text-sm font-medium text-slate-700">{row.label}</td>
-                            <td className="px-6 py-4 text-center">
+                            <td data-label="Metric" className="px-6 py-4 text-sm font-medium text-slate-700">{row.label}</td>
+                            <td data-label={dataA.state} className="px-6 py-4 text-center">
                               <span className={clsx("font-bold", row.countA === 0 ? "text-emerald-600" : "text-rose-600")}>{row.countA}</span>
                             </td>
-                            <td className="px-6 py-4 text-center">
+                            <td data-label={dataB.state} className="px-6 py-4 text-center">
                               <span className={clsx("font-bold", row.countB === 0 ? "text-emerald-600" : "text-rose-600")}>{row.countB}</span>
                             </td>
                           </tr>
@@ -741,7 +741,7 @@ export default function ComparePage() {
                 </div>
                 
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="tbl-responsive">
                     <thead className="bg-slate-50/50">
                       <tr>
                         <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Metric</th>
@@ -769,14 +769,14 @@ export default function ComparePage() {
                         
                         return (
                           <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="px-6 py-4 font-medium text-slate-900">{metric.label}</td>
-                            <td className="px-6 py-4 text-right font-semibold text-slate-700">
+                            <td data-label="Metric" className="px-6 py-4 font-medium text-slate-900">{metric.label}</td>
+                            <td data-label={dataA.state} className="px-6 py-4 text-right font-semibold text-slate-700">
                               {formatCurrency(valA)}
                             </td>
-                            <td className="px-6 py-4 text-right font-semibold text-slate-700">
+                            <td data-label={dataB.state} className="px-6 py-4 text-right font-semibold text-slate-700">
                               {formatCurrency(valB)}
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            <td data-label="Difference" className="px-6 py-4 text-right">
                               <span className={clsx(
                                 "text-sm font-semibold",
                                 diff > 0 ? "text-emerald-600" : diff < 0 ? "text-blue-600" : "text-slate-400"
