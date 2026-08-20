@@ -452,7 +452,7 @@ const AnomalyCenter = ({ anomalies, onViewPage }) => {
 };
 
 // MDA Row with expansion for sub-units
-const UnitRow = ({ unit, depth, onSelect, formatCompact, selectedCode, defaultExpanded }) => {
+const UnitRow = ({ unit, depth, onSelect, onOpenSource, formatCompact, selectedCode, defaultExpanded }) => {
   const [isExpanded, setIsExpanded] = useState(Boolean(defaultExpanded) || depth === 0);
   const children = unit.children || [];
   const hasChildren = children.length > 0;
@@ -511,6 +511,7 @@ const UnitRow = ({ unit, depth, onSelect, formatCompact, selectedCode, defaultEx
             onClick={(e) => {
               e.stopPropagation();
               onSelect && onSelect({ ...unit, pageNumber: unit.provenance?.page });
+              onOpenSource && onOpenSource(unit);
             }}
             className="opacity-0 group-hover/unit:opacity-100 text-[10px] font-bold text-blue-600 hover:underline"
           >
@@ -521,7 +522,7 @@ const UnitRow = ({ unit, depth, onSelect, formatCompact, selectedCode, defaultEx
       {hasChildren && isExpanded && (
         <div className="space-y-1 mt-1 mb-2">
           {children.map((child, idx) => (
-            <UnitRow key={child.code || idx} unit={child} depth={depth + 1} onSelect={onSelect} formatCompact={formatCompact} selectedCode={selectedCode} defaultExpanded={defaultExpanded} />
+            <UnitRow key={child.code || idx} unit={child} depth={depth + 1} onSelect={onSelect} onOpenSource={onOpenSource} formatCompact={formatCompact} selectedCode={selectedCode} defaultExpanded={defaultExpanded} />
           ))}
         </div>
       )}
@@ -654,7 +655,7 @@ const groupProjects = (list) => {
     .sort((a, b) => b.total - a.total);
 };
 
-const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenSector, revenueRows, projectsRows, isLoading, formatCurrency, formatCompact }) => {
+const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenSource, onOpenSector, revenueRows, projectsRows, isLoading, formatCurrency, formatCompact }) => {
   const [treeQuery, setTreeQuery] = useState('');
   const [gridQuery, setGridQuery] = useState('');
   const [projectQuery, setProjectQuery] = useState('');
@@ -994,7 +995,7 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
           ) : (
             <div className="space-y-1" key={treeSignal ? treeSignal.n : 0}>
               {filteredTree.map((unit, idx) => (
-                <UnitRow key={unit.code || idx} unit={unit} depth={0} onSelect={onSelect} formatCompact={formatCompact} selectedCode={mda.code} defaultExpanded={treeSignal?.type === 'expand'} />
+                <UnitRow key={unit.code || idx} unit={unit} depth={0} onSelect={onSelect} onOpenSource={onOpenSource} formatCompact={formatCompact} selectedCode={mda.code} defaultExpanded={treeSignal?.type === 'expand'} />
               ))}
             </div>
           )}
@@ -1227,6 +1228,17 @@ export default function StateDashboard() {
   const [revenueRows, setRevenueRows] = useState(null);
   const [projectsRows, setProjectsRows] = useState(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [sections, setSections] = useState(null);
+
+  // Static table-of-contents for the source PDF (when the pipeline shipped one)
+  useEffect(() => {
+    if (!stateId) return;
+    setSections(null);
+    fetch(`/data/${stateId}.sections.json`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setSections(Array.isArray(j?.sections) ? j.sections : null))
+      .catch(() => setSections(null));
+  }, [stateId]);
 
   // Lazy-fetch revenue-by-MDA and programme projects for the Ministry Profile tab
   useEffect(() => {
@@ -1394,7 +1406,7 @@ export default function StateDashboard() {
     setSelectedMDA({
       name: `${ISSUE_LABELS[anomaly.code] || anomaly.code.replace(/_/g, ' ')} — Page ${anomaly.pages[0]}`,
       pageNumber: anomaly.pages[0],
-      provenance: { line_text: anomaly.message }
+      provenance: { line_text: anomaly.lines?.[0] || anomaly.message }
     });
   };
 
@@ -1522,8 +1534,10 @@ export default function StateDashboard() {
                 <SourceInspector 
                   pdfFileId={data.pdf_file_id || null}
                   stateId={stateId}
+                  sections={sections}
+                  figures={selectedMDA}
                   highlight={selectedMDA?.sourceLine || selectedMDA?.provenance?.line_text}
-                  pageNumber={summaryEvidence?.pageNumber || selectedMDA?.pageNumber || selectedMDA?.provenance?.page || 1} 
+                  pageNumber={parseInt(searchParams.get('page'), 10) || summaryEvidence?.pageNumber || selectedMDA?.pageNumber || selectedMDA?.provenance?.page || 1} 
                 />
               )}
 
@@ -1891,6 +1905,10 @@ export default function StateDashboard() {
               ministries={ministries}
               selectedMinistry={selectedMinistry}
               onSelect={selectTarget}
+              onOpenSource={(unit) => {
+                selectTarget(unit);
+                setSelectedMDA({ ...unit, pageNumber: unit.provenance?.page });
+              }}
               onOpenSector={() => navigate(`/state/${stateId}/sectors`)}
               revenueRows={revenueRows}
               projectsRows={projectsRows}

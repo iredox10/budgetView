@@ -1,0 +1,2075 @@
+{
+  "engine_version": "0.2.0",
+  "sections": [
+    {
+      "key": "summary",
+      "title": "Kano State Government 2026 Approved Budget Summary",
+      "page": 1
+    },
+    {
+      "key": "revenue_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by MDA (not including Opening Balance)",
+      "page": 2
+    },
+    {
+      "key": "revenue_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by MDA (not including Opening Balance)",
+      "page": 3
+    },
+    {
+      "key": "revenue_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by MDA (not including Opening Balance)",
+      "page": 4
+    },
+    {
+      "key": "revenue_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by MDA (not including Opening Balance)",
+      "page": 5
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 6
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 7
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 8
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 9
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 10
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 11
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 12
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 13
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 14
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 15
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by MDA",
+      "page": 16
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification",
+      "page": 50
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification",
+      "page": 51
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification",
+      "page": 52
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification",
+      "page": 53
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification",
+      "page": 54
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts by Administrative Classification",
+      "page": 60
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts by Administrative Classification",
+      "page": 61
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 62
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 63
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 64
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 65
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 66
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 67
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 68
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 69
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Total Revenue (including Capital Receipts) by Administrative Classification (to Department)",
+      "page": 70
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts by Administrative Classification (to Department)",
+      "page": 77
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 80
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts by Administrative Classification (to Department)",
+      "page": 88
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts by Administrative Classification (to Department)",
+      "page": 89
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts by Administrative Classification (to Department)",
+      "page": 90
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 91
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 92
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 93
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 94
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 95
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 96
+    },
+    {
+      "key": "revenue_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Revenue by Economic Classification",
+      "page": 97
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts",
+      "page": 98
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts",
+      "page": 99
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts",
+      "page": 100
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts",
+      "page": 101
+    },
+    {
+      "key": "capital_receipts",
+      "title": "Kano State Government 2026 Approved Budget - Capital Receipts",
+      "page": 102
+    },
+    {
+      "key": "revenue_expenditure_fund",
+      "title": "Kano State Government 2026 Approved Budget - Revenue and Expenditure by Fund Source",
+      "page": 103
+    },
+    {
+      "key": "total_expenditure_admin",
+      "title": "Kano State Government 2026 Approved Budget - Total Expenditure by Administrative Classification",
+      "page": 104
+    },
+    {
+      "key": "personnel_expenditure_admin",
+      "title": "Kano State Government 2026 Approved Budget - Personnel Expenditure by Administrative Classification",
+      "page": 108
+    },
+    {
+      "key": "other_recurrent_admin",
+      "title": "Kano State Government 2026 Approved Budget - Other Non-Debt Recurrent Expenditure by Administrative Classification",
+      "page": 112
+    },
+    {
+      "key": "debt_service_admin",
+      "title": "Kano State Government 2026 Approved Budget - Debt Service Expenditure by Administrative Classification",
+      "page": 117
+    },
+    {
+      "key": "capital_expenditure_admin",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Administrative Classification",
+      "page": 117
+    },
+    {
+      "key": "total_expenditure_admin",
+      "title": "Kano State Government 2026 Approved Budget - Total Expenditure by Administrative Classification (to Department)",
+      "page": 121
+    },
+    {
+      "key": "personnel_expenditure_admin",
+      "title": "Kano State Government 2026 Approved Budget - Personnel Expenditure by Administrative Classification (to Department)",
+      "page": 134
+    },
+    {
+      "key": "other_recurrent_admin",
+      "title": "Kano State Government 2026 Approved Budget - Other Non-Debt Recurrent Expenditure by Administrative Classification (to Department)",
+      "page": 140
+    },
+    {
+      "key": "debt_service_admin",
+      "title": "Kano State Government 2026 Approved Budget - Debt Service Expenditure by Administrative Classification (to Department)",
+      "page": 149
+    },
+    {
+      "key": "capital_expenditure_admin",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Administrative Classification (to Department)",
+      "page": 149
+    },
+    {
+      "key": "expenditure_by_economic",
+      "title": "Kano State Government 2026 Approved Budget - Expenditure by Economic Classification",
+      "page": 159
+    },
+    {
+      "key": "total_expenditure_functional",
+      "title": "Kano State Government 2026 Approved Budget - Total Expenditure by Functional Classification",
+      "page": 165
+    },
+    {
+      "key": "personnel_expenditure_functional",
+      "title": "Kano State Government 2026 Approved Budget - Personnel Expenditure by Functional Classification",
+      "page": 168
+    },
+    {
+      "key": "other_recurrent_functional",
+      "title": "Kano State Government 2026 Approved Budget - Other Non-Debt Recurrent Expenditure by Functional Classification",
+      "page": 170
+    },
+    {
+      "key": "debt_service_functional",
+      "title": "Kano State Government 2026 Approved Budget - Debt Service Expenditure by Functional Classification",
+      "page": 173
+    },
+    {
+      "key": "capital_expenditure_functional",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Functional Classification",
+      "page": 173
+    },
+    {
+      "key": "expenditure_by_location",
+      "title": "Kano State Government 2026 Approved Budget - Total Expenditure by Location",
+      "page": 176
+    },
+    {
+      "key": "expenditure_by_programme",
+      "title": "Kano State Government 2026 Approved Budget - Total Expenditure by Programme (Sector, Objective and Programme)",
+      "page": 179
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 191
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 192
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 193
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 194
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 195
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 196
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 197
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 198
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 199
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 200
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 201
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 202
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 203
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 204
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 205
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 206
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 207
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 208
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 209
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 210
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 211
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 212
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 213
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 214
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 215
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 216
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 217
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 218
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 219
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 220
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 221
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 222
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 223
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 224
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 225
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 226
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 227
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 228
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 229
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 230
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 231
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 232
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 233
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 234
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 235
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 236
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 237
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 238
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 239
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 240
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 241
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 242
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 243
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 244
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 245
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 246
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 247
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 248
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 249
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 250
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 251
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 252
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 253
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 254
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 255
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 256
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 257
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 258
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 259
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 260
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 261
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 262
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 263
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 264
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 265
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 266
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 267
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 268
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 269
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 270
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 271
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 272
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 273
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 274
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 275
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 276
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 277
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 278
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 279
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 280
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 281
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 282
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 283
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 284
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 285
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 286
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 287
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 288
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 289
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 290
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 291
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 292
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 293
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 294
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 295
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 296
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 297
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 298
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 299
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 300
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 301
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 302
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 303
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 304
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 305
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 306
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 307
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 308
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 309
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 310
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 311
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 312
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 313
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 314
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 315
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 316
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 317
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 318
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 319
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 320
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 321
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 322
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 323
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 324
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 325
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 326
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 327
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 328
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 329
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 330
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 331
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 332
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 333
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 334
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 335
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 336
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 337
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 338
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 339
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 340
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 341
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 342
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 343
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 344
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 345
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 346
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 347
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 348
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 349
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 350
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 351
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 352
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 353
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 354
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 355
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 356
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 357
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 358
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 359
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 360
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 361
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 362
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 363
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 364
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 365
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 366
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 367
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 368
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 369
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 370
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 371
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 372
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 373
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 374
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 375
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 376
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 377
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 378
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 379
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 380
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 381
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 382
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 383
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 384
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 385
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 386
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 387
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 388
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 389
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 390
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 391
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 392
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 393
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 394
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 395
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 396
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 397
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 398
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 399
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 400
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 401
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 402
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 403
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 404
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 405
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 406
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 407
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 408
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 409
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 410
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 411
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 412
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 413
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 414
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 415
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 416
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 417
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 418
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 419
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 420
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 421
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 422
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 423
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 424
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 425
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 426
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 427
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 428
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 429
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 430
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 431
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 432
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 433
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 434
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 435
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 436
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 437
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 438
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 439
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 440
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 441
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 442
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 443
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 444
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 445
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 446
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 447
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 448
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 449
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 450
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 451
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 452
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 453
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 454
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 455
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 456
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 457
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 458
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 459
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 460
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 461
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 462
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 463
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 464
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 465
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 466
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 467
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 468
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 469
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 470
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 471
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 472
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 473
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 474
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 475
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 476
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 477
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 478
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 479
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 480
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 481
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 482
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 483
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 484
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 485
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 486
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 487
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 488
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 489
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 490
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 491
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 492
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 493
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 494
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 495
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 496
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 497
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 498
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 499
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 500
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 501
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 502
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 503
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 504
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 505
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 506
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 507
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 508
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 509
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 510
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 511
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 512
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 513
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 514
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 515
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 516
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 517
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 518
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 519
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 520
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Capital Expenditure by Project",
+      "page": 521
+    },
+    {
+      "key": "basic_education_admin",
+      "title": "Kano State Government 2026 Approved Budget - Basic Education Expenditure by Administrative Classification",
+      "page": 522
+    },
+    {
+      "key": "basic_education_economic",
+      "title": "Kano State Government 2026 Approved Budget - Basic Education Expenditure by Economic Classification",
+      "page": 522
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Basic Education Expenditure by MDA by Main Economic Classification (* Other Recurrent refers to Debt Service, Loans, Subsidies,",
+      "page": 525
+    },
+    {
+      "key": "primary_health_admin",
+      "title": "Kano State Government 2026 Approved Budget - Primary Health Expenditure by Administrative Classification",
+      "page": 526
+    },
+    {
+      "key": "primary_health_economic",
+      "title": "Kano State Government 2026 Approved Budget - Primary Health Expenditure by Economic Classification",
+      "page": 526
+    },
+    {
+      "key": "expenditure_by_mda",
+      "title": "Kano State Government 2026 Approved Budget - Primary Health Expenditure by MDA by Main Economic Classification (* Other Recurrent refers to Debt Service, Loans, Subsidies, Grants and Transfers)",
+      "page": 527
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Basic Education Capital Expenditure by Project",
+      "page": 528
+    },
+    {
+      "key": "capital_project",
+      "title": "Kano State Government 2026 Approved Budget - Primary Health Capital Expenditure by Project",
+      "page": 550
+    }
+  ],
+  "order": [
+    "summary",
+    "revenue_by_mda",
+    "expenditure_by_mda",
+    "capital_receipts",
+    "revenue_by_economic",
+    "revenue_expenditure_fund",
+    "total_expenditure_admin",
+    "personnel_expenditure_admin",
+    "other_recurrent_admin",
+    "capital_expenditure_admin",
+    "debt_service_admin",
+    "expenditure_by_economic",
+    "total_expenditure_functional",
+    "personnel_expenditure_functional",
+    "other_recurrent_functional",
+    "capital_expenditure_functional",
+    "debt_service_functional",
+    "expenditure_by_location",
+    "expenditure_by_programme",
+    "capital_project",
+    "basic_education_admin",
+    "basic_education_economic",
+    "primary_health_admin",
+    "primary_health_economic"
+  ],
+  "classification_scheme": [
+    "administrative",
+    "economic",
+    "functional",
+    "location",
+    "programme",
+    "project",
+    "fund"
+  ]
+}
