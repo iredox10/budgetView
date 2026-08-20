@@ -857,21 +857,37 @@ const MinistryProfile = ({ data, ministries, selectedMinistry, onSelect, onOpenS
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
             {filteredMinistries.map((m) => (
-              <button
+              <div
                 key={m.code}
                 onClick={() => onSelect(m)}
                 className={clsx(
-                  "text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all",
+                  "relative text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer",
                   selectedMinistry?.code === m.code
                     ? "bg-slate-900 text-white border-slate-900 shadow-lg"
                     : "bg-white text-slate-700 border-slate-200 hover:border-slate-400"
                 )}
               >
-                <span className="block truncate">{m.name}</span>
+                <span className="block truncate pr-16">{m.name}</span>
                 <span className={clsx("block text-[11px] font-mono mt-0.5", selectedMinistry?.code === m.code ? "text-slate-300" : "text-slate-400")}>
                   {formatCompact(m.total)} · {m.code}
                 </span>
-              </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenSource && onOpenSource({ ...m, pageNumber: m.provenance?.page });
+                  }}
+                  className={clsx(
+                    "absolute top-2.5 right-2.5 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border transition-colors",
+                    selectedMinistry?.code === m.code
+                      ? "text-slate-200 border-slate-700 hover:bg-slate-800"
+                      : "text-blue-600 border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-200"
+                  )}
+                  title={`Open the official PDF at the page for ${m.name}`}
+                >
+                  <Eye className="w-3 h-3" />
+                  VIEW SOURCE
+                </button>
+              </div>
             ))}
           </div>
         </div>
