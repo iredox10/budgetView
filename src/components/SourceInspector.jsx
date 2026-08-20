@@ -3,11 +3,12 @@ import { storage, BUCKET_ID } from '../utils/appwrite';
 import { Loader2, AlertCircle, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { Title, Text, Badge, Button } from '@tremor/react';
 
-export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
+export default function SourceInspector({ pdfFileId, pageNumber, stateId, highlight }) {
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const canvasRef = useRef(null);
+  const boxRef = useRef(null);
   const renderTaskRef = useRef(null);
   const loadSeqRef = useRef(0);
 
@@ -18,7 +19,67 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
       return;
     }
     loadPDF();
-  }, [pdfFileId, pageNumber, stateId]);
+  }, [pdfFileId, pageNumber, stateId, highlight]);
+
+  const locateAndHighlight = async (page, viewport) => {
+    if (!highlight) return;
+    const text = await page.getTextContent();
+    const code = String(highlight).match(/\d{6,12}/)?.[0];
+    const nameTokens = String(highlight)
+      .split(/\s+/)
+      .filter(w => w.length > 3 && !/\d/.test(w))
+      .slice(0, 3)
+      .map(w => w.toLowerCase());
+    const codePrefix = code ? code.slice(0, 4) : null;
+
+    const hits = (text.items || []).filter(it => {
+      const s = (it.str || '').trim();
+      if (!s) return false;
+      if (code && s.includes(code)) return true;
+      if (codePrefix && s.startsWith(codePrefix) && /\d{4}/.test(s)) return true;
+      return nameTokens.length > 0 && nameTokens.some(t => s.toLowerCase().includes(t));
+    });
+    if (!hits.length) return;
+
+    // Merge overlapping/adjacent items into row bands (by shared baseline).
+    const rows = [];
+    for (const it of hits) {
+      const x0 = it.transform[4];
+      const top = it.transform[5] - (it.height || 0);
+      const right = x0 + (it.width || 0);
+      const bottom = it.transform[5];
+      let row = rows.find(r => Math.abs(r.bottom - bottom) < 3);
+      if (!row) {
+        rows.push({ left: x0, top, right, bottom });
+      } else {
+        row.left = Math.min(row.left, x0);
+        row.top = Math.min(row.top, top);
+        row.right = Math.max(row.right, right);
+        row.bottom = Math.max(row.bottom, bottom);
+      }
+    }
+
+    const ctx = canvasRef.current.getContext('2d');
+    let firstY = Infinity;
+    for (const r of rows) {
+      const tl = viewport.convertToViewportPoint(r.left, r.top);
+      const br = viewport.convertToViewportPoint(r.right, r.bottom);
+      const x = tl[0], y = tl[1], w = br[0] - tl[0], h = br[1] - tl[1];
+      ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(202, 138, 4, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+      if (y < firstY) firstY = y;
+    }
+
+    // Scroll the highlighted row into view (canvas may be CSS-scaled by max-w-full).
+    if (boxRef.current && Number.isFinite(firstY)) {
+      const scale = canvasRef.current.clientWidth / canvasRef.current.width;
+      const cssY = firstY * scale;
+      boxRef.current.scrollTop = Math.max(0, cssY - boxRef.current.clientHeight / 2);
+    }
+  };
 
   const loadPDF = async () => {
     const seq = ++loadSeqRef.current;
@@ -83,6 +144,8 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
       renderTaskRef.current = page.render(renderContext);
       await renderTaskRef.current.promise;
       if (seq !== loadSeqRef.current) return;
+      await locateAndHighlight(page, viewport);
+      if (seq !== loadSeqRef.current) return;
       setLoading(false);
     } catch (err) {
       if (seq !== loadSeqRef.current) return;
@@ -111,7 +174,7 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
         )}
       </div>
 
-      <div className="relative bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 min-h-[400px] flex items-center justify-center shadow-inner">
+      <div ref={boxRef} className="relative bg-slate-100 rounded-2xl overflow-auto border border-slate-200 min-h-[400px] max-h-[70vh] flex items-start justify-center shadow-inner">
         {loading && (
           <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-3">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />

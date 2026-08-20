@@ -1522,6 +1522,7 @@ export default function StateDashboard() {
                 <SourceInspector 
                   pdfFileId={data.pdf_file_id || null}
                   stateId={stateId}
+                  highlight={selectedMDA?.sourceLine || selectedMDA?.provenance?.line_text}
                   pageNumber={summaryEvidence?.pageNumber || selectedMDA?.pageNumber || selectedMDA?.provenance?.page || 1} 
                 />
               )}
