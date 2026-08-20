@@ -9,6 +9,7 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
   const [error, setError] = useState(null);
   const canvasRef = useRef(null);
   const renderTaskRef = useRef(null);
+  const loadSeqRef = useRef(0);
 
   useEffect(() => {
     if (!pdfFileId && !stateId) {
@@ -20,6 +21,7 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
   }, [pdfFileId, pageNumber, stateId]);
 
   const loadPDF = async () => {
+    const seq = ++loadSeqRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -57,9 +59,11 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
 
       const loadingTask = window.pdfjsLib.getDocument({ data: pdfBytes });
       const pdf = await loadingTask.promise;
+      if (seq !== loadSeqRef.current) return;
       setNumPages(pdf.numPages);
-      
+
       const page = await pdf.getPage(pageNumber || 1);
+      if (seq !== loadSeqRef.current) return;
       const viewport = page.getViewport({ scale: 1.5 });
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
@@ -75,11 +79,14 @@ export default function SourceInspector({ pdfFileId, pageNumber, stateId }) {
         canvasContext: context,
         viewport: viewport
       };
-      
+
       renderTaskRef.current = page.render(renderContext);
       await renderTaskRef.current.promise;
+      if (seq !== loadSeqRef.current) return;
       setLoading(false);
     } catch (err) {
+      if (seq !== loadSeqRef.current) return;
+      if (/cancelled/i.test(String(err?.message || err?.name || ''))) return;
       console.error("PDF rendering error:", err);
       setError("Unable to render source page. The file may be restricted or missing.");
       setLoading(false);
